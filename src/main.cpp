@@ -10,8 +10,11 @@
 #include <IsingModel.h>
 #include <LeapFrogIntegrator.h>
 
+/**
+ * @brief Tests the Leap Frog integrator
+ */
 void test_leap_frog() {
-    const int grid_size = 2;
+    const int grid_size = 5;
     const int dim = 2;
     const int lambda = int_pow(grid_size, dim);
     const double C{4.1};
@@ -54,7 +57,12 @@ void test_leap_frog() {
 
 }
 
-
+/**
+ * @brief Main function
+ * @param argc
+ * @param argv
+ * @return Exit status
+ */
 int main(int argc, char *argv[]) {
     std::cout << "Hello\n";
     test_leap_frog();

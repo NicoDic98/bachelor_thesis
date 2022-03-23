@@ -31,9 +31,15 @@ public:
      * @param N Dimension of the vectors which should be integrated
      * @param model Force function to use in the updates of the momenta
      */
-    explicit LeapFrogIntegrator(IsingModel &model_) :
-            model{model_} {}
+    explicit LeapFrogIntegrator(IsingModel &model_) : model{model_} {}
 
+    /**
+     * @brief Integrates the field phi with momentum pi along the Hamiltonian equations of motion.
+     * @param amount_of_steps Amount of integration steps
+     * @param step_size Step size for each integration step
+     * @param phi Field
+     * @param pi Momentum
+     */
     void integrate(size_t amount_of_steps, double step_size, VectorX &phi, VectorX &pi);
 
 
