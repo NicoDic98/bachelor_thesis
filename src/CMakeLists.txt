@@ -8,8 +8,9 @@ set(BINARY_INCLUDE "${PROJECT_BINARY_DIR}/include")
 configure_file("SrcConfig.h.in" "${BINARY_INCLUDE}/SrcConfig.h")
 
 set(SOURCE_FILES main.cpp)
-add_subdirectory(Tensors_basic)
+
 add_subdirectory(LeapFrogIntegrator)
+add_subdirectory(IsingModel)
 
 message("SOURCE_FILES=${SOURCE_FILES}")
 
