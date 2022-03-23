@@ -10,7 +10,7 @@
 #include "LeapFrogIntegrator.h"
 
 void LeapFrogIntegrator::update_pi(VectorX &phi, VectorX &pi, double step_size) {
-    pi += step_size * force_function(phi);
+    pi += step_size * model.get_force(phi);
 }
 
 void LeapFrogIntegrator::update_phi(VectorX &phi, VectorX &pi, double step_size) {

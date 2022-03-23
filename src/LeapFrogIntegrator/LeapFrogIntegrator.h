@@ -11,6 +11,7 @@
 #define BACHELOR_THESIS_LEAPFROGINTEGRATOR_H
 
 #include <eigen3/Eigen/Dense>
+#include <IsingModel.h> //TODO look at vererbung to generalize this
 
 namespace {
     /**
@@ -28,10 +29,10 @@ public:
     /**
      * @brief Constructor of the Leap Frog Integrator
      * @param N Dimension of the vectors which should be integrated
-     * @param force_function_ Force function to use in the updates of the momenta
+     * @param model Force function to use in the updates of the momenta
      */
-    LeapFrogIntegrator(size_t N, VectorX (*force_function_)(const VectorX &phi)) :
-            dimension{N}, force_function{force_function_} {}
+    explicit LeapFrogIntegrator(IsingModel &model_) :
+            model{model_} {}
 
     void integrate(size_t amount_of_steps, double step_size, VectorX &phi, VectorX &pi);
 
@@ -53,11 +54,9 @@ private:
      * @param step_size
      * @return phi_new
      */
-    void update_phi(VectorX &phi, VectorX &pi, double step_size);
+    static void update_phi(VectorX &phi, VectorX &pi, double step_size);
 
-    size_t dimension;
-
-    VectorX (*force_function)(const VectorX &phi);
+    IsingModel &model;
 };
 
 
