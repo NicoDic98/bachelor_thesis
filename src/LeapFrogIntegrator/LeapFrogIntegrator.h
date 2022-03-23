@@ -30,7 +30,7 @@ public:
      * @param N Dimension of the vectors which should be integrated
      * @param force_function_ Force function to use in the updates of the momenta
      */
-    LeapFrogIntegrator(size_t N, VectorX (*force_function_)(VectorX &phi)) :
+    LeapFrogIntegrator(size_t N, VectorX (*force_function_)(const VectorX &phi)) :
             dimension{N}, force_function{force_function_} {}
 
     void integrate(size_t amount_of_steps, double step_size, VectorX &phi, VectorX &pi);
@@ -57,7 +57,7 @@ private:
 
     size_t dimension;
 
-    VectorX (*force_function)(VectorX &phi);
+    VectorX (*force_function)(const VectorX &phi);
 };
 
 
