@@ -17,6 +17,7 @@ IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, i
         : beta{beta_}, sqrt_beta{sqrt(beta_)}, h{std::move(h_)}, eta{std::move(eta_)}, offset{offset_},
           k_sym(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)),
           k_rec(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)) {
+    std::cout << "Constructor 1 called\n";
     fill_connectivity_matrix(dimension_, neighbour_extent_, grid_size_);
     add_offset_to_connectivity_matrix();
     k_rec = k_sym;
@@ -54,7 +55,7 @@ void IsingModel::fill_connectivity_matrix(int dimension, int neighbour_extent, i
 
     std::vector<long> index_offsets;
     long size = k_sym.rows();
-    generate_index_offsets(index_offsets, size, 0, 0, 0);
+    generate_index_offsets(index_offsets, size, dimension, neighbour_extent, grid_size);
 
     for (auto elem: index_offsets) {
         std::cout << elem << '\n';
@@ -78,9 +79,8 @@ void IsingModel::print_connectivity_matrix() {
     std::cout << k_sym;
 }
 
-void
-IsingModel::generate_index_offsets(std::vector<long> &index_offsets, long size, int dimension, int neighbour_extent,
-                                   int grid_size) {
+void IsingModel::generate_index_offsets(std::vector<long> &index_offsets, long size,
+                                        int dimension, int neighbour_extent, int grid_size) {
     long base_offset{1};
     for (int i = 0; i < dimension; ++i) {
         for (long j = 1; j <= neighbour_extent; ++j) {

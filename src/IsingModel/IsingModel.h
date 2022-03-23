@@ -49,7 +49,7 @@ private:
 
     void add_offset_to_connectivity_matrix();
 
-    void generate_index_offsets(std::vector<long> &index_offsets, long size, int dimension, int neighbour_extent,
+    static void generate_index_offsets(std::vector<long> &index_offsets, long size, int dimension, int neighbour_extent,
                                 int grid_size);
 };
 
