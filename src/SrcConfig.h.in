@@ -1,0 +1,14 @@
+/** @file SrcConfig.h
+* @author    nico
+* @version   0.0.1
+* @date      22.03.22
+*/
+
+
+#ifndef BACHELOR_THESIS_SRCCONFIG_H
+#define BACHELOR_THESIS_SRCCONFIG_H
+//TODO Find fancy solution for this
+#define Tutorial_VERSION_MAJOR @bachelor_thesis_VERSION_MAJOR@
+#define Tutorial_VERSION_MINOR @bachelor_thesis_VERSION_MINOR@
+
+#endif //BACHELOR_THESIS_SRCCONFIG_H
