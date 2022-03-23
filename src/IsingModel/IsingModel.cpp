@@ -35,10 +35,11 @@ IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, M
 double IsingModel::get_action(const VectorX &phi) {
     VectorX var_phi{k_rec * phi};
     double ret{0.};
+    std::cout << '\n' << phi << '\n' << std::endl;
     for (int i = 0; i < eta.rows(); ++i) {
-        ret -= log(cosh(eta(i) + sqrt_beta * var_phi(i))/ cosh(eta(i)));
+        ret -= log(cosh(eta(i) + sqrt_beta * var_phi(i)) / cosh(eta(i)));
     }
-    ret += 0.5 * phi.dot(k_sym * phi);
+    ret += 0.5 * phi.transpose() * k_sym * phi;
     ret -= sqrt_beta * h.dot(phi);
     return ret;
 }
@@ -49,6 +50,7 @@ VectorX IsingModel::get_force(const VectorX &phi) {
     for (auto &elem: temp) {
         elem = tanh(elem);
     }
+    //std::cout << "2:\n" << -var_phi + sqrt_beta * h + sqrt_beta * k_rec.transpose() * temp << std::endl;
     return -var_phi + sqrt_beta * h + sqrt_beta * k_rec.transpose() * temp;
 }
 
@@ -59,17 +61,19 @@ double IsingModel::get_magnetization(const VectorX &phi) {
 void IsingModel::fill_connectivity_matrix(int dimension, int neighbour_extent, int grid_size) {
     k_sym.setZero();
 
-    std::vector<long> index_offsets;
     long lambda = k_sym.rows();
-    generate_index_offsets(index_offsets, lambda, dimension, neighbour_extent, grid_size);
-
-    for (auto elem: index_offsets) {
-        std::cout << elem << '\n';
-    }
 
     for (long m = 0; m < lambda; ++m) {
-        for (auto index_offset: index_offsets) {
-            k_sym(m, (m + index_offset) % lambda) += 1;
+        long base_offset{1};
+        for (int i = 0; i < dimension; ++i) {
+            for (long j = 1; j <= neighbour_extent; ++j) {
+                k_sym(m, (m + base_offset * neighbour_extent) % (base_offset * grid_size)
+                         + (base_offset * grid_size) * (m / (base_offset * grid_size))) += 1;
+                // this additional + is needed in cas of eg ((0,1),(2,3)) to get the correct connections for 2
+                k_sym(m, (m - base_offset * neighbour_extent + (base_offset * grid_size)) % (base_offset * grid_size)
+                         + (base_offset * grid_size) * (m / (base_offset * grid_size))) += 1;
+            }
+            base_offset *= grid_size;
         }
 
     }
@@ -83,16 +87,4 @@ void IsingModel::add_offset_to_connectivity_matrix() {
 
 void IsingModel::print_connectivity_matrix() {
     std::cout << k_sym;
-}
-
-void IsingModel::generate_index_offsets(std::vector<long> &index_offsets, long lambda,
-                                        int dimension, int neighbour_extent, int grid_size) {
-    long base_offset{1};
-    for (int i = 0; i < dimension; ++i) {
-        for (long j = 1; j <= neighbour_extent; ++j) {
-            index_offsets.push_back(j * base_offset);
-            index_offsets.push_back(lambda - j * base_offset);
-        }
-        base_offset *= grid_size;
-    }
 }

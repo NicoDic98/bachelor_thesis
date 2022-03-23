@@ -49,8 +49,6 @@ private:
 
     void add_offset_to_connectivity_matrix();
 
-    static void generate_index_offsets(std::vector<long> &index_offsets, long size, int dimension, int neighbour_extent,
-                                int grid_size);
 };
 
 inline int int_pow(int x, int y) {

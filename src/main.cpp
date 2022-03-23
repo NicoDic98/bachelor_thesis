@@ -11,25 +11,31 @@
 #include <LeapFrogIntegrator.h>
 
 void test_leap_frog() {
-    const int grid_size = 8;
+    const int grid_size = 3;
     const int dim = 2;
     const int lambda = int_pow(grid_size, dim);
     const double C{4.1};
-    const double beta{2.0};
+    const double beta{1.0};
 
     VectorX phi0(lambda);
     phi0.setRandom();
     VectorX pi0(lambda);
     pi0.setRandom();
     VectorX h0(lambda);
-    h0.setRandom();
+    h0.setOnes();
     VectorX eta0(lambda);
     eta0.setZero();
 
     IsingModel test(beta, h0, eta0, C, dim, 1, grid_size);
 
     LeapFrogIntegrator leapTest(test);
+    test.print_connectivity_matrix();
     int numMD = 10;
+    phi0(0) = 1;
+    phi0(1) = 2;
+    phi0(2) = -0.1;
+    phi0(3) = -1.5;
+    std::cout << test.get_action(phi0)<<std::endl;
 
     double S_start = test.get_action(phi0) + pi0.dot(pi0) / 2.;
     std::vector<double> S_error;
@@ -38,11 +44,13 @@ void test_leap_frog() {
         MD.push_back(i);
         VectorX phiNew(phi0);
         VectorX piNew(pi0);
-        std::cout << 1. / i << std::endl;
+
         leapTest.integrate(i, 1. / i, phiNew, piNew);
         double S_end = test.get_action(phiNew) + piNew.dot(piNew) / 2.;
-        S_error.push_back(abs(S_start - S_end) / S_start);
-        std::cout << i << " : " << abs(S_start - S_end) / S_start << std::endl;
+        S_error.push_back(abs((S_start - S_end) / S_start));
+        //std::cout << S_start<<std::endl;
+        //std::cout << S_end<<std::endl;
+        std::cout << i << "\t: " << abs((S_start - S_end) / S_start) << std::endl;
     }
 
 }
