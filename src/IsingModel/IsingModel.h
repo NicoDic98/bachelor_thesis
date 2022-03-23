@@ -23,7 +23,10 @@ namespace {
 
 class IsingModel {
 public:
-    explicit IsingModel(int dimension_, int grid_size_, int neighbour_extent_, double offset);
+    IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, int dimension_, int neighbour_extent_,
+               int grid_size_);
+
+    IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, MatrixX k_sym_, MatrixX k_rec_);
 
     double get_action(const VectorX &phi);
 
@@ -34,15 +37,29 @@ public:
     void print_connectivity_matrix();
 
 private:
-    int dimension;
-    int grid_size;
-    int neighbour_extent;
-    MatrixX connectivity_matrix;
+    double beta;
+    double sqrt_beta;
+    VectorX h;
+    VectorX eta;
+    double offset;
+    MatrixX k_sym;
+    MatrixX k_rec;
 
-    void fill_connectivity_matrix();
-    void add_offset_to_connectivity_matrix(double offset);
-    void generate_index_offsets(std::vector<long> &index_offsets, long size);
+    void fill_connectivity_matrix(int dimension, int neighbour_extent, int grid_size);
+
+    void add_offset_to_connectivity_matrix();
+
+    void generate_index_offsets(std::vector<long> &index_offsets, long size, int dimension, int neighbour_extent,
+                                int grid_size);
 };
 
+inline int int_pow(int x, int y) {
+    assert(y > 0);
+    int result = 1;
+    for (int i = 0; i < y; ++i) {
+        result *= x;
+    }
+    return result;
+}
 
 #endif //BACHELOR_THESIS_ISINGMODEL_H
