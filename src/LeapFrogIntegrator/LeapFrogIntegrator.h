@@ -12,10 +12,12 @@
 
 #include <eigen3/Eigen/Dense>
 
-/**
- * @brief Vector type definition
- */
-typedef Eigen::VectorXd VectorX;
+namespace {
+    /**
+     * @brief Vector type definition
+     */
+    typedef Eigen::VectorXd VectorX;
+}
 
 
 /**
