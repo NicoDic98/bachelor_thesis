@@ -19,8 +19,8 @@ void LeapFrogIntegrator::update_phi(VectorX &phi, VectorX &pi, double step_size)
 
 void LeapFrogIntegrator::integrate(size_t amount_of_steps, double step_size, VectorX &phi, VectorX &pi) {
     for (size_t _ = 0; _ < amount_of_steps; _++) {
-        update_phi(phi,pi,step_size);
+        update_phi(phi,pi,step_size*0.5);
         update_pi(phi,pi,step_size);
-        update_phi(phi,pi,step_size);
+        update_phi(phi,pi,step_size*0.5);
     }
 }

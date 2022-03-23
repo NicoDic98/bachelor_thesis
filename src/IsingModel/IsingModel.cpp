@@ -35,7 +35,6 @@ IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, M
 double IsingModel::get_action(const VectorX &phi) {
     VectorX var_phi{k_rec * phi};
     double ret{0.};
-    std::cout << '\n' << phi << '\n' << std::endl;
     for (int i = 0; i < eta.rows(); ++i) {
         ret -= log(cosh(eta(i) + sqrt_beta * var_phi(i)) / cosh(eta(i)));
     }
@@ -50,7 +49,6 @@ VectorX IsingModel::get_force(const VectorX &phi) {
     for (auto &elem: temp) {
         elem = tanh(elem);
     }
-    //std::cout << "2:\n" << -var_phi + sqrt_beta * h + sqrt_beta * k_rec.transpose() * temp << std::endl;
     return -var_phi + sqrt_beta * h + sqrt_beta * k_rec.transpose() * temp;
 }
 
@@ -86,5 +84,5 @@ void IsingModel::add_offset_to_connectivity_matrix() {
 }
 
 void IsingModel::print_connectivity_matrix() {
-    std::cout << k_sym;
+    std::cout << k_sym << std::endl;
 }

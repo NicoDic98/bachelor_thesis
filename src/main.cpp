@@ -11,7 +11,7 @@
 #include <LeapFrogIntegrator.h>
 
 void test_leap_frog() {
-    const int grid_size = 3;
+    const int grid_size = 2;
     const int dim = 2;
     const int lambda = int_pow(grid_size, dim);
     const double C{4.1};
@@ -22,9 +22,9 @@ void test_leap_frog() {
     VectorX pi0(lambda);
     pi0.setRandom();
     VectorX h0(lambda);
-    h0.setOnes();
+    h0.setRandom();
     VectorX eta0(lambda);
-    eta0.setZero();
+    eta0.setRandom();
 
     IsingModel test(beta, h0, eta0, C, dim, 1, grid_size);
 
@@ -35,7 +35,6 @@ void test_leap_frog() {
     phi0(1) = 2;
     phi0(2) = -0.1;
     phi0(3) = -1.5;
-    std::cout << test.get_action(phi0)<<std::endl;
 
     double S_start = test.get_action(phi0) + pi0.dot(pi0) / 2.;
     std::vector<double> S_error;
