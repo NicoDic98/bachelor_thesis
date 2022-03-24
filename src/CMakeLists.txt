@@ -8,17 +8,18 @@ set(BINARY_INCLUDE "${PROJECT_BINARY_DIR}/include")
 configure_file("SrcConfig.h.in" "${BINARY_INCLUDE}/SrcConfig.h")
 
 set(SOURCE_FILES main.cpp)
+set(INCLUDE_DIRECTORIES "${BINARY_INCLUDE}")
 
 add_subdirectory(LeapFrogIntegrator)
 add_subdirectory(IsingModel)
+add_subdirectory(HMCGenerator)
 
 message("SOURCE_FILES=${SOURCE_FILES}")
+message("INCLUDE_DIRECTORIES=${INCLUDE_DIRECTORIES}")
 
 # add the executable
 add_executable("${PROJECT_NAME}" ${SOURCE_FILES})
 
 # add the binary tree to the search path for include files
 # so that we will find TutorialConfig.h
-target_include_directories("${PROJECT_NAME}" PUBLIC
-        "${BINARY_INCLUDE}"
-        )
+target_include_directories("${PROJECT_NAME}" PUBLIC ${INCLUDE_DIRECTORIES})

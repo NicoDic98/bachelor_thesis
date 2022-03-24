@@ -9,6 +9,7 @@
 #include <SrcConfig.h>
 #include <IsingModel.h>
 #include <LeapFrogIntegrator.h>
+#include <HMCGenerator.h>
 
 /**
  * @brief Tests the Leap Frog integrator
@@ -54,7 +55,6 @@ void test_leap_frog() {
         //std::cout << S_end<<std::endl;
         std::cout << i << "\t: " << abs((S_start - S_end) / S_start) << std::endl;
     }
-
 }
 
 /**
