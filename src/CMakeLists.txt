@@ -13,6 +13,7 @@ set(INCLUDE_DIRECTORIES "${BINARY_INCLUDE}")
 add_subdirectory(LeapFrogIntegrator)
 add_subdirectory(IsingModel)
 add_subdirectory(HMCGenerator)
+add_subdirectory(MyTypes)
 
 message("SOURCE_FILES=${SOURCE_FILES}")
 message("INCLUDE_DIRECTORIES=${INCLUDE_DIRECTORIES}")

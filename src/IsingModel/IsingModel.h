@@ -11,19 +11,9 @@
 #ifndef BACHELOR_THESIS_ISINGMODEL_H
 #define BACHELOR_THESIS_ISINGMODEL_H
 
-#include <eigen3/Eigen/Dense>
-#include <vector>
 
-namespace {
-    /**
-     * @brief Vector type definition
-     */
-    typedef Eigen::VectorXd VectorX;
-    /**
-     * @brief Matrix type definition
-     */
-    typedef Eigen::MatrixXd MatrixX;
-}
+#include <vector>
+#include <MyTypes.h>
 
 /**
  * @brief Definition of the Ising model.

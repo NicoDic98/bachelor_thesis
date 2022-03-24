@@ -10,16 +10,8 @@
 #ifndef BACHELOR_THESIS_LEAPFROGINTEGRATOR_H
 #define BACHELOR_THESIS_LEAPFROGINTEGRATOR_H
 
-#include <eigen3/Eigen/Dense>
+#include <MyTypes.h>
 #include <IsingModel.h> //TODO look at vererbung to generalize this
-
-namespace {
-    /**
-     * @brief Vector type definition
-     */
-    typedef Eigen::VectorXd VectorX;
-}
-
 
 /**
  * @brief Implementation of the Leap Frog Integrator
