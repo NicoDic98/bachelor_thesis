@@ -4,6 +4,7 @@
  * @author     nico
  * @version    0.0.1
  * @date       23.03.22
+ * @todo       Use sparse matrices for the connectivity matrices
  */
 
 
