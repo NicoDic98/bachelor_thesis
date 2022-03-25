@@ -70,11 +70,19 @@ public:
      */
     void print_connectivity_matrix();
 
+    /**
+     * @brief Sets the value of beta to new_beta
+     * @param new_beta Inverse temperature
+     */
     void set_beta(double new_beta) {
         beta = new_beta;
         sqrt_beta = sqrt(beta);
     }
 
+    /**
+     * @brief Returns beta
+     * @return Inverse temperature
+     */
     double get_beta() const { return beta; }
 
 private:

@@ -59,6 +59,10 @@ void test_leap_frog() {
     }
 }
 
+/**
+ * @brief Tests the HMC, and prints some results to filename
+ * @param filename
+ */
 void test_HMC(const std::string &filename) {
     const int grid_size = 5;
     const int dim = 2;

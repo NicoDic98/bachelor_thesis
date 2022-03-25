@@ -13,8 +13,8 @@
 #include <eigen3/Eigen/Dense>
 
 /**
-     * @brief Vector type definition
-     */
+  * @brief Vector type definition
+  */
 typedef Eigen::VectorXd VectorX;
 
 /**

@@ -27,6 +27,7 @@ public:
 
     /**
      * @brief Integrates the field phi with momentum pi along the Hamiltonian equations of motion.
+     * @note  Integration happens inplace.
      * @param amount_of_steps Amount of integration steps
      * @param step_size Step size for each integration step
      * @param phi Field
