@@ -6,7 +6,7 @@ set(SOURCE_FILES main.cpp)
 set(INCLUDE_DIRECTORIES "${BINARY_INCLUDE}")
 
 
-# Add High Five eigen:
+# Add Eigen3:
 set(HIGHFIVE_USE_EIGEN ON)
 #message("CMAKE_SYSTEM_PREFIX_PATH=${CMAKE_SYSTEM_PREFIX_PATH}")
 find_package(Eigen3 REQUIRED)
@@ -16,9 +16,6 @@ else()
     find_package(PkgConfig)
     pkg_check_modules(EIGEN3 REQUIRED eigen3)
 endif()
-set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} "${EIGEN3_INCLUDE_DIRS}")
-
-
 
 include(FetchContent)
 # Add High Five:
@@ -48,4 +45,4 @@ add_executable("${PROJECT_NAME}" ${SOURCE_FILES})
 # add the binary tree to the search path for include files
 # so that we will find TutorialConfig.h
 target_include_directories("${PROJECT_NAME}" PUBLIC ${INCLUDE_DIRECTORIES})
-target_link_libraries("${PROJECT_NAME}" PUBLIC ${HDF5_LIBRARIES})
+target_link_libraries("${PROJECT_NAME}" PUBLIC ${HDF5_LIBRARIES} Eigen3::Eigen)
