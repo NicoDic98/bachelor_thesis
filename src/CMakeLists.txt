@@ -6,18 +6,29 @@ set(SOURCE_FILES main.cpp)
 set(INCLUDE_DIRECTORIES "${BINARY_INCLUDE}")
 
 
+# Add High Five eigen:
+set(HIGHFIVE_USE_EIGEN ON)
+#message("CMAKE_SYSTEM_PREFIX_PATH=${CMAKE_SYSTEM_PREFIX_PATH}")
+find_package(Eigen3 REQUIRED)
+if(Eigen3_FOUND)
+    message(STATUS "Found my Eigen ${Eigen3_VERSION}: ${EIGEN3_INCLUDE_DIRS}")
+else()
+    find_package(PkgConfig)
+    pkg_check_modules(EIGEN3 REQUIRED eigen3)
+endif()
+set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} "${EIGEN3_INCLUDE_DIRS}")
+
+
+
+include(FetchContent)
 # Add High Five:
 find_package(HDF5)
-include(FetchContent)
 FetchContent_Declare(
         HighFive
         GIT_REPOSITORY https://github.com/BlueBrain/HighFive.git
         GIT_TAG 5db7df453cd32811cd63b75627236cf13d337b66
 )
 FetchContent_MakeAvailable(HighFive)
-message("highfive_SOURCE_DIR=${highfive_SOURCE_DIR}")
-message("highfive_POPULATED=${highfive_POPULATED}")
-message("highfive_BINARY_DIR=${highfive_BINARY_DIR}")
 set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} "${highfive_SOURCE_DIR}/include")
 
 
@@ -30,8 +41,6 @@ add_subdirectory(IsingModel)
 add_subdirectory(HMCGenerator)
 add_subdirectory(MyTypes)
 
-message("SOURCE_FILES=${SOURCE_FILES}")
-message("INCLUDE_DIRECTORIES=${INCLUDE_DIRECTORIES}")
 
 # add the executable
 add_executable("${PROJECT_NAME}" ${SOURCE_FILES})

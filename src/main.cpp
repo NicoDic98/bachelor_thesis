@@ -12,7 +12,7 @@
 #include <LeapFrogIntegrator.h>
 #include <HMCGenerator.h>
 #include <fstream>
-#include <highfive/H5File.hpp>
+#include <highfive/H5Easy.hpp>
 
 /**
  * @brief Tests the Leap Frog integrator
