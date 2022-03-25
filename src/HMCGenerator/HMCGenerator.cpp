@@ -44,15 +44,16 @@ VectorX HMCGenerator::do_HMC_step(const VectorX &phi0) {
 double HMCGenerator::generate_ensembles(const VectorX &phiStart,
                                         size_t amount_of_samples, size_t amount_of_thermalization_steps) {
     //TODO add expand option
+    assert(model.check_dimensions(phiStart));
     VectorX phi(phiStart);
-    ensembles.clear();
+    ensembles.resize(amount_of_samples);
     for (int i = 0; i < amount_of_thermalization_steps; ++i) {
         phi = do_HMC_step(phi);
     }
     accepted_configurations = 0;
     for (int i = 0; i < amount_of_samples; ++i) {
         phi = do_HMC_step(phi);
-        ensembles.push_back(phi);
+        ensembles[i] = phi;
     }
 
     double ret{1.};

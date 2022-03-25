@@ -85,6 +85,8 @@ public:
      */
     double get_beta() const { return beta; }
 
+    bool check_dimensions(const VectorX &phi);
+
 private:
     double beta;
     double sqrt_beta;
@@ -98,6 +100,7 @@ private:
 
     void add_offset_to_connectivity_matrix();
 
+    bool check_internal_dimensions() { return check_dimensions(h); }
 };
 
 /**

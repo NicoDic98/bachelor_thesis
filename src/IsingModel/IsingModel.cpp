@@ -22,14 +22,14 @@ IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, i
     add_offset_to_connectivity_matrix();
 
     k_rec = k_sym;
+    assert(check_internal_dimensions());
 }
 
 IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, MatrixX k_sym_, MatrixX k_rec_)
         : beta{beta_}, sqrt_beta{sqrt(beta_)}, h{std::move(h_)}, eta{std::move(eta_)}, offset{offset_},
           k_sym{std::move(k_sym_)},
           k_rec{std::move(k_rec_)} {
-
-
+    assert(check_internal_dimensions());
 }
 
 double IsingModel::get_action(const VectorX &phi) {
@@ -87,4 +87,28 @@ void IsingModel::add_offset_to_connectivity_matrix() {
 
 void IsingModel::print_connectivity_matrix() {
     std::cout << k_sym << std::endl;
+}
+
+bool IsingModel::check_dimensions(const VectorX &phi) {
+    long size_a = h.rows();
+    long size_base = eta.rows();
+
+    if (phi.rows() != size_a) {
+        return false;
+    }
+
+    if (k_sym.rows() != size_a) {
+        return false;
+    }
+    if (k_sym.cols() != size_a) {
+        return false;
+    }
+
+    if (k_rec.rows() != size_base) {
+        return false;
+    }
+    if (k_rec.cols() != size_a) {
+        return false;
+    }
+    return true;
 }
