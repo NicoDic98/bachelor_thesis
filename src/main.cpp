@@ -12,6 +12,7 @@
 #include <LeapFrogIntegrator.h>
 #include <HMCGenerator.h>
 #include <fstream>
+#include <hdf5.h>
 
 /**
  * @brief Tests the Leap Frog integrator
@@ -87,12 +88,12 @@ void test_HMC(const std::string &filename) {
         std::cerr << filename << " can't be opened!\n";
         exit(-42);
     }
-    for (double beta_loop = 0.25; beta_loop < 2.1; beta_loop += 0.1) {
-        test.set_beta(beta_loop);
+    for (double inverse_beta = 0.5; inverse_beta < 4.1; inverse_beta += 0.1) {
+        test.set_beta(1. / inverse_beta);
         std::cout << "Acceptance rate:" << HMCTest.generate_ensembles(phi0, 20000, 1000) << std::endl;
         double m = HMCTest.compute_magnetization();
-        std::cout << "Beta: " << beta_loop << "\t Magnetization:" << m << std::endl;
-        output << beta_loop << '\t' << m << '\n';
+        std::cout << "Beta: " << 1. / inverse_beta << "\t Magnetization:" << m << std::endl;
+        output << inverse_beta << '\t' << m << '\n';
     }
     output.close();
 
