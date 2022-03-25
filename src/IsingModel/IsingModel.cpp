@@ -44,16 +44,18 @@ double IsingModel::get_action(const VectorX &phi) {
 }
 
 VectorX IsingModel::get_force(const VectorX &phi) {
-    VectorX var_phi{k_rec * phi};
-    VectorX temp{eta + sqrt_beta * var_phi};
+    VectorX var_phi1{k_rec * phi};
+    VectorX var_phi2{k_sym * phi};
+    VectorX temp{eta + sqrt_beta * var_phi1};
     for (auto &elem: temp) {
         elem = tanh(elem);
     }
-    return -var_phi + sqrt_beta * h + sqrt_beta * k_rec.transpose() * temp;
+    return -var_phi2 + sqrt_beta * h + sqrt_beta * k_rec.transpose() * temp;
 }
 
 double IsingModel::get_magnetization(const VectorX &phi) {
-    return 0;
+
+    return (phi / sqrt_beta - (k_sym.inverse()) * h).sum() / phi.rows();
 }
 
 void IsingModel::fill_connectivity_matrix(int dimension, int neighbour_extent, int grid_size) {

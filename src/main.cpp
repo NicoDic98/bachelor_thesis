@@ -11,6 +11,7 @@
 #include <IsingModel.h>
 #include <LeapFrogIntegrator.h>
 #include <HMCGenerator.h>
+#include <fstream>
 
 /**
  * @brief Tests the Leap Frog integrator
@@ -58,12 +59,12 @@ void test_leap_frog() {
     }
 }
 
-void test_HMC() {
-    const int grid_size = 16;
+void test_HMC(const std::string &filename) {
+    const int grid_size = 5;
     const int dim = 2;
     const int lambda = int_pow(grid_size, dim);
     const double C{4.1};
-    const double beta{1.0};
+    const double beta{0.5};
 
     VectorX phi0(lambda);
     phi0.setRandom();
@@ -74,11 +75,23 @@ void test_HMC() {
 
     IsingModel test(beta, h0, eta0, C, dim, 1, grid_size);
 
-    LeapFrogIntegrator leapTest(test);
-    test.print_connectivity_matrix();
-    HMCGenerator::SetSeed(42L);
-    HMCGenerator HMCTest(test, 8, 1. / 8);
-    std::cout << HMCTest.generate_ensembles(phi0, 20000, 1000) << std::endl;
+    std::default_random_engine myengine{42L};
+    HMCGenerator HMCTest(test, 8, 1. / 8, myengine);
+
+    std::ofstream output(filename);
+    if (!output) {
+        std::cerr << filename << " can't be opened!\n";
+        exit(-42);
+    }
+    for (double beta_loop = 0.25; beta_loop < 2.1; beta_loop += 0.1) {
+        test.set_beta(beta_loop);
+        std::cout << "Acceptance rate:" << HMCTest.generate_ensembles(phi0, 20000, 1000) << std::endl;
+        double m = HMCTest.compute_magnetization();
+        std::cout << "Beta: " << beta_loop << "\t Magnetization:" << m << std::endl;
+        output << beta_loop << '\t' << m << '\n';
+    }
+    output.close();
+
 }
 
 /**
@@ -88,7 +101,8 @@ void test_HMC() {
  * @return Exit status
  */
 int main(int argc, char *argv[]) {
+
     std::cout << "Hello\n";
     test_leap_frog();
-    test_HMC();
+    test_HMC(std::string(DATA_DIR).append("Test.dat"));
 }

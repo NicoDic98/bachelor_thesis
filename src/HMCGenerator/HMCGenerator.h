@@ -19,13 +19,15 @@
 
 class HMCGenerator {
 public:
-    HMCGenerator(IsingModel &model_, size_t amount_of_steps_, double step_size_);
-
-
-    static void SetSeed(long seed) { generator.seed(seed); }
+    HMCGenerator(IsingModel &model_, size_t amount_of_steps_, double step_size_,
+                 std::default_random_engine &generator_);
 
     double generate_ensembles(const VectorX &phiStart,
                               size_t amount_of_samples, size_t amount_of_thermalization_steps = 10);
+
+    double compute_magnetization();
+
+    double get_beta() const { return model.get_beta(); }
 
 
 private:
@@ -34,10 +36,10 @@ private:
     IsingModel &model;
     size_t amount_of_steps;
     double step_size;
-    static std::default_random_engine generator;
+    std::default_random_engine &generator; //TODO Maybe make this static?
     LeapFrogIntegrator integrator;
     std::vector<VectorX> ensembles;
-    std::vector<bool> acceptance;
+    int accepted_configurations{0};
 };
 
 

@@ -5,6 +5,7 @@ project(bachelor_thesis VERSION 0.1)
 
 set(SOURCE_DIR_NAME "src")
 set(DOCUMENTATION_DIR_NAME "docs")
+set(DATA_DIR_NAME "data")
 
 # Print some info:
 message("PROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}")

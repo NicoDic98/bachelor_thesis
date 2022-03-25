@@ -70,6 +70,13 @@ public:
      */
     void print_connectivity_matrix();
 
+    void set_beta(double new_beta) {
+        beta = new_beta;
+        sqrt_beta = sqrt(beta);
+    }
+
+    double get_beta() const { return beta; }
+
 private:
     double beta;
     double sqrt_beta;

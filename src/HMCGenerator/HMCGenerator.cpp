@@ -10,10 +10,12 @@
 #include "HMCGenerator.h"
 
 
-std::default_random_engine HMCGenerator::generator{42};
+//std::default_random_engine HMCGenerator::generator{42};
 
-HMCGenerator::HMCGenerator(IsingModel &model_, size_t amount_of_steps_, double step_size_)
-        : model{model_}, amount_of_steps{amount_of_steps_}, step_size{step_size_}, integrator{model_} {
+HMCGenerator::HMCGenerator(IsingModel &model_, size_t amount_of_steps_, double step_size_,
+                           std::default_random_engine &generator_)
+        : model{model_}, amount_of_steps{amount_of_steps_}, step_size{step_size_}, integrator{model_},
+          generator{generator_} {
 }
 
 VectorX HMCGenerator::do_HMC_step(const VectorX &phi0) {
@@ -29,12 +31,11 @@ VectorX HMCGenerator::do_HMC_step(const VectorX &phi0) {
 
     std::uniform_real_distribution<double> uniformRealDistribution(0., 1.);
 
-    if ((H_start - H_end) > uniformRealDistribution(generator)) {
+    if (exp(H_start - H_end) > uniformRealDistribution(generator)) {
         // Accept
-        acceptance.push_back(true);
+        accepted_configurations++;
         return phi;
     } else {
-        acceptance.push_back(false);
         // Reject
         return phi0;
     }
@@ -44,19 +45,24 @@ double HMCGenerator::generate_ensembles(const VectorX &phiStart,
                                         size_t amount_of_samples, size_t amount_of_thermalization_steps) {
     //TODO add expand option
     VectorX phi(phiStart);
+    ensembles.clear();
     for (int i = 0; i < amount_of_thermalization_steps; ++i) {
         phi = do_HMC_step(phi);
     }
-
-    for (int i = 0; i < amount_of_thermalization_steps; ++i) {
+    accepted_configurations = 0;
+    for (int i = 0; i < amount_of_samples; ++i) {
         phi = do_HMC_step(phi);
         ensembles.push_back(phi);
     }
 
+    double ret{1.};
+    return ret * accepted_configurations / amount_of_samples;
+}
+
+double HMCGenerator::compute_magnetization() {
     double ret{0.};
-    for (auto elem: acceptance) {
-        ret += elem;
+    for (const auto &elem: ensembles) {
+        ret += abs(model.get_magnetization(elem));
     }
-    ret = ret / acceptance.size();
-    return ret;
+    return ret / ensembles.size();
 }
