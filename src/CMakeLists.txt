@@ -37,6 +37,7 @@ add_subdirectory(LeapFrogIntegrator)
 add_subdirectory(IsingModel)
 add_subdirectory(HMCGenerator)
 add_subdirectory(MyTypes)
+add_subdirectory(MultiLevelHMCGenerator)
 
 
 # add the executable
