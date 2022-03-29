@@ -14,11 +14,12 @@
 
 #include <vector>
 #include <MyTypes.h>
+#include <BaseModel.h>
 
 /**
  * @brief Definition of the Ising model.
  */
-class IsingModel {
+class IsingModel : public BaseModel<VectorX> {
 public:
     /**
      * @brief Constructor of IsingModel, with generation of connectivity matrix
@@ -49,21 +50,14 @@ public:
      * @param phi Field
      * @return S(phi) (action)
      */
-    double get_action(const VectorX &phi);
-
-    /**
-     * @brief Calculates the artificial force for the given field phi
-     * @param phi Field
-     * @return Artificial force according to artificial hamiltonian
-     */
-    VectorX get_force(const VectorX &phi);
+    double get_action(const VectorX &phi) override;
 
     /**
      * @brief Calculates the magnetization for the given field phi
      * @param phi Field
      * @return m(phi) (magnetization)
      */
-    double get_magnetization(const VectorX &phi);
+    double get_magnetization(const VectorX &phi) override;
 
     /**
      * @brief Prints out the connectivity matrix
@@ -74,21 +68,14 @@ public:
      * @brief Sets the value of beta to new_beta
      * @param new_beta Inverse temperature
      */
-    void set_beta(double new_beta) {
+    void set_beta(double new_beta) override {
         beta = new_beta;
         sqrt_beta = sqrt(beta);
     }
 
-    /**
-     * @brief Returns beta
-     * @return Inverse temperature
-     */
-    double get_beta() const { return beta; }
-
-    bool check_dimensions(const VectorX &phi);
+    bool check_dimensions(const VectorX &phi) override;
 
 private:
-    double beta;
     double sqrt_beta;
     VectorX h;
     VectorX eta;
@@ -101,6 +88,16 @@ private:
     void add_offset_to_connectivity_matrix();
 
     bool check_internal_dimensions() { return check_dimensions(h); }
+
+protected:
+
+    /**
+     * @brief Calculates the artificial force for the given field phi
+     * @param phi Field
+     * @return Artificial force according to artificial hamiltonian
+     */
+    VectorX get_force(const VectorX &phi) override;
+
 };
 
 /**

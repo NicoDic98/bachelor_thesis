@@ -14,7 +14,7 @@
 
 IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, int dimension_,
                        int neighbour_extent_, int grid_size_)
-        : beta{beta_}, sqrt_beta{sqrt(beta_)}, h{std::move(h_)}, eta{std::move(eta_)}, offset{offset_},
+        : BaseModel<VectorX>(beta_), sqrt_beta{sqrt(beta_)}, h{std::move(h_)}, eta{std::move(eta_)}, offset{offset_},
           k_sym(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)),
           k_rec(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)) {
 
@@ -26,7 +26,7 @@ IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, i
 }
 
 IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, MatrixX k_sym_, MatrixX k_rec_)
-        : beta{beta_}, sqrt_beta{sqrt(beta_)}, h{std::move(h_)}, eta{std::move(eta_)}, offset{offset_},
+        : BaseModel<VectorX>(beta_), sqrt_beta{sqrt(beta_)}, h{std::move(h_)}, eta{std::move(eta_)}, offset{offset_},
           k_sym{std::move(k_sym_)},
           k_rec{std::move(k_rec_)} {
     assert(check_internal_dimensions());

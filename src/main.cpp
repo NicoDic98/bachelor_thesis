@@ -35,7 +35,7 @@ void test_leap_frog() {
 
     IsingModel test(beta, h0, eta0, C, dim, 1, grid_size);
 
-    LeapFrogIntegrator leapTest(test);
+    LeapFrogIntegrator<decltype(test.get_dof_sample())> leapTest(test);
     test.print_connectivity_matrix();
     int numMD = 10;
     phi0(0) = 1;
@@ -81,14 +81,14 @@ void test_HMC(const std::string &filename) {
     IsingModel test(beta, h0, eta0, C, dim, 1, grid_size);
 
     std::default_random_engine myengine{42L};
-    HMCGenerator HMCTest(test, 8, 1. / 8, myengine);
+    HMCGenerator<decltype(test.get_dof_sample())> HMCTest(test, 8, 1. / 8, myengine);
 
     std::ofstream output(filename);
     if (!output) {
         std::cerr << filename << " can't be opened!\n";
         exit(-42);
     }
-    for (double inverse_beta = 0.5; inverse_beta < 4.1; inverse_beta += 0.1) {
+    for (double inverse_beta = 0.5; inverse_beta < 1.05; inverse_beta += 0.1) {
         test.set_beta(1. / inverse_beta);
         std::cout << "Acceptance rate:" << HMCTest.generate_ensembles(phi0, 20000, 1000) << std::endl;
         double m = HMCTest.compute_magnetization();
@@ -122,6 +122,6 @@ int main(int argc, char *argv[]) {
 // read back
     std::vector<int> result;
     dataset.read(result);
-    //test_leap_frog();
-    //test_HMC(std::string(DATA_DIR).append("Test.dat"));
+    test_leap_frog();
+    test_HMC(std::string(DATA_DIR).append("Test.dat"));
 }

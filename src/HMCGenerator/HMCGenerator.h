@@ -12,7 +12,7 @@
 #define BACHELOR_THESIS_HMCGENERATOR_H
 
 #include <MyTypes.h>
-#include <IsingModel.h> //TODO look at vererbung to generalize this
+#include <BaseModel.h>
 #include <LeapFrogIntegrator.h>
 #include <iostream>
 #include <random>
@@ -20,6 +20,7 @@
 /**
  * @brief Implementation of the standard HMC algorithm
  */
+template<class configuration_type>
 class HMCGenerator {
 public:
     /**
@@ -29,8 +30,11 @@ public:
      * @param step_size_ Step size in the integration process
      * @param generator_ Random number generator to be used for the HMC
      */
-    HMCGenerator(IsingModel &model_, size_t amount_of_steps_, double step_size_,
-                 std::default_random_engine &generator_);
+    HMCGenerator(BaseModel<configuration_type> &model_, size_t amount_of_steps_, double step_size_,
+                 std::default_random_engine &generator_)
+            : model{model_}, amount_of_steps{amount_of_steps_}, step_size{step_size_}, integrator{model_},
+              generator{generator_} {
+    }
 
     /**
      * @brief Generate amount_of_samples amount of ensembles, starting from phiStart and doing
@@ -40,14 +44,36 @@ public:
      * @param amount_of_thermalization_steps Amount of thermalization steps
      * @return Acceptance rate
      */
-    double generate_ensembles(const VectorX &phiStart,
-                              size_t amount_of_samples, size_t amount_of_thermalization_steps = 10);
+    double generate_ensembles(const configuration_type &phiStart,
+                              size_t amount_of_samples, size_t amount_of_thermalization_steps = 10) {
+        //TODO add expand option
+        assert(model.check_dimensions(phiStart));
+        configuration_type phi(phiStart);
+        ensembles.resize(amount_of_samples);
+        for (int i = 0; i < amount_of_thermalization_steps; ++i) {
+            phi = do_HMC_step(phi);
+        }
+        accepted_configurations = 0;
+        for (int i = 0; i < amount_of_samples; ++i) {
+            phi = do_HMC_step(phi);
+            ensembles[i] = phi;
+        }
+
+        double ret{1.};
+        return ret * accepted_configurations / amount_of_samples;
+    }
 
     /**
      * @brief Compute the magnetization of the currently loaded ensemble
      * @return magnetization
      */
-    double compute_magnetization();
+    double compute_magnetization() {
+        double ret{0.};
+        for (const auto &elem: ensembles) {
+            ret += abs(model.get_magnetization(elem));
+        }
+        return ret / ensembles.size();
+    }
 
     /**
      * @brief Returns beta of the used model
@@ -57,14 +83,35 @@ public:
 
 
 private:
-    VectorX do_HMC_step(const VectorX &phi0);
+    configuration_type do_HMC_step(const configuration_type &phi0){
+        configuration_type pi(phi0.rows());
+        configuration_type phi(phi0);
+        std::normal_distribution<double> gauss(0, 1);
+        for (auto &elem: pi) {
+            elem = gauss(generator);
+        }
+        double H_start = pi.dot(pi) * 0.5 + model.get_action(phi);
+        integrator.integrate(amount_of_steps, step_size, phi, pi); //updates in place
+        double H_end = pi.dot(pi) * 0.5 + model.get_action(phi);
 
-    IsingModel &model;
+        std::uniform_real_distribution<double> uniformRealDistribution(0., 1.);
+
+        if (exp(H_start - H_end) > uniformRealDistribution(generator)) {
+            // Accept
+            accepted_configurations++;
+            return phi;
+        } else {
+            // Reject
+            return phi0;
+        }
+    }
+
+    BaseModel<configuration_type> &model;
     size_t amount_of_steps;
     double step_size;
     std::default_random_engine &generator; //TODO Maybe make this static?
-    LeapFrogIntegrator integrator;
-    std::vector<VectorX> ensembles;
+    LeapFrogIntegrator<configuration_type> integrator;
+    std::vector<configuration_type> ensembles;
     int accepted_configurations{0};
 };
 
