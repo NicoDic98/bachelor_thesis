@@ -23,7 +23,7 @@ public:
      * @param N Dimension of the vectors which should be integrated
      * @param model Force function to use in the updates of the momenta
      */
-    explicit LeapFrogIntegrator(BaseModel<configuration_type> &model_) : model{model_} {}
+    explicit LeapFrogIntegrator(BaseModel<configuration_type> &model_);
 
     /**
      * @brief Integrates the field phi with momentum pi along the Hamiltonian equations of motion.
@@ -33,19 +33,25 @@ public:
      * @param phi Field
      * @param pi Momentum
      */
-    void integrate(size_t amount_of_steps, double step_size, configuration_type &phi, configuration_type &pi){
-        for (size_t _ = 0; _ < amount_of_steps; _++) {
-            model.update_phi(phi,pi,step_size*0.5);
-            model.update_pi(phi,pi,step_size);
-            model.update_phi(phi,pi,step_size*0.5);
-        }
-    }
-
+    void integrate(size_t amount_of_steps, double step_size, configuration_type &phi, configuration_type &pi);
 
 
 private:
     BaseModel<configuration_type> &model;
 };
+
+template<class configuration_type>
+LeapFrogIntegrator<configuration_type>::LeapFrogIntegrator(BaseModel<configuration_type> &model_) : model{model_} {}
+
+template<class configuration_type>
+void LeapFrogIntegrator<configuration_type>::integrate(size_t amount_of_steps, double step_size,
+                                                       configuration_type &phi, configuration_type &pi) {
+    for (size_t _ = 0; _ < amount_of_steps; _++) {
+        model.update_phi(phi, pi, step_size * 0.5);
+        model.update_pi(phi, pi, step_size);
+        model.update_phi(phi, pi, step_size * 0.5);
+    }
+}
 
 
 #endif //BACHELOR_THESIS_LEAPFROGINTEGRATOR_H
