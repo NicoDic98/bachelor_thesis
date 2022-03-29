@@ -17,7 +17,12 @@ class BaseModel {
 public:
     explicit BaseModel(double beta_);
 
-    BaseModel() : beta{42.} {}
+    BaseModel(const BaseModel<configuration_type> &NewModel) : beta{NewModel.beta} {
+
+    }
+
+    BaseModel(const BaseModel<configuration_type> &NewModel, const MatrixX &InterpolationMatrix)
+            : beta{NewModel.beta} {}
 
     virtual ~BaseModel() = default;
 
@@ -27,13 +32,13 @@ public:
      * @brief Returns beta
      * @return Inverse temperature
      */
-    virtual double get_beta();
+    virtual inline double get_beta() const;
 
     /**
      * @brief Sets the value of beta to new_beta
      * @param new_beta Inverse temperature
      */
-    virtual void set_beta(double new_beta);
+    virtual inline void set_beta(double new_beta);
 
     virtual double get_magnetization(const configuration_type &) = 0;
 
@@ -60,28 +65,28 @@ public:
 
     virtual configuration_type get_dof_sample();
 
-    virtual BaseModel<configuration_type>& get_coarser_model(const MatrixX &)=0;
+    virtual BaseModel<configuration_type> *get_coarser_model(const MatrixX &InterpolationMatrix) = 0;
+    virtual BaseModel<configuration_type> *get_copy_of_model() = 0;
+
 
     virtual void print_name();
 
-protected:
-
-    double beta;
-
     virtual configuration_type get_force(const configuration_type &) = 0;
 
+private:
+    double beta;
 };
 
 template<class configuration_type>
 BaseModel<configuration_type>::BaseModel(double beta_) : beta{beta_} {}
 
 template<class configuration_type>
-double BaseModel<configuration_type>::get_beta() {
+inline double BaseModel<configuration_type>::get_beta() const {
     return beta;
 }
 
 template<class configuration_type>
-void BaseModel<configuration_type>::set_beta(double new_beta) {
+inline void BaseModel<configuration_type>::set_beta(double new_beta) {
     beta = new_beta;
 }
 

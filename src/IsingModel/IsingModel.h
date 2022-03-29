@@ -34,16 +34,11 @@ public:
     IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, int dimension_, int neighbour_extent_,
                int grid_size_);
 
-    /**
-     * @brief Constructor of IsingModel, expecting already calculated k_sym and k_rec
-     * @param beta_ Inverse temperature
-     * @param h_ External field
-     * @param eta_ Generalisation field
-     * @param offset_ Offset used to shift the connectivity matrix by identity*offset_
-     * @param k_sym_ Square connectivity matrix
-     * @param k_rec_ Rectangular connectivity matrix
-     */
-    IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, MatrixX k_sym_, MatrixX k_rec_);
+
+    IsingModel(const IsingModel &NewModel, const MatrixX &InterpolationMatrix);
+
+    IsingModel(const IsingModel &NewModel);
+
 
     /**
      * @brief Calculates the action for the given field phi
@@ -69,27 +64,27 @@ public:
      * @param new_beta Inverse temperature
      */
     void set_beta(double new_beta) override {
-        beta = new_beta;
-        sqrt_beta = sqrt(beta);
+        BaseModel::set_beta(new_beta);
+        sqrt_beta = sqrt(get_beta());
     }
 
     bool check_dimensions(const VectorX &phi) override;
 
     void print_name() override;
 
-    IsingModel &get_coarser_model(const MatrixX &) override;
+    IsingModel *get_coarser_model(const MatrixX &InterpolationMatrix) override;
+    IsingModel *get_copy_of_model() override;
 
 private:
     double sqrt_beta;
     VectorX h;
     VectorX eta;
-    double offset;
     MatrixX k_sym;
     MatrixX k_rec;
 
     void fill_connectivity_matrix(int dimension, int neighbour_extent, int grid_size);
 
-    void add_offset_to_connectivity_matrix();
+    void add_offset_to_connectivity_matrix(double offset);
 
     bool check_internal_dimensions() { return check_dimensions(h); }
 
