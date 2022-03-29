@@ -14,22 +14,27 @@
 
 IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, int dimension_,
                        int neighbour_extent_, int grid_size_)
-        : BaseModel<VectorX>(beta_), sqrt_beta{sqrt(beta_)}, h{std::move(h_)}, eta{std::move(eta_)}, offset{offset_},
+        : BaseModel<VectorX>(beta_), sqrt_beta{sqrt(beta_)}, h{std::move(h_)}, eta{std::move(eta_)},
           k_sym(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)),
           k_rec(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)) {
 
     fill_connectivity_matrix(dimension_, neighbour_extent_, grid_size_);
-    add_offset_to_connectivity_matrix();
+    add_offset_to_connectivity_matrix(offset_);
 
     k_rec = k_sym;
     assert(check_internal_dimensions());
 }
 
-IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, MatrixX k_sym_, MatrixX k_rec_)
-        : BaseModel<VectorX>(beta_), sqrt_beta{sqrt(beta_)}, h{std::move(h_)}, eta{std::move(eta_)}, offset{offset_},
-          k_sym{std::move(k_sym_)},
-          k_rec{std::move(k_rec_)} {
-    assert(check_internal_dimensions());
+IsingModel::IsingModel(const IsingModel &NewModel, const MatrixX &InterpolationMatrix)
+        : BaseModel<VectorX>(NewModel.get_beta()) {
+    std::cout << "Hello" << std::endl;
+    //TODO
+}
+
+IsingModel::IsingModel(const IsingModel &NewModel)
+        : BaseModel<VectorX>(NewModel.get_beta()) {
+    std::cout << "hi" << std::endl;
+    //TODO
 }
 
 double IsingModel::get_action(const VectorX &phi) {
@@ -79,7 +84,7 @@ void IsingModel::fill_connectivity_matrix(int dimension, int neighbour_extent, i
     }
 }
 
-void IsingModel::add_offset_to_connectivity_matrix() {
+void IsingModel::add_offset_to_connectivity_matrix(double offset) {
     MatrixX OffsetMatrix(k_sym.rows(), k_sym.cols());
     OffsetMatrix.setIdentity();
     k_sym += offset * OffsetMatrix;
@@ -117,6 +122,16 @@ void IsingModel::print_name() {
     std::cout << "I'm the IsingModel" << std::endl;
 }
 
-IsingModel &IsingModel::get_coarser_model(const MatrixX &) {
-    return *this;
+IsingModel *IsingModel::get_coarser_model(const MatrixX &InterpolationMatrix) {
+    return new IsingModel(*this, InterpolationMatrix);
 }
+
+IsingModel *IsingModel::get_copy_of_model() {
+    return new IsingModel(*this);
+}
+
+
+
+
+
+
