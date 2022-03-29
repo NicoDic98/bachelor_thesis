@@ -11,7 +11,6 @@
 #ifndef BACHELOR_THESIS_HMCGENERATOR_H
 #define BACHELOR_THESIS_HMCGENERATOR_H
 
-#include <MyTypes.h>
 #include <BaseModel.h>
 #include <LeapFrogIntegrator.h>
 #include <iostream>

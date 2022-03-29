@@ -10,7 +10,6 @@
 #ifndef BACHELOR_THESIS_LEAPFROGINTEGRATOR_H
 #define BACHELOR_THESIS_LEAPFROGINTEGRATOR_H
 
-#include <MyTypes.h>
 #include <BaseModel.h>
 
 /**
