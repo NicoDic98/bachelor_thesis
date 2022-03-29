@@ -100,6 +100,26 @@ void test_HMC(const std::string &filename) {
 
 }
 
+
+void test_multi_level_hmc() {
+    const int grid_size = 5;
+    const int dim = 2;
+    const int lambda = int_pow(grid_size, dim);
+    const double C{4.1};
+    const double beta{0.5};
+
+    VectorX h0(lambda);
+    h0.setZero();
+    VectorX eta0(lambda);
+    eta0.setZero();
+    std::default_random_engine myengine{42L};
+
+    IsingModel test(beta, h0, eta0, C, dim, 1, grid_size);
+    MultiLevelHMCGenerator<decltype(test.get_dof_sample()), IsingModel>(test, {1, 2}, {1, 2}, 1, InterpolationType::Checkerboard, {8, 8},
+                                                {1. / 8, 1. / 8},
+                                                myengine);
+}
+
 /**
  * @brief Main function
  * @param argc
@@ -107,22 +127,23 @@ void test_HMC(const std::string &filename) {
  * @return Exit status
  */
 int main(int argc, char *argv[]) {
-    std::cout << "Hello\n";
-    using namespace HighFive;
-// we create a new hdf5 file
-    File file(std::string(DATA_DIR).append("new_file.h5"), File::ReadWrite | File::Create | File::Truncate);
+    /* std::cout << "Hello\n";
+     using namespace HighFive;
+ // we create a new hdf5 file
+     File file(std::string(DATA_DIR).append("new_file.h5"), File::ReadWrite | File::Create | File::Truncate);
 
-    std::vector<int> data(50, 1);
+     std::vector<int> data(50, 1);
 
-// let's create a dataset of native integer with the size of the vector 'data'
-    DataSet dataset = file.createDataSet<int>("/dataset_one",  DataSpace::From(data));
+ // let's create a dataset of native integer with the size of the vector 'data'
+     DataSet dataset = file.createDataSet<int>("/dataset_one",  DataSpace::From(data));
 
-// let's write our vector of int to the HDF5 dataset
-    dataset.write(data);
+ // let's write our vector of int to the HDF5 dataset
+     dataset.write(data);
 
-// read back
-    std::vector<int> result;
-    dataset.read(result);
-    test_leap_frog();
-    test_HMC(std::string(DATA_DIR).append("Test.dat"));
+ // read back
+     std::vector<int> result;
+     dataset.read(result);*/
+    //test_leap_frog();
+    //test_HMC(std::string(DATA_DIR).append("Test.dat"));
+    test_multi_level_hmc();
 }

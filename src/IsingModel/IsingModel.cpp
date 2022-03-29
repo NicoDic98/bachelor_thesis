@@ -112,3 +112,11 @@ bool IsingModel::check_dimensions(const VectorX &phi) {
     }
     return true;
 }
+
+void IsingModel::print_name() {
+    std::cout << "I'm the IsingModel" << std::endl;
+}
+
+IsingModel &IsingModel::get_coarser_model(const MatrixX &) {
+    return *this;
+}

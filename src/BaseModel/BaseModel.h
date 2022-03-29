@@ -10,10 +10,14 @@
 #ifndef BACHELOR_THESIS_BASEMODEL_H
 #define BACHELOR_THESIS_BASEMODEL_H
 
+#include <iostream>
+
 template<class configuration_type>
 class BaseModel {
 public:
     explicit BaseModel(double beta_);
+
+    BaseModel() : beta{42.} {}
 
     virtual ~BaseModel() = default;
 
@@ -56,6 +60,10 @@ public:
 
     virtual configuration_type get_dof_sample();
 
+    virtual BaseModel<configuration_type>& get_coarser_model(const MatrixX &)=0;
+
+    virtual void print_name();
+
 protected:
 
     double beta;
@@ -90,6 +98,11 @@ void BaseModel<configuration_type>::update_phi(configuration_type &phi, configur
 template<class configuration_type>
 configuration_type BaseModel<configuration_type>::get_dof_sample() {
     return configuration_type();
+}
+
+template<class configuration_type>
+void BaseModel<configuration_type>::print_name() {
+    std::cout << "I'm the BaseModel" << std::endl;
 }
 
 

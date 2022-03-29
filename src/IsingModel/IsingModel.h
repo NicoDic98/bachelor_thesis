@@ -75,6 +75,10 @@ public:
 
     bool check_dimensions(const VectorX &phi) override;
 
+    void print_name() override;
+
+    IsingModel &get_coarser_model(const MatrixX &) override;
+
 private:
     double sqrt_beta;
     VectorX h;
