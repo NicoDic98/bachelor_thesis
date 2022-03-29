@@ -35,7 +35,7 @@ void test_leap_frog() {
 
     IsingModel test(beta, h0, eta0, C, dim, 1, grid_size);
 
-    LeapFrogIntegrator<decltype(test.get_dof_sample())> leapTest(test);
+    LeapFrogIntegrator leapTest(test);
     test.print_connectivity_matrix();
     int numMD = 10;
     phi0(0) = 1;
@@ -81,7 +81,7 @@ void test_HMC(const std::string &filename) {
     IsingModel test(beta, h0, eta0, C, dim, 1, grid_size);
 
     std::default_random_engine myengine{42L};
-    HMCGenerator<decltype(test.get_dof_sample())> HMCTest(test, 8, 1. / 8, myengine);
+    HMCGenerator HMCTest(test, 8, 1. / 8, myengine);
 
     std::ofstream output(filename);
     if (!output) {
