@@ -11,6 +11,7 @@
 #include <IsingModel.h>
 #include <LeapFrogIntegrator.h>
 #include <HMCGenerator.h>
+#include <MultiLevelHMCGenerator.h>
 #include <fstream>
 #include <highfive/H5Easy.hpp>
 
