@@ -26,15 +26,18 @@ IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, i
 }
 
 IsingModel::IsingModel(const IsingModel &NewModel, const MatrixX &InterpolationMatrix)
-        : BaseModel<VectorX>(NewModel.get_beta()) {
+        : BaseModel<VectorX>(NewModel.get_beta()), sqrt_beta{sqrt(NewModel.get_beta())}, h{NewModel.h},
+          eta{NewModel.eta} {
     std::cout << "Hello" << std::endl;
-    //TODO
+    k_sym = InterpolationMatrix.transpose() * NewModel.k_sym * InterpolationMatrix;
+    k_rec = NewModel.k_rec * InterpolationMatrix;
 }
 
 IsingModel::IsingModel(const IsingModel &NewModel)
-        : BaseModel<VectorX>(NewModel.get_beta()) {
+        : BaseModel<VectorX>(NewModel.get_beta()), sqrt_beta{sqrt(NewModel.get_beta())}, h{NewModel.h},
+          eta{NewModel.eta}, k_sym{NewModel.k_sym}, k_rec{NewModel.k_rec} {
     std::cout << "hi" << std::endl;
-    //TODO
+
 }
 
 double IsingModel::get_action(const VectorX &phi) {
