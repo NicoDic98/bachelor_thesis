@@ -15,10 +15,11 @@
 IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, int dimension_,
                        int neighbour_extent_, int grid_size_)
         : BaseModel<VectorX>(beta_), sqrt_beta{sqrt(beta_)}, h{std::move(h_)}, eta{std::move(eta_)},
+          dimension{dimension_},
           k_sym(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)),
           k_rec(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)) {
 
-    fill_connectivity_matrix(dimension_, neighbour_extent_, grid_size_);
+    fill_connectivity_matrix(neighbour_extent_, grid_size_);
     add_offset_to_connectivity_matrix(offset_);
 
     k_rec = k_sym;
@@ -27,7 +28,7 @@ IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, i
 
 IsingModel::IsingModel(const IsingModel &NewModel, const MatrixX &InterpolationMatrix)
         : BaseModel<VectorX>(NewModel.get_beta()), sqrt_beta{sqrt(NewModel.get_beta())}, h{NewModel.h},
-          eta{NewModel.eta} {
+          eta{NewModel.eta}, dimension{NewModel.dimension} {
     std::cout << "Hello" << std::endl;
     k_sym = InterpolationMatrix.transpose() * NewModel.k_sym * InterpolationMatrix;
     k_rec = NewModel.k_rec * InterpolationMatrix;
@@ -35,7 +36,7 @@ IsingModel::IsingModel(const IsingModel &NewModel, const MatrixX &InterpolationM
 
 IsingModel::IsingModel(const IsingModel &NewModel)
         : BaseModel<VectorX>(NewModel.get_beta()), sqrt_beta{sqrt(NewModel.get_beta())}, h{NewModel.h},
-          eta{NewModel.eta}, k_sym{NewModel.k_sym}, k_rec{NewModel.k_rec} {
+          eta{NewModel.eta}, dimension{NewModel.dimension}, k_sym{NewModel.k_sym}, k_rec{NewModel.k_rec} {
     std::cout << "hi" << std::endl;
 
 }
@@ -66,7 +67,7 @@ double IsingModel::get_magnetization(const VectorX &phi) {
     return (phi / sqrt_beta - (k_sym.inverse()) * h).sum() / phi.rows();
 }
 
-void IsingModel::fill_connectivity_matrix(int dimension, int neighbour_extent, int grid_size) {
+void IsingModel::fill_connectivity_matrix(int neighbour_extent, int grid_size) {
     k_sym.setZero();
 
     long lambda = k_sym.rows();

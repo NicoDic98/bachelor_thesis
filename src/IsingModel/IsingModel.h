@@ -108,6 +108,11 @@ private:
     double sqrt_beta;
 
     /**
+     * @brief Dimension of the hypercube
+     */
+    int dimension;
+
+    /**
      * @brief External field
      */
     VectorX h;
@@ -128,12 +133,11 @@ private:
     MatrixX k_rec;
 
     /**
-     * @brief Fills the connectivity matrix \a k_sym for the given hyper cube of dimension \p dimension and side length \p grid_size
-     * @param dimension Dimension
+     * @brief Fills the connectivity matrix \a k_sym for the given hyper cube of dimension \a dimension and side length \p grid_size
      * @param neighbour_extent Range at which nearest neighbours interact (along the axis)
      * @param grid_size Side length
      */
-    void fill_connectivity_matrix(int dimension, int neighbour_extent, int grid_size);
+    void fill_connectivity_matrix(int neighbour_extent, int grid_size);
 
     /**
      * @brief Add identity*\p offset to the connectivity matrix \a k_sym
