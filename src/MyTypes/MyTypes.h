@@ -22,4 +22,11 @@ typedef Eigen::VectorXd VectorX;
  */
 typedef Eigen::MatrixXd MatrixX;
 
+/**
+ * @brief Interpolation types
+ */
+enum class InterpolationType {
+    Checkerboard, Black_White
+};
+
 #endif //BACHELOR_THESIS_MYTYPES_H

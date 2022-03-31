@@ -37,9 +37,9 @@ public:
     /**
      * @brief Coarsening constructor of IsingModel
      * @param NewModel Finer model
-     * @param InterpolationMatrix Interpolation matrix to use for the coarsening
+     * @param InterpolationType_ Interpolation type to use for the coarsening
      */
-    IsingModel(const IsingModel &NewModel, const MatrixX &InterpolationMatrix);
+    IsingModel(const IsingModel &NewModel, InterpolationType InterpolationType_);
 
     /**
      * @brief Copy constructor of IsingModel
@@ -81,7 +81,7 @@ public:
      * @param phi Field
      * @return True, if all dimension checks are passed. False, if any dimension check fails.
      */
-    bool check_dimensions(const VectorX &phi) override;
+    bool check_dimensions(const VectorX &phi) const override;
 
     /**
      * @brief Prints the name of the model
@@ -89,11 +89,16 @@ public:
     void print_name() override;
 
     /**
+     * @brief Prints the dimensions of the stored vectors and matrices
+     */
+    void print_dimensions();
+
+    /**
      * @brief Returns the coarsent model with respect to the given interpolation matrix
-     * @param InterpolationMatrix Interpolation matrix to use for the coarsening
+     * @param InterpolationType_ Interpolation type to use for the coarsening
      * @return Coursed model
      */
-    IsingModel *get_coarser_model(const MatrixX &InterpolationMatrix) override;
+    IsingModel *get_coarser_model(InterpolationType InterpolationType_) override;
 
     /**
      * @brief Return a copy of the model
@@ -133,11 +138,18 @@ private:
     MatrixX k_rec;
 
     /**
+     * @brief Interpolation matrix
+     */
+    MatrixX InterpolationMatrix;
+
+    /**
      * @brief Fills the connectivity matrix \a k_sym for the given hyper cube of dimension \a dimension and side length \p grid_size
      * @param neighbour_extent Range at which nearest neighbours interact (along the axis)
      * @param grid_size Side length
      */
     void fill_connectivity_matrix(int neighbour_extent, int grid_size);
+
+    int fill_interpolation_matrix(InterpolationType InterpolationType_);
 
     /**
      * @brief Add identity*\p offset to the connectivity matrix \a k_sym
@@ -148,7 +160,7 @@ private:
     /**
      * @brief Checks the dimensions of internal vectors and matrices
      */
-    bool check_internal_dimensions() { return check_dimensions(h); }
+    bool check_internal_dimensions() const { return check_dimensions(h); }
 
 protected:
 

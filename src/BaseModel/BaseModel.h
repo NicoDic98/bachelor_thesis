@@ -35,9 +35,9 @@ public:
     /**
      * @brief Coarsening constructor of BaseModel
      * @param NewModel Finer model
-     * @param InterpolationMatrix Interpolation matrix to use for the coarsening
+     * @param InterpolationType_ Interpolation type to use for the coarsening
      */
-    BaseModel(const BaseModel<configuration_type> &NewModel, const MatrixX &InterpolationMatrix)
+    BaseModel(const BaseModel<configuration_type> &NewModel, InterpolationType InterpolationType_)
             : beta{NewModel.beta} {}
 
 
@@ -78,7 +78,7 @@ public:
      * @param phi Field
      * @return True, if all dimension checks are passed. False, if any dimension check fails.
      */
-    virtual bool check_dimensions(const configuration_type &phi) = 0;
+    virtual bool check_dimensions(const configuration_type &phi) const = 0;
 
     /**
      * @brief Updates the momentum pi and returns the new momentum pi_new
@@ -106,10 +106,10 @@ public:
 
     /**
      * @brief Returns the coarsent model with respect to the given interpolation matrix
-     * @param InterpolationMatrix Interpolation matrix to use for the coarsening
+     * @param InterpolationType_ Interpolation type to use for the coarsening
      * @return Coursed model
      */
-    virtual BaseModel<configuration_type> *get_coarser_model(const MatrixX &InterpolationMatrix) = 0;
+    virtual BaseModel<configuration_type> *get_coarser_model(InterpolationType InterpolationType_) = 0;
 
     /**
      * @brief Return a copy of the model

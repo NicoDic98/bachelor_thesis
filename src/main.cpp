@@ -115,9 +115,9 @@ void test_multi_level_hmc() {
     std::default_random_engine myengine{42L};
 
     IsingModel test(beta, h0, eta0, C, dim, 1, grid_size);
-    MultiLevelHMCGenerator(test, {1, 2}, {1, 2}, 1, InterpolationType::Checkerboard, {8, 8},
-                                                {1. / 8, 1. / 8},
-                                                myengine);
+    MultiLevelHMCGenerator(test, {1, 2, 3}, {1, 2, 3}, 1, InterpolationType::Checkerboard, {8, 8, 8},
+                           {1. / 8, 1. / 8, 1. / 8},
+                           myengine);
 }
 
 /**
