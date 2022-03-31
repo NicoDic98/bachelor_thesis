@@ -17,7 +17,8 @@
 #include <random>
 
 /**
- * @brief Implementation of the standard HMC algorithm
+ * @brief Template of the standard HMC algorithm
+ * @tparam configuration_type Datatype, which is used for the configurations of the model
  */
 template<class configuration_type>
 class HMCGenerator {

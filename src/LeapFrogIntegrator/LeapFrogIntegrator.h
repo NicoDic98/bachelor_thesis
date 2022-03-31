@@ -14,6 +14,7 @@
 
 /**
  * @brief Implementation of the Leap Frog Integrator
+ * @tparam configuration_type Datatype, which is used for the configurations of the model
  */
 template<class configuration_type>
 class LeapFrogIntegrator {
@@ -37,6 +38,9 @@ public:
 
 
 private:
+    /**
+     * @brief Model used in the integration
+     */
     BaseModel<configuration_type> &model;
 };
 

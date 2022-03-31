@@ -18,10 +18,17 @@
 #include <utility>
 #include <memory>
 
+/**
+ * @brief Interpolation types
+ */
 enum class InterpolationType {
     Checkerboard, Black_White
 };
 
+/**
+ * @brief Template of the Multilevel HMC algorithm
+ * @tparam configuration_type Datatype, which is used for the configurations of the model
+ */
 template<class configuration_type>
 class MultiLevelHMCGenerator {
 public:
