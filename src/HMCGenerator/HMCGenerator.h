@@ -57,14 +57,46 @@ public:
 
 
 private:
+    /**
+     * @brief Do one HMC step
+     * @param phi0 Starting field
+     * @return New field (after accept/reject)
+     */
     configuration_type do_HMC_step(const configuration_type &phi0);
 
+    /**
+     * @brief Model used in the HMC evolution
+     */
     BaseModel<configuration_type> &model;
+
+    /**
+     * @brief Amount of molecular dynamic steps used in the integration process
+     */
     size_t amount_of_steps;
+
+    /**
+     * @brief Step size to use in the molecular dynamics integration
+     */
     double step_size;
+
+    /**
+     * @brief Random number generator used for the conjugate momenta sampling
+     */
     std::default_random_engine &generator; //TODO Maybe make this static?
+
+    /**
+     * @brief Integrator used for the molecular dynamics integration
+     */
     LeapFrogIntegrator<configuration_type> integrator;
+
+    /**
+     * @brief Array of configurations
+     */
     std::vector<configuration_type> ensembles;
+
+    /**
+     * @brief Amount of accepted configurations
+     */
     int accepted_configurations{0};
 };
 
