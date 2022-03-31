@@ -15,7 +15,7 @@
 IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, int dimension_,
                        int neighbour_extent_, int grid_size_)
         : BaseModel<VectorX>(beta_), sqrt_beta{sqrt(beta_)}, h{std::move(h_)}, eta{std::move(eta_)},
-          dimension{dimension_},
+          dimension{dimension_}, grid_side_length{grid_size_},
           k_sym(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)),
           k_rec(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)),
           InterpolationMatrix{} {
@@ -29,13 +29,14 @@ IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, i
 
 IsingModel::IsingModel(const IsingModel &NewModel, InterpolationType InterpolationType_)
         : BaseModel<VectorX>(NewModel.get_beta()), sqrt_beta{sqrt(NewModel.get_beta())}, h{NewModel.h},
-          eta{NewModel.eta}, dimension{NewModel.dimension}, InterpolationMatrix{} {
+          eta{NewModel.eta}, dimension{NewModel.dimension}, grid_side_length{NewModel.grid_side_length},
+          InterpolationMatrix{} {
     std::cout << "Hello" << std::endl;
     assert(NewModel.check_internal_dimensions());
-    int resize_factor = fill_interpolation_matrix(InterpolationType_);
+    grid_side_length = fill_interpolation_matrix(InterpolationType_, h.rows(), grid_side_length);
     k_sym = InterpolationMatrix.transpose() * NewModel.k_sym * InterpolationMatrix;
     k_rec = NewModel.k_rec * InterpolationMatrix;
-    h.resize(h.rows() / resize_factor);
+    h.resize(int_pow(grid_side_length, dimension));
 
     print_dimensions();
     assert(check_internal_dimensions());
@@ -43,7 +44,8 @@ IsingModel::IsingModel(const IsingModel &NewModel, InterpolationType Interpolati
 
 IsingModel::IsingModel(const IsingModel &NewModel)
         : BaseModel<VectorX>(NewModel.get_beta()), sqrt_beta{sqrt(NewModel.get_beta())}, h{NewModel.h},
-          eta{NewModel.eta}, dimension{NewModel.dimension}, k_sym{NewModel.k_sym}, k_rec{NewModel.k_rec},
+          eta{NewModel.eta}, dimension{NewModel.dimension}, grid_side_length{NewModel.grid_side_length},
+          k_sym{NewModel.k_sym}, k_rec{NewModel.k_rec},
           InterpolationMatrix{NewModel.InterpolationMatrix} {
     std::cout << "hi" << std::endl;
 
@@ -144,19 +146,54 @@ IsingModel *IsingModel::get_copy_of_model() {
     return new IsingModel(*this);
 }
 
-int IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_) {
-    int resize_factor{1};
+int
+IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_, long fine_size, int fine_grid_side_length) {
+    int coarse_grid_side_length{1};
+    int coarse_lambda{1};
     switch (InterpolationType_) {
         case InterpolationType::Checkerboard:
-            resize_factor = 4;
-            InterpolationMatrix.resize(h.rows(), h.rows() / resize_factor);//TODO What about 6/4=1?
+
+            if (fine_grid_side_length % 2 == 0) {
+                coarse_grid_side_length = fine_grid_side_length / 2;
+            } else {
+                coarse_grid_side_length = (fine_grid_side_length + 1) / 2;
+            }
+
+            coarse_lambda = int_pow(coarse_grid_side_length, dimension);
+
+            InterpolationMatrix.resize(fine_size, coarse_lambda);
+            InterpolationMatrix.setZero();
+
+
+            for (long m = 0; m < InterpolationMatrix.rows(); ++m) {
+                long base_offset{1};
+                double factor{1};
+                for (int i = 0; i < dimension; ++i) {
+                    if (((m / base_offset) % fine_grid_side_length) % 2 == 1) {
+                        factor *= 0.5;
+                    }
+
+                    base_offset *= fine_grid_side_length;
+                }
+                base_offset = 1;
+                long coarse_base_offset{1};
+                for (int i = 0; i < dimension; ++i) {
+                    long fine_dim_id = (m / base_offset) % fine_grid_side_length;
+                    if (fine_dim_id % 2 == 1) {
+
+                        InterpolationMatrix(m, (fine_dim_id+coarse_grid_side_length-1) % coarse_grid_side_length)=factor;
+                    }
+                    coarse_base_offset*=coarse_grid_side_length;
+                    base_offset *= fine_grid_side_length;
+                }
+            }
             break;
         case InterpolationType::Black_White:
-            resize_factor = 2;
-            InterpolationMatrix.resize(h.rows(), h.rows() / resize_factor);
+            coarse_grid_side_length = 42;//TODO think if this can even be generalized to e.g. 3 dimensions
+            InterpolationMatrix.resize(fine_size, coarse_grid_side_length);
             break;
     }
-    return resize_factor;
+    return coarse_grid_side_length;
 }
 
 void IsingModel::print_dimensions() {

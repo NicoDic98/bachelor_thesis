@@ -118,6 +118,11 @@ private:
     int dimension;
 
     /**
+     * @brief Side length of the hypercube
+     */
+    int grid_side_length;
+
+    /**
      * @brief External field
      */
     VectorX h;
@@ -149,7 +154,7 @@ private:
      */
     void fill_connectivity_matrix(int neighbour_extent, int grid_size);
 
-    int fill_interpolation_matrix(InterpolationType InterpolationType_);
+    int fill_interpolation_matrix(InterpolationType InterpolationType_, long fine_size, int fine_grid_side_length);
 
     /**
      * @brief Add identity*\p offset to the connectivity matrix \a k_sym
