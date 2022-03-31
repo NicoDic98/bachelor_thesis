@@ -34,9 +34,17 @@ public:
     IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, int dimension_, int neighbour_extent_,
                int grid_size_);
 
-
+    /**
+     * @brief Coarsening constructor of IsingModel
+     * @param NewModel Finer model
+     * @param InterpolationMatrix Interpolation matrix to use for the coarsening
+     */
     IsingModel(const IsingModel &NewModel, const MatrixX &InterpolationMatrix);
 
+    /**
+     * @brief Copy constructor of IsingModel
+     * @param NewModel Model to copy
+     */
     IsingModel(const IsingModel &NewModel);
 
 
@@ -68,24 +76,74 @@ public:
         sqrt_beta = sqrt(get_beta());
     }
 
+    /**
+     * @brief Checks the dimensions of internal vectors and matrices with regard to the given field phi
+     * @param phi Field
+     * @return True, if all dimension checks are passed. False, if any dimension check fails.
+     */
     bool check_dimensions(const VectorX &phi) override;
 
+    /**
+     * @brief Prints the name of the model
+     */
     void print_name() override;
 
+    /**
+     * @brief Returns the coarsent model with respect to the given interpolation matrix
+     * @param InterpolationMatrix Interpolation matrix to use for the coarsening
+     * @return Coursed model
+     */
     IsingModel *get_coarser_model(const MatrixX &InterpolationMatrix) override;
+
+    /**
+     * @brief Return a copy of the model
+     * @return Copy of the model
+     */
     IsingModel *get_copy_of_model() override;
 
 private:
+    /**
+     * @brief sqrt(Inverse temperature)
+     */
     double sqrt_beta;
+
+    /**
+     * @brief External field
+     */
     VectorX h;
+
+    /**
+     * @brief Generalization field
+     */
     VectorX eta;
+
+    /**
+     * @brief Symmetric connectivity matrix
+     */
     MatrixX k_sym;
+
+    /**
+     * @brief Asymmetric connectivity matrix
+     */
     MatrixX k_rec;
 
+    /**
+     * @brief Fills the connectivity matrix \a k_sym for the given hyper cube of dimension \p dimension and side length \p grid_size
+     * @param dimension Dimension
+     * @param neighbour_extent Range at which nearest neighbours interact (along the axis)
+     * @param grid_size Side length
+     */
     void fill_connectivity_matrix(int dimension, int neighbour_extent, int grid_size);
 
+    /**
+     * @brief Add identity*\p offset to the connectivity matrix \a k_sym
+     * @param offset Offset to be used
+     */
     void add_offset_to_connectivity_matrix(double offset);
 
+    /**
+     * @brief Checks the dimensions of internal vectors and matrices
+     */
     bool check_internal_dimensions() { return check_dimensions(h); }
 
 protected:
