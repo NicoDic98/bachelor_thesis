@@ -12,21 +12,46 @@
 
 #include <iostream>
 
+/**
+ * @brief Template for the Abstract Class BaseModel
+ * @tparam configuration_type Datatype, which is used for the configurations of the model
+ */
 template<class configuration_type>
 class BaseModel {
 public:
+
+    /**
+     * @brief Most Basic constructor of BaseModel
+     * @param beta_ Inverse temperature of the model
+     */
     explicit BaseModel(double beta_);
 
-    BaseModel(const BaseModel<configuration_type> &NewModel) : beta{NewModel.beta} {
+    /**
+     * @brief Copy constructor of BaseModel
+     * @param NewModel Model to copy
+     */
+    BaseModel(const BaseModel<configuration_type> &NewModel) : beta{NewModel.beta} {}
 
-    }
-
+    /**
+     * @brief Coarsening constructor of BaseModel
+     * @param NewModel Finer model
+     * @param InterpolationMatrix Interpolation matrix to use for the coarsening
+     */
     BaseModel(const BaseModel<configuration_type> &NewModel, const MatrixX &InterpolationMatrix)
             : beta{NewModel.beta} {}
 
+
+    /**
+     * @brief Destructor of BaseModel
+     */
     virtual ~BaseModel() = default;
 
-    virtual double get_action(const configuration_type &) = 0;
+    /**
+     * @brief Calculates the action for the given field phi
+     * @param phi Field
+     * @return S(phi) (action)
+     */
+    virtual double get_action(const configuration_type &phi) = 0;
 
     /**
      * @brief Returns beta
@@ -40,10 +65,20 @@ public:
      */
     virtual inline void set_beta(double new_beta);
 
-    virtual double get_magnetization(const configuration_type &) = 0;
+    /**
+     * @brief Calculates the magnetization for the given field phi
+     * @param phi Field
+     * @return m(phi) (magnetization)
+     */
+    virtual double get_magnetization(const configuration_type &phi) = 0;
 
 
-    virtual bool check_dimensions(const configuration_type &) = 0;
+    /**
+     * @brief Checks the dimensions of internal vectors and matrices with regard to the given field phi
+     * @param phi Field
+     * @return True, if all dimension checks are passed. False, if any dimension check fails.
+     */
+    virtual bool check_dimensions(const configuration_type &phi) = 0;
 
     /**
      * @brief Updates the momentum pi and returns the new momentum pi_new
@@ -63,17 +98,43 @@ public:
      */
     virtual void update_phi(configuration_type &phi, configuration_type &pi, double step_size);
 
+    /**
+     * @brief Returns a configuration using the standard constructor of the configuration type
+     * @return Sample object, which represents a configuration
+     */
     virtual configuration_type get_dof_sample();
 
+    /**
+     * @brief Returns the coarsent model with respect to the given interpolation matrix
+     * @param InterpolationMatrix Interpolation matrix to use for the coarsening
+     * @return Coursed model
+     */
     virtual BaseModel<configuration_type> *get_coarser_model(const MatrixX &InterpolationMatrix) = 0;
+
+    /**
+     * @brief Return a copy of the model
+     * @return Copy of the model
+     */
     virtual BaseModel<configuration_type> *get_copy_of_model() = 0;
 
-
+    /**
+     * @brief Prints the name of the model
+     */
     virtual void print_name();
 
-    virtual configuration_type get_force(const configuration_type &) = 0;
+protected:
+
+    /**
+     * @brief Calculates the artificial force for the given field phi
+     * @param phi Field
+     * @return Artificial force according to artificial hamiltonian
+     */
+    virtual configuration_type get_force(const configuration_type &phi) = 0;
 
 private:
+    /**
+     * @brief Inverse temperature
+     */
     double beta;
 };
 
