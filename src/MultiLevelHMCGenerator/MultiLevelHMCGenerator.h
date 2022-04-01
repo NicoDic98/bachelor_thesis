@@ -102,8 +102,7 @@ double MultiLevelHMCGenerator<configuration_type>::generate_ensembles(const conf
 }
 
 template<class configuration_type>
-configuration_type
-MultiLevelHMCGenerator<configuration_type>::LevelRecursion(int level, const configuration_type &phi) {
+configuration_type MultiLevelHMCGenerator<configuration_type>::LevelRecursion(int level, const configuration_type &phi) {
     configuration_type currentField{phi};
     AcceptanceRates[level] += HMCStack[level].generate_ensembles(currentField, nu_pre[level], 0, level == 0);
     currentField = HMCStack[level].get_last_configuration();
