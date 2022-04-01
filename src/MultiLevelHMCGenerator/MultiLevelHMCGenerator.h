@@ -31,9 +31,23 @@ public:
                            const std::vector<size_t> &amount_of_steps_, const std::vector<double> &step_sizes_,
                            std::default_random_engine &generator_);
 
+    /**
+     * @brief Generate \p amount_of_samples amount of ensembles, starting from \p phiStart and doing
+     *        \p amount_of_thermalization_steps thermalization steps in advance
+     * @param phiStart Starting field
+     * @param amount_of_samples Amount of samples to take
+     * @param amount_of_thermalization_steps Amount of thermalization steps
+     * @return Acceptance rate
+     */
+    double generate_ensembles(const configuration_type &phiStart,
+                              size_t amount_of_samples, size_t amount_of_thermalization_steps = 10);
+
+    configuration_type LevelRecursion(int level, const configuration_type &phi);
+
 private:
     std::vector<size_t> nu_pre;
     std::vector<size_t> nu_post;
+    size_t gamma;
     InterpolationType inter_type;
     std::default_random_engine &generator;
     std::vector<HMCGenerator<configuration_type>> HMCStack;
@@ -49,7 +63,7 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
                                                                    const std::vector<size_t> &amount_of_steps_,
                                                                    const std::vector<double> &step_sizes_,
                                                                    std::default_random_engine &generator_)
-        : nu_pre{std::move(nu_pre_)}, nu_post{std::move(nu_post_)}, inter_type{InterpolationType_},
+        : nu_pre{std::move(nu_pre_)}, nu_post{std::move(nu_post_)}, gamma{gamma_}, inter_type{InterpolationType_},
           generator{generator_} {
     //TODO: add auto sizing
     assert(nu_pre.size() == nu_post.size());
@@ -66,6 +80,35 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
         HMCStack.push_back(HMCGenerator(*ModelStack[i], amount_of_steps_[i], step_sizes_[i], generator));
     }
 
+}
+
+template<class configuration_type>
+double MultiLevelHMCGenerator<configuration_type>::generate_ensembles(const configuration_type &phiStart,
+                                                                      size_t amount_of_samples,
+                                                                      size_t amount_of_thermalization_steps) {
+
+    LevelRecursion(0, phiStart);
+    return 0;
+}
+
+template<class configuration_type>
+configuration_type
+MultiLevelHMCGenerator<configuration_type>::LevelRecursion(int level, const configuration_type &phi) {
+    configuration_type currentField{phi};
+    HMCStack[level].generate_ensembles(currentField, nu_pre[level], 0);
+    currentField = HMCStack[level].get_last_configuration();
+    //std::cout << "Level:\t" << level << std::endl;
+
+    if (level < (nu_pre.size() - 1)) {
+        ModelStack[level + 1]->update_fields(currentField);
+        configuration_type CoarseCorrections = ModelStack[level + 1]->get_empty_field();
+        for (int i = 0; i < gamma; ++i) {
+            CoarseCorrections = LevelRecursion(level + 1, CoarseCorrections);
+        }
+        ModelStack[level + 1]->interpolate(CoarseCorrections, currentField);
+    }
+    HMCStack[level].generate_ensembles(currentField, nu_post[level], 0);
+    return HMCStack[level].get_last_configuration();
 }
 
 

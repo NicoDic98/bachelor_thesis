@@ -108,6 +108,8 @@ void test_multi_level_hmc() {
     const double C{4.1};
     const double beta{0.5};
 
+    VectorX phi0(lambda);
+    phi0.setRandom();
     VectorX h0(lambda);
     h0.setZero();
     VectorX eta0(lambda);
@@ -115,9 +117,10 @@ void test_multi_level_hmc() {
     std::default_random_engine myengine{42L};
 
     IsingModel test(beta, h0, eta0, C, dim, 1, grid_size);
-    MultiLevelHMCGenerator(test, {1, 2, 3}, {1, 2, 3}, 1, InterpolationType::Checkerboard, {8, 8, 8},
+    MultiLevelHMCGenerator mygen(test, {1, 2, 3}, {1, 2, 3}, 2, InterpolationType::Checkerboard, {8, 8, 8},
                            {1. / 8, 1. / 8, 1. / 8},
                            myengine);
+    mygen.generate_ensembles(phi0,20,0);
 }
 
 /**

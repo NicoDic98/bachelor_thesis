@@ -18,7 +18,7 @@ IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, i
           dimension{dimension_}, grid_side_length{grid_size_},
           k_sym(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)),
           k_rec(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)),
-          InterpolationMatrix{} {
+          InterpolationMatrix{}, FinerModel{*this} {
 
     fill_connectivity_matrix(neighbour_extent_, grid_size_);
     add_offset_to_connectivity_matrix(offset_);
@@ -30,12 +30,12 @@ IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, i
 IsingModel::IsingModel(const IsingModel &NewModel, InterpolationType InterpolationType_)
         : BaseModel<VectorX>(NewModel.get_beta()), sqrt_beta{sqrt(NewModel.get_beta())}, h{NewModel.h},
           eta{NewModel.eta}, dimension{NewModel.dimension}, grid_side_length{NewModel.grid_side_length},
-          InterpolationMatrix{} {
+          InterpolationMatrix{}, FinerModel{NewModel} {
     std::cout << "Isingmodel Interpolation constructor called" << std::endl;
-    assert(NewModel.check_internal_dimensions());
+    assert(FinerModel.check_internal_dimensions());
     grid_side_length = fill_interpolation_matrix(InterpolationType_, h.rows(), grid_side_length);
-    k_sym = InterpolationMatrix.transpose() * NewModel.k_sym * InterpolationMatrix;
-    k_rec = NewModel.k_rec * InterpolationMatrix;
+    k_sym = InterpolationMatrix.transpose() * FinerModel.k_sym * InterpolationMatrix;
+    k_rec = FinerModel.k_rec * InterpolationMatrix;
     h.resize(int_pow(grid_side_length, dimension));
 
     //print_dimensions();
@@ -47,7 +47,7 @@ IsingModel::IsingModel(const IsingModel &NewModel)
         : BaseModel<VectorX>(NewModel.get_beta()), sqrt_beta{sqrt(NewModel.get_beta())}, h{NewModel.h},
           eta{NewModel.eta}, dimension{NewModel.dimension}, grid_side_length{NewModel.grid_side_length},
           k_sym{NewModel.k_sym}, k_rec{NewModel.k_rec},
-          InterpolationMatrix{NewModel.InterpolationMatrix} {
+          InterpolationMatrix{NewModel.InterpolationMatrix}, FinerModel{*this} {
     std::cout << "Isingmodel copy constructor called" << std::endl;
 
     //print_dimensions();
@@ -222,12 +222,30 @@ void IsingModel::print_dimensions() {
     std::cout << "eta dimensions:\t (" << eta.rows() << ", " << eta.cols() << ')' << std::endl;
     std::cout << "k_sym dimensions:\t (" << k_sym.rows() << ", " << k_sym.cols() << ')' << std::endl;
     std::cout << "k_rec dimensions:\t (" << k_rec.rows() << ", " << k_rec.cols() << ')' << std::endl;
-    std::cout << "InterpolationMatrix dimensions:\t (" << InterpolationMatrix.rows() << ", " << InterpolationMatrix.cols() << ')' << std::endl;
+    std::cout << "InterpolationMatrix dimensions:\t (" << InterpolationMatrix.rows() << ", "
+              << InterpolationMatrix.cols() << ')' << std::endl;
 }
 
 void IsingModel::print_interpolation_matrix() {
     std::cout << InterpolationMatrix << std::endl;
 }
+
+void IsingModel::update_fields(const VectorX &phi) {
+    h = (FinerModel.h.transpose() - phi.transpose() * FinerModel.k_sym / sqrt_beta) * InterpolationMatrix;
+    eta = FinerModel.eta + sqrt_beta * FinerModel.k_rec * phi;
+}
+
+void IsingModel::interpolate(const VectorX &phi2a, VectorX &phia) {
+    phia += InterpolationMatrix * phi2a;
+}
+
+VectorX IsingModel::get_empty_field() {
+    VectorX temp(h.rows());
+    temp.setZero();
+    return temp;
+}
+
+
 
 
 

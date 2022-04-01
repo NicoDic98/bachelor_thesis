@@ -111,6 +111,12 @@ public:
      */
     IsingModel *get_copy_of_model() override;
 
+    void update_fields(const VectorX &phi) override;
+
+    void interpolate(const VectorX &phi2a, VectorX &phia) override;
+
+    VectorX get_empty_field()override;
+
 private:
     /**
      * @brief sqrt(Inverse temperature)
@@ -151,6 +157,8 @@ private:
      * @brief Interpolation matrix
      */
     MatrixX InterpolationMatrix;
+
+    const IsingModel &FinerModel;
 
     /**
      * @brief Fills the connectivity matrix \a k_sym for the given hyper cube of dimension \a dimension and side length \p grid_size

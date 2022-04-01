@@ -117,6 +117,12 @@ public:
      */
     virtual BaseModel<configuration_type> *get_copy_of_model() = 0;
 
+    virtual void update_fields(const configuration_type &phi) = 0;
+
+    virtual void interpolate(const configuration_type &phi2a, configuration_type &phia) = 0;
+
+    virtual configuration_type get_empty_field()=0;
+
     /**
      * @brief Prints the name of the model
      */

@@ -57,6 +57,9 @@ public:
     double get_beta() const { return model.get_beta(); }
 
 
+    configuration_type get_last_configuration();
+
+
 private:
     /**
      * @brief Do one HMC step
@@ -160,6 +163,11 @@ HMCGenerator<configuration_type>::HMCGenerator(BaseModel<configuration_type> &mo
                                                double step_size_, std::default_random_engine &generator_)
         : model{model_}, amount_of_steps{amount_of_steps_}, step_size{step_size_}, integrator{model_},
           generator{generator_} {
+}
+
+template<class configuration_type>
+configuration_type HMCGenerator<configuration_type>::get_last_configuration() {
+    return ensembles.back();
 }
 
 
