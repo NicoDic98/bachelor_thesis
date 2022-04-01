@@ -39,6 +39,7 @@ IsingModel::IsingModel(const IsingModel &NewModel, InterpolationType Interpolati
     h.resize(int_pow(grid_side_length, dimension));
 
     print_dimensions();
+    print_interpolation_matrix();
     assert(check_internal_dimensions());
 }
 
@@ -157,6 +158,7 @@ IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_, long
                 coarse_grid_side_length = fine_grid_side_length / 2;
             } else {
                 coarse_grid_side_length = (fine_grid_side_length + 1) / 2;
+                //TODO: think more about this case
             }
 
             coarse_lambda = int_pow(coarse_grid_side_length, dimension);
@@ -167,25 +169,44 @@ IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_, long
 
             for (long m = 0; m < InterpolationMatrix.rows(); ++m) {
                 long base_offset{1};
+                long coarse_offset{1};
                 double factor{1};
+                std::vector<long> fine_interpolation_ids{m};
                 for (int i = 0; i < dimension; ++i) {
                     if (((m / base_offset) % fine_grid_side_length) % 2 == 1) {
                         factor *= 0.5;
+                        std::vector<long> temp{fine_interpolation_ids};
+                        fine_interpolation_ids.clear();
+                        for (long elem: temp) {
+                            fine_interpolation_ids.push_back(
+                                    (elem + base_offset) % (base_offset * fine_grid_side_length) +
+                                    (base_offset * fine_grid_side_length) *
+                                    (elem / (base_offset * fine_grid_side_length)));
+                            fine_interpolation_ids.push_back(
+                                    (elem - base_offset + (base_offset * fine_grid_side_length)) %
+                                    (base_offset * fine_grid_side_length) +
+                                    (base_offset * fine_grid_side_length) *
+                                    (elem / (base_offset * fine_grid_side_length)));
+                        }
                     }
 
                     base_offset *= fine_grid_side_length;
                 }
-                base_offset = 1;
-                long coarse_base_offset{1};
-                for (int i = 0; i < dimension; ++i) {
-                    long fine_dim_id = (m / base_offset) % fine_grid_side_length;
-                    if (fine_dim_id % 2 == 1) {
+                //assert(factor == fine_interpolation_ids.size());
+                for (auto elem: fine_interpolation_ids) {
+                    base_offset = 1;
+                    coarse_offset = 1;
+                    long coarse_id{0};
+                    for (int i = 0; i < dimension; ++i) {
+                        coarse_id +=
+                                ((elem % (base_offset * fine_grid_side_length)) / (base_offset * 2)) * coarse_offset;
 
-                        InterpolationMatrix(m, (fine_dim_id+coarse_grid_side_length-1) % coarse_grid_side_length)=factor;
+                        base_offset *= fine_grid_side_length;
+                        coarse_offset *= coarse_grid_side_length;
                     }
-                    coarse_base_offset*=coarse_grid_side_length;
-                    base_offset *= fine_grid_side_length;
+                    InterpolationMatrix(m, coarse_id) = factor;
                 }
+
             }
             break;
         case InterpolationType::Black_White:
@@ -201,6 +222,11 @@ void IsingModel::print_dimensions() {
     std::cout << "eta dimensions:\t (" << eta.rows() << ", " << eta.cols() << ')' << std::endl;
     std::cout << "k_sym dimensions:\t (" << k_sym.rows() << ", " << k_sym.cols() << ')' << std::endl;
     std::cout << "k_rec dimensions:\t (" << k_rec.rows() << ", " << k_rec.cols() << ')' << std::endl;
+    std::cout << "InterpolationMatrix dimensions:\t (" << InterpolationMatrix.rows() << ", " << InterpolationMatrix.cols() << ')' << std::endl;
+}
+
+void IsingModel::print_interpolation_matrix() {
+    std::cout << InterpolationMatrix << std::endl;
 }
 
 

@@ -68,6 +68,11 @@ public:
     void print_connectivity_matrix();
 
     /**
+     * @brief Prints out the interpolation matrix
+     */
+    void print_interpolation_matrix();
+
+    /**
      * @brief Sets the value of beta to new_beta
      * @param new_beta Inverse temperature
      */
