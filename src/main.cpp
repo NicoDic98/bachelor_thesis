@@ -91,7 +91,7 @@ void test_HMC(const std::string &filename) {
     }
     for (double inverse_beta = 0.5; inverse_beta < 1.05; inverse_beta += 0.1) {
         test.set_beta(1. / inverse_beta);
-        std::cout << "Acceptance rate:" << HMCTest.generate_ensembles(phi0, 20000, 1000) << std::endl;
+        std::cout << "Acceptance rate:" << HMCTest.generate_ensembles(phi0, 20000, 1000, false) << std::endl;
         double m = HMCTest.compute_magnetization();
         std::cout << "Beta: " << 1. / inverse_beta << "\t Magnetization:" << m << std::endl;
         output << inverse_beta << '\t' << m << '\n';
@@ -118,9 +118,9 @@ void test_multi_level_hmc() {
 
     IsingModel test(beta, h0, eta0, C, dim, 1, grid_size);
     MultiLevelHMCGenerator mygen(test, {1, 2, 3}, {1, 2, 3}, 2, InterpolationType::Checkerboard, {8, 8, 8},
-                           {1. / 8, 1. / 8, 1. / 8},
-                           myengine);
-    mygen.generate_ensembles(phi0,20,0);
+                                 {1. / 8, 1. / 8, 1. / 8},
+                                 myengine);
+    std::cout << mygen.generate_ensembles(phi0, 20000, 1000);
 }
 
 /**

@@ -52,6 +52,7 @@ private:
     std::default_random_engine &generator;
     std::vector<HMCGenerator<configuration_type>> HMCStack;
     std::vector<std::unique_ptr<BaseModel<configuration_type>>> ModelStack;
+    std::vector<double> AcceptanceRates;
 };
 
 template<class configuration_type>
@@ -64,12 +65,13 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
                                                                    const std::vector<double> &step_sizes_,
                                                                    std::default_random_engine &generator_)
         : nu_pre{std::move(nu_pre_)}, nu_post{std::move(nu_post_)}, gamma{gamma_}, inter_type{InterpolationType_},
-          generator{generator_} {
+          generator{generator_}, AcceptanceRates{} {
     //TODO: add auto sizing
     assert(nu_pre.size() == nu_post.size());
     assert(nu_pre.size() == amount_of_steps_.size());
     assert(nu_pre.size() == step_sizes_.size());
 
+    AcceptanceRates.resize(nu_pre.size());
     ModelStack.push_back(std::unique_ptr<BaseModel<configuration_type>>(model_.get_copy_of_model()));
     HMCStack.push_back(HMCGenerator(model_, amount_of_steps_[0], step_sizes_[0], generator));
 
@@ -86,16 +88,24 @@ template<class configuration_type>
 double MultiLevelHMCGenerator<configuration_type>::generate_ensembles(const configuration_type &phiStart,
                                                                       size_t amount_of_samples,
                                                                       size_t amount_of_thermalization_steps) {
-
-    LevelRecursion(0, phiStart);
-    return 0;
+    for (int i = 0; i < amount_of_thermalization_steps; ++i) {
+        LevelRecursion(0, phiStart);
+    }
+    HMCStack[0].clear_ensembles();
+    for (auto &elem: AcceptanceRates) {
+        elem = 0.;
+    }
+    for (int i = 0; i < amount_of_samples; ++i) {
+        LevelRecursion(0, phiStart);
+    }
+    return AcceptanceRates[0] / (amount_of_samples * 2);
 }
 
 template<class configuration_type>
 configuration_type
 MultiLevelHMCGenerator<configuration_type>::LevelRecursion(int level, const configuration_type &phi) {
     configuration_type currentField{phi};
-    HMCStack[level].generate_ensembles(currentField, nu_pre[level], 0);
+    AcceptanceRates[level] += HMCStack[level].generate_ensembles(currentField, nu_pre[level], 0, level == 0);
     currentField = HMCStack[level].get_last_configuration();
     //std::cout << "Level:\t" << level << std::endl;
 
@@ -107,7 +117,7 @@ MultiLevelHMCGenerator<configuration_type>::LevelRecursion(int level, const conf
         }
         ModelStack[level + 1]->interpolate(CoarseCorrections, currentField);
     }
-    HMCStack[level].generate_ensembles(currentField, nu_post[level], 0);
+    AcceptanceRates[level] += HMCStack[level].generate_ensembles(currentField, nu_post[level], 0, level == 0);
     return HMCStack[level].get_last_configuration();
 }
 

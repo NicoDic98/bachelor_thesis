@@ -41,8 +41,8 @@ public:
      * @param amount_of_thermalization_steps Amount of thermalization steps
      * @return Acceptance rate
      */
-    double generate_ensembles(const configuration_type &phiStart,
-                              size_t amount_of_samples, size_t amount_of_thermalization_steps = 10);
+    double generate_ensembles(const configuration_type &phiStart, size_t amount_of_samples,
+                              size_t amount_of_thermalization_steps, bool expand);
 
     /**
      * @brief Compute the magnetization of the currently loaded ensemble
@@ -58,6 +58,8 @@ public:
 
 
     configuration_type get_last_configuration();
+
+    void clear_ensembles();
 
 
 private:
@@ -138,20 +140,25 @@ double HMCGenerator<configuration_type>::compute_magnetization() {
 }
 
 template<class configuration_type>
-double HMCGenerator<configuration_type>::generate_ensembles(const configuration_type &phiStart,
-                                                            size_t amount_of_samples,
-                                                            size_t amount_of_thermalization_steps) {
-    //TODO add expand option
+double
+HMCGenerator<configuration_type>::generate_ensembles(const configuration_type &phiStart, size_t amount_of_samples,
+                                                     size_t amount_of_thermalization_steps, bool expand) {
     assert(model.check_dimensions(phiStart));
     configuration_type phi(phiStart);
-    ensembles.resize(amount_of_samples);
+
+    int startindex{0};
+    if (expand) {
+        startindex = ensembles.size();
+    }
+
+    ensembles.resize(startindex + amount_of_samples);
     for (int i = 0; i < amount_of_thermalization_steps; ++i) {
         phi = do_HMC_step(phi);
     }
     accepted_configurations = 0;
     for (int i = 0; i < amount_of_samples; ++i) {
         phi = do_HMC_step(phi);
-        ensembles[i] = phi;
+        ensembles[startindex + i] = phi;
     }
 
     double ret{1.};
@@ -168,6 +175,11 @@ HMCGenerator<configuration_type>::HMCGenerator(BaseModel<configuration_type> &mo
 template<class configuration_type>
 configuration_type HMCGenerator<configuration_type>::get_last_configuration() {
     return ensembles.back();
+}
+
+template<class configuration_type>
+void HMCGenerator<configuration_type>::clear_ensembles() {
+    ensembles.clear();
 }
 
 
