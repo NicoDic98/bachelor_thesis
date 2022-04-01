@@ -31,15 +31,15 @@ IsingModel::IsingModel(const IsingModel &NewModel, InterpolationType Interpolati
         : BaseModel<VectorX>(NewModel.get_beta()), sqrt_beta{sqrt(NewModel.get_beta())}, h{NewModel.h},
           eta{NewModel.eta}, dimension{NewModel.dimension}, grid_side_length{NewModel.grid_side_length},
           InterpolationMatrix{} {
-    std::cout << "Hello" << std::endl;
+    std::cout << "Isingmodel Interpolation constructor called" << std::endl;
     assert(NewModel.check_internal_dimensions());
     grid_side_length = fill_interpolation_matrix(InterpolationType_, h.rows(), grid_side_length);
     k_sym = InterpolationMatrix.transpose() * NewModel.k_sym * InterpolationMatrix;
     k_rec = NewModel.k_rec * InterpolationMatrix;
     h.resize(int_pow(grid_side_length, dimension));
 
-    print_dimensions();
-    print_interpolation_matrix();
+    //print_dimensions();
+    //print_interpolation_matrix();
     assert(check_internal_dimensions());
 }
 
@@ -48,9 +48,9 @@ IsingModel::IsingModel(const IsingModel &NewModel)
           eta{NewModel.eta}, dimension{NewModel.dimension}, grid_side_length{NewModel.grid_side_length},
           k_sym{NewModel.k_sym}, k_rec{NewModel.k_rec},
           InterpolationMatrix{NewModel.InterpolationMatrix} {
-    std::cout << "hi" << std::endl;
+    std::cout << "Isingmodel copy constructor called" << std::endl;
 
-    print_dimensions();
+    //print_dimensions();
     assert(check_internal_dimensions());
 }
 
