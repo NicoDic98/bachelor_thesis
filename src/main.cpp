@@ -89,7 +89,7 @@ void test_HMC(const std::string &filename) {
         std::cerr << filename << " can't be opened!\n";
         exit(-42);
     }
-    for (double inverse_beta = 0.5; inverse_beta < 4.05; inverse_beta += 0.3) {
+    for (double inverse_beta = 0.3; inverse_beta < 4.05; inverse_beta += 0.1) {
         test.set_beta(1. / inverse_beta);
         std::cout << "Acceptance rate:" << HMCTest.generate_ensembles(phi0, 20000, 1000, false) << std::endl;
         auto mag = HMCTest.compute_magnetization();
@@ -106,7 +106,7 @@ void test_HMC(const std::string &filename) {
 }
 
 
-void test_multi_level_hmc(const std::string &filename) {
+void test_multi_level_hmc() {
     const int grid_size = 8;
     const int dim = 2;
     const int lambda = int_pow(grid_size, dim);
@@ -166,6 +166,6 @@ void test_multi_level_hmc(const std::string &filename) {
  */
 int main(int argc, char *argv[]) {
     //test_leap_frog();
-    test_multi_level_hmc(std::string(DATA_DIR).append("MultiLevelTest.dat"));
+    test_multi_level_hmc();
     test_HMC(std::string(DATA_DIR).append("HMCTest.dat"));
 }
