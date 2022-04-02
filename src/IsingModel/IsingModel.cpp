@@ -1,6 +1,6 @@
 /**
  * @file       IsingModel.cpp
- * @brief
+ * @brief      Definition of the Ising Model methods
  * @author     nico
  * @version    0.0.1
  * @date       23.03.22
@@ -154,6 +154,9 @@ IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_, long
     switch (InterpolationType_) {
         case InterpolationType::Checkerboard:
 
+            /*
+             * Compute new sizes
+             */
             if (fine_grid_side_length % 2 == 0) {
                 coarse_grid_side_length = fine_grid_side_length / 2;
             } else {
@@ -171,6 +174,9 @@ IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_, long
                 long base_offset{1};
                 long coarse_offset{1};
                 double factor{1};
+                /*
+                 * Get ids of fine level sources of the current m
+                 */
                 std::vector<long> fine_interpolation_ids{m};
                 for (int i = 0; i < dimension; ++i) {
                     if (((m / base_offset) % fine_grid_side_length) % 2 == 1) {
@@ -193,6 +199,10 @@ IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_, long
                     base_offset *= fine_grid_side_length;
                 }
                 //assert(factor == fine_interpolation_ids.size());
+
+                /*
+                 * Fill interpolation matrix, by calculating the coarse level id of each source
+                 */
                 for (auto elem: fine_interpolation_ids) {
                     base_offset = 1;
                     coarse_offset = 1;

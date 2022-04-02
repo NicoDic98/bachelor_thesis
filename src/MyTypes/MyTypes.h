@@ -1,6 +1,6 @@
 /**
  * @file       MyTypes.h
- * @brief
+ * @brief      Definition of used types
  * @author     nico
  * @version    0.0.1
  * @date       24.03.22

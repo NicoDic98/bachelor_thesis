@@ -1,6 +1,6 @@
 /**
  * @file       MultiLevelHMCGenerator.h
- * @brief
+ * @brief      Declarations of Multi level HMC
  * @author     nico
  * @version    0.0.1
  * @date       26.03.22
@@ -25,6 +25,17 @@
 template<class configuration_type>
 class MultiLevelHMCGenerator {
 public:
+    /**
+     * @brief Constructor of the Multi Level HMC generator
+     * @param model_ Model for which to generate ensembles
+     * @param nu_pre_ Amount of pre coarsening steps to take at each level
+     * @param nu_post_ Amount of post coarsening steps to take at each level
+     * @param gamma_ Amount of repetitions at each level (determines if a 'V' or 'W' or ... cycle is performed)
+     * @param InterpolationType_ Interpolation type used to generate the coarser levels
+     * @param amount_of_steps_ Amount of steps to be used in the integration process for each level
+     * @param step_sizes_ Step size in the integration process for each level
+     * @param generator_ Random number generator to be used for the HMC process
+     */
     MultiLevelHMCGenerator(BaseModel<configuration_type> &model_, std::vector<size_t> nu_pre_,
                            std::vector<size_t> nu_post_, size_t gamma_,
                            InterpolationType InterpolationType_,
@@ -37,21 +48,59 @@ public:
      * @param phiStart Starting field
      * @param amount_of_samples Amount of samples to take
      * @param amount_of_thermalization_steps Amount of thermalization steps
-     * @return Acceptance rate
+     * @return Acceptance rates
      */
     double generate_ensembles(const configuration_type &phiStart,
                               size_t amount_of_samples, size_t amount_of_thermalization_steps = 10);
 
-    configuration_type LevelRecursion(int level, const configuration_type &phi);
 
 private:
+    /**
+     * @brief Recursion to go to coarser levels
+     * @param level Current level id (finest=1, coarsest=\c nu_pre.size() )
+     * @param phi Starting configuration/field
+     * @return Updated configuration/field
+     */
+    configuration_type LevelRecursion(int level, const configuration_type &phi);
+
+    /**
+     * @brief Amount of pre coarsening steps to take at each level
+     */
     std::vector<size_t> nu_pre;
+
+    /**
+     * @brief Amount of post coarsening steps to take at each level
+     */
     std::vector<size_t> nu_post;
+
+    /**
+     * @brief Amount of repetitions at each level (determines if a 'V' or 'W' or ... cycle is performed)
+     */
     size_t gamma;
+
+    /**
+     * @brief Interpolation type used to generate the coarser levels
+     */
     InterpolationType inter_type;
+
+    /**
+     * @brief Random number generator to be used for the HMC process
+     */
     std::default_random_engine &generator;
+
+    /**
+     * @brief Stores the HMC generator for each level
+     */
     std::vector<HMCGenerator<configuration_type>> HMCStack;
+
+    /**
+     * @brief Stores the model for each level
+     */
     std::vector<std::unique_ptr<BaseModel<configuration_type>>> ModelStack;
+
+    /**
+     * @brief Saves the Acceptance rate at each level
+     */
     std::vector<double> AcceptanceRates;
 };
 

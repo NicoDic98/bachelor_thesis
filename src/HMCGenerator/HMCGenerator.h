@@ -57,10 +57,22 @@ public:
     double get_beta() const { return model.get_beta(); }
 
 
+    /**
+     * @brief Returns the last element of \a ensembles
+     * @return Last element of \a ensembles
+     */
     configuration_type get_last_configuration();
 
+    /**
+     * @brief Clear \a ensembles
+     */
     void clear_ensembles();
 
+    /**
+     * @brief Dumps all data from \a model as attributes and \a ensembles as dataset to the H5 \p file at \p path
+     * @param file File to dump to
+     * @param path Path to dump to
+     */
     void dumpToH5(HighFive::File &file, std::string path);
 
 

@@ -1,6 +1,6 @@
 /**
  * @file       IsingModel.h
- * @brief      Declaration of the Ising Model Including its Connectivity matrix and Force term in the artificial hamiltonian
+ * @brief      Declaration of the Ising Model
  * @author     nico
  * @version    0.0.1
  * @date       23.03.22
@@ -111,12 +111,30 @@ public:
      */
     IsingModel *get_copy_of_model() override;
 
+    /**
+     * @brief Update internal Fields with the d.o.f. field \p phi of the finer level.
+     * @param phi d.o.f. field
+     */
     void update_fields(const VectorX &phi) override;
 
+    /**
+     * @brief Updates finer field \p phia using the \a InterpolationMatrix and the coarser field \p phi2a
+     * @param phi2a Coarse field
+     * @param phia Fine field
+     */
     void interpolate(const VectorX &phi2a, VectorX &phia) override;
 
+    /**
+     * @brief Returns an empty field, useful for the starting of a Multi Level run
+     * @return Empty field d.o.f. field
+     */
     VectorX get_empty_field() override;
 
+    /**
+     * @brief Dumps all data as attributes to the H5 \p file at \p path
+     * @param file File to dump to
+     * @param path Path to dump to
+     */
     void dumpToH5(HighFive::File &file, std::string path) override;
 
 private:
@@ -160,6 +178,9 @@ private:
      */
     MatrixX InterpolationMatrix;
 
+    /**
+     * @brief Reference to the next finer Level in Multi Level mode, otherwise reference to \c *this.
+     */
     const IsingModel &FinerModel;
 
     /**
@@ -169,6 +190,13 @@ private:
      */
     void fill_connectivity_matrix(int neighbour_extent, int grid_size);
 
+    /**
+     * @brief Fills the \a InterpolationMatrix
+     * @param InterpolationType_ Type of interpolation to be used
+     * @param fine_size Finer grid total size
+     * @param fine_grid_side_length Finer grid hyper cube side length
+     * @return Coarse grid side length
+     */
     int fill_interpolation_matrix(InterpolationType InterpolationType_, long fine_size, int fine_grid_side_length);
 
     /**

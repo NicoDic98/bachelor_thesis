@@ -1,6 +1,6 @@
 /**
  * @file       BaseModel.h
- * @brief
+ * @brief      Base physical models
  * @author     nico
  * @version    0.0.1
  * @date       27.03.22
@@ -118,12 +118,30 @@ public:
      */
     virtual BaseModel<configuration_type> *get_copy_of_model() = 0;
 
+    /**
+     * @brief Update internal Fields with the d.o.f. field \p phi of the finer level
+     * @param phi d.o.f. field
+     */
     virtual void update_fields(const configuration_type &phi) = 0;
 
+    /**
+     * @brief Updates finer field \p phia using the interpolation of the coarser field \p phi2a
+     * @param phi2a Coarse field
+     * @param phia Fine field
+     */
     virtual void interpolate(const configuration_type &phi2a, configuration_type &phia) = 0;
 
+    /**
+     * @brief Returns an empty field, useful for the starting of a Multi Level run
+     * @return Empty field d.o.f. field
+     */
     virtual configuration_type get_empty_field() = 0;
 
+    /**
+     * @brief Dumps all data as attributes to the H5 \p file at \p path
+     * @param file File to dump to
+     * @param path Path to dump to
+     */
     virtual void dumpToH5(HighFive::File &file, std::string path) = 0;
 
     /**
