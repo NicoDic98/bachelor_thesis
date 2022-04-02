@@ -50,7 +50,7 @@ public:
      * @param amount_of_thermalization_steps Amount of thermalization steps
      * @return Acceptance rates
      */
-    double generate_ensembles(const configuration_type &phiStart,
+    std::vector<double> generate_ensembles(const configuration_type &phiStart,
                               size_t amount_of_samples, size_t amount_of_thermalization_steps = 10);
 
 
@@ -134,7 +134,7 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
 }
 
 template<class configuration_type>
-double MultiLevelHMCGenerator<configuration_type>::generate_ensembles(const configuration_type &phiStart,
+std::vector<double> MultiLevelHMCGenerator<configuration_type>::generate_ensembles(const configuration_type &phiStart,
                                                                       size_t amount_of_samples,
                                                                       size_t amount_of_thermalization_steps) {
     HighFive::File file(std::string(DATA_DIR).append("file.h5"),
@@ -152,7 +152,10 @@ double MultiLevelHMCGenerator<configuration_type>::generate_ensembles(const conf
     }
 
     HMCStack[0].dumpToH5(file, "/firsttest/level0");
-    return AcceptanceRates[0] / (amount_of_samples * 2);
+    for (int i = 0; i < AcceptanceRates.size(); ++i) {
+        AcceptanceRates[i]=AcceptanceRates[i]/(amount_of_samples*(nu_pre[i]+nu_post[i])* int_pow(gamma,i));
+    }
+    return AcceptanceRates;
 }
 
 template<class configuration_type>

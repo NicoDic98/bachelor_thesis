@@ -120,7 +120,10 @@ void test_multi_level_hmc() {
                                  {1. / 8, 1. / 8, 1. / 8},
                                  myengine);
 
-    std::cout << mygen.generate_ensembles(phi0, 2000, 100);
+    std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 2000, 100);
+    for (auto acceptance_rate: acceptance_rates) {
+        std::cout << acceptance_rate << std::endl;
+    }
 }
 
 /**
