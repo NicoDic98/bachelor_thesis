@@ -149,7 +149,7 @@ std::vector<double> HMCGenerator<configuration_type>::compute_magnetization() {
     std::cout << ensembles.size() << std::endl;
     std::vector<double> ret(ensembles.size());
     for (int i = 0; i < ensembles.size(); ++i) {
-        ret[i]= abs(model.get_magnetization(ensembles[i]));
+        ret[i]= model.get_magnetization(ensembles[i]);
     }
     return ret;
 }
