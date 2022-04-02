@@ -53,13 +53,19 @@ public:
     std::vector<double> generate_ensembles(const configuration_type &phiStart,
                                            size_t amount_of_samples, size_t amount_of_thermalization_steps = 10);
 
+    /**
+     * @brief Compute the magnetization of the currently loaded ensembles
+     * @return magnetization
+     */
+    double compute_magnetization();
+
     void propagate_update();
 
 
 private:
     /**
      * @brief Recursion to go to coarser levels
-     * @param level Current level id (finest=1, coarsest=\c nu_pre.size() )
+     * @param level Current level id (finest=0, coarsest=\c nu_pre.size()-1 )
      * @param phi Starting configuration/field
      * @return Updated configuration/field
      */
@@ -188,6 +194,11 @@ void MultiLevelHMCGenerator<configuration_type>::propagate_update() {
     for (int i = 1; i < ModelStack.size(); ++i) {
         ModelStack[i]->pull_attributes_from_finer_level();
     }
+}
+
+template<class configuration_type>
+double MultiLevelHMCGenerator<configuration_type>::compute_magnetization() {
+    return HMCStack[0].compute_magnetization();
 }
 
 

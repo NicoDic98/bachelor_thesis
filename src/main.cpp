@@ -88,11 +88,11 @@ void test_HMC(const std::string &filename) {
         std::cerr << filename << " can't be opened!\n";
         exit(-42);
     }
-    for (double inverse_beta = 0.5; inverse_beta < 1.05; inverse_beta += 0.1) {
+    for (double inverse_beta = 0.5; inverse_beta < 4.05; inverse_beta += 0.3) {
         test.set_beta(1. / inverse_beta);
         std::cout << "Acceptance rate:" << HMCTest.generate_ensembles(phi0, 20000, 1000, false) << std::endl;
         double m = HMCTest.compute_magnetization();
-        std::cout << "Beta: " << 1. / inverse_beta << "\t Magnetization:" << m << std::endl;
+        std::cout << "Inverse Beta: " << inverse_beta << "\t Magnetization:" << m << std::endl;
         output << inverse_beta << '\t' << m << '\n';
     }
     output.close();
@@ -100,7 +100,7 @@ void test_HMC(const std::string &filename) {
 }
 
 
-void test_multi_level_hmc() {
+void test_multi_level_hmc(const std::string &filename) {
     const int grid_size = 8;
     const int dim = 2;
     const int lambda = int_pow(grid_size, dim);
@@ -116,17 +116,33 @@ void test_multi_level_hmc() {
     std::default_random_engine myengine{42L};
 
     IsingModel test(beta, h0, eta0, C, dim, 1, grid_size);
-    MultiLevelHMCGenerator mygen(test, {1, 2, 3}, {1, 2, 3}, 2, InterpolationType::Checkerboard, {8, 8, 8},
-                                 {1. / 8, 1. / 8, 1. / 8},
-                                 myengine);
+    //MultiLevelHMCGenerator mygen(test, {1, 2, 3}, {1, 2, 3}, 2, InterpolationType::Checkerboard, {8, 8, 8},
+      //                           {1. / 8, 1. / 8, 1. / 8},
+          //                       myengine);
 
-    test.set_beta(0.5);
-    mygen.propagate_update();
 
-    std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 2000, 100);
-    for (auto acceptance_rate: acceptance_rates) {
-        std::cout << acceptance_rate << std::endl;
+
+    std::ofstream output(filename);
+    if (!output) {
+        std::cerr << filename << " can't be opened!\n";
+        exit(-42);
     }
+    for (double inverse_beta = 0.5; inverse_beta < 4.05; inverse_beta += 0.3) {
+        test.set_beta(1. / inverse_beta);
+        MultiLevelHMCGenerator mygen(test, {0, 2, 3}, {1, 2, 3}, 2, InterpolationType::Checkerboard, {8, 8, 8},
+                                     {1. / 8, 1. / 8, 1. / 8},
+                                     myengine);
+        std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 20000, 1000);
+        for (auto acceptance_rate: acceptance_rates) {
+            std::cout << "Acceptance rate:" << acceptance_rate << std::endl;
+        }
+        double m = mygen.compute_magnetization();
+        std::cout << "Inverse Beta: " << inverse_beta << "\t Magnetization:" << m << std::endl;
+        output << inverse_beta << '\t' << m << '\n';
+    }
+    output.close();
+
+
 }
 
 /**
@@ -137,6 +153,6 @@ void test_multi_level_hmc() {
  */
 int main(int argc, char *argv[]) {
     //test_leap_frog();
-    //test_HMC(std::string(DATA_DIR).append("Test.dat"));
-    test_multi_level_hmc();
+    test_multi_level_hmc(std::string(DATA_DIR).append("MultiLevelTest.dat"));
+    test_HMC(std::string(DATA_DIR).append("HMCTest.dat"));
 }

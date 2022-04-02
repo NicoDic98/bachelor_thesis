@@ -21,8 +21,8 @@ IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, i
           InterpolationMatrix{}, FinerModel{*this} {
 
     fill_connectivity_matrix(neighbour_extent_, grid_size_);
-    add_offset_to_connectivity_matrix(offset_+(2*neighbour_extent_*dimension));
-
+    add_offset_to_connectivity_matrix(offset_ + (2 * neighbour_extent_ * dimension));
+    //todo: test that this really yields a positive definit connectivity matrix (search for min eigenvalue before adding the offset)
     k_rec = k_sym;
     assert(check_internal_dimensions());
 }
