@@ -51,7 +51,7 @@ public:
      * @return Acceptance rates
      */
     std::vector<double> generate_ensembles(const configuration_type &phiStart,
-                              size_t amount_of_samples, size_t amount_of_thermalization_steps = 10);
+                                           size_t amount_of_samples, size_t amount_of_thermalization_steps = 10);
 
 
 private:
@@ -116,15 +116,18 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
         : nu_pre{std::move(nu_pre_)}, nu_post{std::move(nu_post_)}, gamma{gamma_}, inter_type{InterpolationType_},
           generator{generator_}, AcceptanceRates{} {
     //TODO: add auto sizing
+    assert(gamma > 0);
     assert(nu_pre.size() == nu_post.size());
     assert(nu_pre.size() == amount_of_steps_.size());
     assert(nu_pre.size() == step_sizes_.size());
+
 
     AcceptanceRates.resize(nu_pre.size());
     ModelStack.push_back(std::unique_ptr<BaseModel<configuration_type>>(model_.get_copy_of_model()));
     HMCStack.push_back(HMCGenerator(model_, amount_of_steps_[0], step_sizes_[0], generator));
 
     for (int i = 1; i < nu_pre.size(); ++i) {
+        assert(nu_pre[i] + nu_post[i] > 0);
         ModelStack.push_back(
                 std::unique_ptr<BaseModel<configuration_type>>(
                         (ModelStack[i - 1])->get_coarser_model(inter_type)));
@@ -135,8 +138,8 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
 
 template<class configuration_type>
 std::vector<double> MultiLevelHMCGenerator<configuration_type>::generate_ensembles(const configuration_type &phiStart,
-                                                                      size_t amount_of_samples,
-                                                                      size_t amount_of_thermalization_steps) {
+                                                                                   size_t amount_of_samples,
+                                                                                   size_t amount_of_thermalization_steps) {
     HighFive::File file(std::string(DATA_DIR).append("file.h5"),
                         HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
 
@@ -153,7 +156,7 @@ std::vector<double> MultiLevelHMCGenerator<configuration_type>::generate_ensembl
 
     HMCStack[0].dumpToH5(file, "/firsttest/level0");
     for (int i = 0; i < AcceptanceRates.size(); ++i) {
-        AcceptanceRates[i]=AcceptanceRates[i]/(amount_of_samples*(nu_pre[i]+nu_post[i])* int_pow(gamma,i));
+        AcceptanceRates[i] = AcceptanceRates[i] / (amount_of_samples * (nu_pre[i] + nu_post[i]) * int_pow(gamma, i));
     }
     return AcceptanceRates;
 }
