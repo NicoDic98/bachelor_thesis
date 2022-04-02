@@ -53,6 +53,8 @@ public:
     std::vector<double> generate_ensembles(const configuration_type &phiStart,
                                            size_t amount_of_samples, size_t amount_of_thermalization_steps = 10);
 
+    void propagate_update();
+
 
 private:
     /**
@@ -179,6 +181,13 @@ MultiLevelHMCGenerator<configuration_type>::LevelRecursion(int level, const conf
     }
     AcceptanceRates[level] += HMCStack[level].generate_ensembles(currentField, nu_post[level], 0, level == 0);
     return HMCStack[level].get_last_configuration();
+}
+
+template<class configuration_type>
+void MultiLevelHMCGenerator<configuration_type>::propagate_update() {
+    for (int i = 1; i < ModelStack.size(); ++i) {
+        ModelStack[i]->pull_attributes_from_finer_level();
+    }
 }
 
 

@@ -131,6 +131,8 @@ public:
      */
     virtual void interpolate(const configuration_type &phi2a, configuration_type &phia) = 0;
 
+    virtual void pull_attributes_from_finer_level() = 0;
+
     /**
      * @brief Returns an empty field, useful for the starting of a Multi Level run
      * @return Empty field d.o.f. field

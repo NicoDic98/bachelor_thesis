@@ -269,6 +269,11 @@ void IsingModel::dumpToH5(HighFive::File &file, std::string path) {
 
 }
 
+void IsingModel::pull_attributes_from_finer_level() {
+    set_beta(FinerModel.get_beta());
+    //TODO maybe add some more attributes to be pulled
+}
+
 
 
 

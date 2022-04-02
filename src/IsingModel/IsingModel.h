@@ -124,6 +124,8 @@ public:
      */
     void interpolate(const VectorX &phi2a, VectorX &phia) override;
 
+    void pull_attributes_from_finer_level() override;
+
     /**
      * @brief Returns an empty field, useful for the starting of a Multi Level run
      * @return Empty field d.o.f. field
