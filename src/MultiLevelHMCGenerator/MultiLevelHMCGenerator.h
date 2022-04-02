@@ -174,7 +174,7 @@ configuration_type
 MultiLevelHMCGenerator<configuration_type>::LevelRecursion(int level, const configuration_type &phi) {
     configuration_type currentField{phi};
     AcceptanceRates[level] += HMCStack[level].generate_ensembles(currentField, nu_pre[level], 0, level == 0);
-    currentField = HMCStack[level].get_last_configuration();
+    currentField = HMCStack[level].get_last_configuration(currentField);
     //std::cout << "Level:\t" << level << std::endl;
 
     if (level < (nu_pre.size() - 1)) {
@@ -186,7 +186,7 @@ MultiLevelHMCGenerator<configuration_type>::LevelRecursion(int level, const conf
         ModelStack[level + 1]->interpolate(CoarseCorrections, currentField);
     }
     AcceptanceRates[level] += HMCStack[level].generate_ensembles(currentField, nu_post[level], 0, level == 0);
-    return HMCStack[level].get_last_configuration();
+    return HMCStack[level].get_last_configuration(currentField);
 }
 
 template<class configuration_type>

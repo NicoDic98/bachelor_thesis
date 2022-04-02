@@ -61,7 +61,7 @@ public:
      * @brief Returns the last element of \a ensembles
      * @return Last element of \a ensembles
      */
-    configuration_type get_last_configuration();
+    configuration_type get_last_configuration(const configuration_type &default_phi);
 
     /**
      * @brief Clear \a ensembles
@@ -187,8 +187,12 @@ HMCGenerator<configuration_type>::HMCGenerator(BaseModel<configuration_type> &mo
 }
 
 template<class configuration_type>
-configuration_type HMCGenerator<configuration_type>::get_last_configuration() {
-    return ensembles.back();
+configuration_type HMCGenerator<configuration_type>::get_last_configuration(const configuration_type &default_phi) {
+    if (ensembles.empty()) {
+        return default_phi;
+    } else {
+        return ensembles.back();
+    }
 }
 
 template<class configuration_type>
