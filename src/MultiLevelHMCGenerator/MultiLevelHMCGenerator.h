@@ -57,7 +57,9 @@ public:
      * @brief Compute the magnetization of the currently loaded ensembles
      * @return magnetization
      */
-    double compute_magnetization();
+    std::vector<double> compute_magnetization(HighFive::File &file);
+
+    void dumpToH5(HighFive::File &file);
 
     void propagate_update();
 
@@ -148,21 +150,18 @@ template<class configuration_type>
 std::vector<double> MultiLevelHMCGenerator<configuration_type>::generate_ensembles(const configuration_type &phiStart,
                                                                                    size_t amount_of_samples,
                                                                                    size_t amount_of_thermalization_steps) {
-    HighFive::File file(std::string(DATA_DIR).append("file.h5"),
-                        HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
-
+    configuration_type phi(phiStart);
     for (int i = 0; i < amount_of_thermalization_steps; ++i) {
-        LevelRecursion(0, phiStart);
+        phi = LevelRecursion(0, phi);
     }
     HMCStack[0].clear_ensembles();
     for (auto &elem: AcceptanceRates) {
         elem = 0.;
     }
     for (int i = 0; i < amount_of_samples; ++i) {
-        LevelRecursion(0, phiStart);
+        phi = LevelRecursion(0, phi);
     }
 
-    HMCStack[0].dumpToH5(file, "/firsttest/level0");
     for (int i = 0; i < AcceptanceRates.size(); ++i) {
         AcceptanceRates[i] = AcceptanceRates[i] / (amount_of_samples * (nu_pre[i] + nu_post[i]) * int_pow(gamma, i));
     }
@@ -197,8 +196,15 @@ void MultiLevelHMCGenerator<configuration_type>::propagate_update() {
 }
 
 template<class configuration_type>
-double MultiLevelHMCGenerator<configuration_type>::compute_magnetization() {
-    return HMCStack[0].compute_magnetization();
+std::vector<double> MultiLevelHMCGenerator<configuration_type>::compute_magnetization(HighFive::File &file) {
+    auto temp=HMCStack[0].compute_magnetization();
+    H5Easy::dump(file, "/level0/magnetizations", temp);
+    return temp;
+}
+
+template<class configuration_type>
+void MultiLevelHMCGenerator<configuration_type>::dumpToH5(HighFive::File &file) {
+    HMCStack[0].dumpToH5(file, "/level0/ensembles");
 }
 
 

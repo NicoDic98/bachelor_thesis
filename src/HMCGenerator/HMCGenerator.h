@@ -48,7 +48,7 @@ public:
      * @brief Compute the magnetization of the currently loaded ensemble
      * @return magnetization
      */
-    double compute_magnetization();
+    std::vector<double> compute_magnetization();
 
     /**
      * @brief Returns beta of the used model
@@ -145,12 +145,13 @@ configuration_type HMCGenerator<configuration_type>::do_HMC_step(const configura
 }
 
 template<class configuration_type>
-double HMCGenerator<configuration_type>::compute_magnetization() {
-    double ret{0.};
-    for (const auto &elem: ensembles) {
-        ret += abs(model.get_magnetization(elem));
+std::vector<double> HMCGenerator<configuration_type>::compute_magnetization() {
+    std::cout << ensembles.size() << std::endl;
+    std::vector<double> ret(ensembles.size());
+    for (int i = 0; i < ensembles.size(); ++i) {
+        ret[i]= abs(model.get_magnetization(ensembles[i]));
     }
-    return ret / ensembles.size();
+    return ret;
 }
 
 template<class configuration_type>
@@ -176,7 +177,13 @@ HMCGenerator<configuration_type>::generate_ensembles(const configuration_type &p
     }
 
     double ret{1.};
-    return ret * accepted_configurations / amount_of_samples;
+    if (amount_of_samples) {
+        return ret * accepted_configurations / amount_of_samples;
+    } else {
+        return 0.;
+    }
+
+
 }
 
 template<class configuration_type>
