@@ -26,7 +26,7 @@ public:
      * @param beta_ Inverse temperature
      * @param h_ External field
      * @param eta_ Generalisation field
-     * @param offset_ Offset used to shift the connectivity matrix by identity*offset_
+     * @param offset_ Offset used to shift the connectivity matrix by \c identity*(offset_+ needed_offset)
      * @param dimension_ Dimension of the Ising model
      * @param neighbour_extent_ Range of coupling spins
      * @param grid_size_ Spatial extend of the square/cubic/... grid

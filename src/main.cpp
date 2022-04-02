@@ -21,7 +21,7 @@ void test_leap_frog() {
     const int grid_size = 5;
     const int dim = 2;
     const int lambda = int_pow(grid_size, dim);
-    const double C{4.1};
+    const double C{0.1};
     const double beta{1.0};
 
     VectorX phi0(lambda);
@@ -68,7 +68,7 @@ void test_HMC(const std::string &filename) {
     const int grid_size = 5;
     const int dim = 2;
     const int lambda = int_pow(grid_size, dim);
-    const double C{4.1};
+    const double C{0.1};
     const double beta{0.5};
 
     VectorX phi0(lambda);
@@ -104,7 +104,7 @@ void test_multi_level_hmc() {
     const int grid_size = 8;
     const int dim = 2;
     const int lambda = int_pow(grid_size, dim);
-    const double C{4.1};
+    const double C{0.1};
     const double beta{0.5};
 
     VectorX phi0(lambda);
