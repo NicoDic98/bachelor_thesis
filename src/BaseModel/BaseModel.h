@@ -11,6 +11,7 @@
 #define BACHELOR_THESIS_BASEMODEL_H
 
 #include <iostream>
+#include <highfive/H5Easy.hpp>
 
 /**
  * @brief Template for the Abstract Class BaseModel
@@ -121,7 +122,9 @@ public:
 
     virtual void interpolate(const configuration_type &phi2a, configuration_type &phia) = 0;
 
-    virtual configuration_type get_empty_field()=0;
+    virtual configuration_type get_empty_field() = 0;
+
+    virtual void dumpToH5(HighFive::File &file, std::string path) = 0;
 
     /**
      * @brief Prints the name of the model

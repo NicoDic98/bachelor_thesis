@@ -61,6 +61,8 @@ public:
 
     void clear_ensembles();
 
+    void dumpToH5(HighFive::File &file, std::string path);
+
 
 private:
     /**
@@ -180,6 +182,12 @@ configuration_type HMCGenerator<configuration_type>::get_last_configuration() {
 template<class configuration_type>
 void HMCGenerator<configuration_type>::clear_ensembles() {
     ensembles.clear();
+}
+
+template<class configuration_type>
+void HMCGenerator<configuration_type>::dumpToH5(HighFive::File &file, std::string path) {
+    H5Easy::dump(file, path, ensembles);
+    model.dumpToH5(file, path);
 }
 
 

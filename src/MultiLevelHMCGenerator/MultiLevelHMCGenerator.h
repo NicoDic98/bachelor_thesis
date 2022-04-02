@@ -88,6 +88,9 @@ template<class configuration_type>
 double MultiLevelHMCGenerator<configuration_type>::generate_ensembles(const configuration_type &phiStart,
                                                                       size_t amount_of_samples,
                                                                       size_t amount_of_thermalization_steps) {
+    HighFive::File file(std::string(DATA_DIR).append("file.h5"),
+                        HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
+
     for (int i = 0; i < amount_of_thermalization_steps; ++i) {
         LevelRecursion(0, phiStart);
     }
@@ -98,11 +101,14 @@ double MultiLevelHMCGenerator<configuration_type>::generate_ensembles(const conf
     for (int i = 0; i < amount_of_samples; ++i) {
         LevelRecursion(0, phiStart);
     }
+
+    HMCStack[0].dumpToH5(file, "/firsttest/level0");
     return AcceptanceRates[0] / (amount_of_samples * 2);
 }
 
 template<class configuration_type>
-configuration_type MultiLevelHMCGenerator<configuration_type>::LevelRecursion(int level, const configuration_type &phi) {
+configuration_type
+MultiLevelHMCGenerator<configuration_type>::LevelRecursion(int level, const configuration_type &phi) {
     configuration_type currentField{phi};
     AcceptanceRates[level] += HMCStack[level].generate_ensembles(currentField, nu_pre[level], 0, level == 0);
     currentField = HMCStack[level].get_last_configuration();

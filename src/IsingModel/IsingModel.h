@@ -115,7 +115,9 @@ public:
 
     void interpolate(const VectorX &phi2a, VectorX &phia) override;
 
-    VectorX get_empty_field()override;
+    VectorX get_empty_field() override;
+
+    void dumpToH5(HighFive::File &file, std::string path) override;
 
 private:
     /**

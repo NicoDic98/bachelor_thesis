@@ -245,6 +245,20 @@ VectorX IsingModel::get_empty_field() {
     return temp;
 }
 
+void IsingModel::dumpToH5(HighFive::File &file, std::string path) {
+    H5Easy::dumpAttribute(file, path, "beta", get_beta());
+    H5Easy::dumpAttribute(file, path, "dimension", dimension);
+    H5Easy::dumpAttribute(file, path, "grid_side_length", grid_side_length);
+    H5Easy::dumpAttribute(file, path, "h", h);
+    H5Easy::dumpAttribute(file, path, "eta", eta);
+    H5Easy::dumpAttribute(file, path, "k_sym", k_sym);
+    H5Easy::dumpAttribute(file, path, "k_rec", k_rec);
+    if (InterpolationMatrix.size() != 0) {
+        H5Easy::dumpAttribute(file, path, "InterpolationMatrix", InterpolationMatrix);
+    }
+
+}
+
 
 
 
