@@ -18,7 +18,7 @@
 /**
  * @brief Tests the Leap Frog integrator
  */
-void test_leap_frog() {
+[[maybe_unused]] void test_leap_frog() {
     const int grid_size = 5;
     const int dim = 2;
     const int lambda = int_pow(grid_size, dim);
@@ -38,7 +38,6 @@ void test_leap_frog() {
 
     LeapFrogIntegrator leapTest(test);
     test.print_connectivity_matrix();
-    int numMD = 10;
     phi0(0) = 1;
     phi0(1) = 2;
     phi0(2) = -0.1;
@@ -97,7 +96,7 @@ void test_HMC(const std::string &filename) {
         for (auto elem: mag) {
             m += elem;
         }
-        m /= mag.size();
+        m /= static_cast<double>(mag.size());
         std::cout << "Inverse Beta: " << inverse_beta << "\t Magnetization:" << m << std::endl;
         output << inverse_beta << '\t' << m << '\n';
     }
@@ -151,7 +150,7 @@ void test_multi_level_hmc() {
         for (auto elem: mag) {
             m += elem;
         }
-        m /= mag.size();
+        m /= static_cast<double>(mag.size());
         std::cout << "Inverse Beta: " << inverse_beta << "\t Magnetization:" << m << std::endl;
     }
 
@@ -164,7 +163,7 @@ void test_multi_level_hmc() {
  * @param argv
  * @return Exit status
  */
-int main(int argc, char *argv[]) {
+int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_leap_frog();
     test_multi_level_hmc();
     test_HMC(std::string(DATA_DIR).append("HMCTest.dat"));
