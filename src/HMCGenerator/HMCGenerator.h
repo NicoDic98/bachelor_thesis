@@ -45,11 +45,9 @@ public:
                               size_t amount_of_thermalization_steps, bool expand);
 
     /**
-     * @brief Compute the magnetization of the currently loaded ensemble
-     * @return magnetization
+     * @brief Compute the \p observable_function_pointer of the currently loaded ensemble
+     * @return vector of observable
      */
-    std::vector<double> compute_magnetization();
-
     std::vector<double> compute_observable(double (BaseModel<configuration_type>::*observable_function_pointer)(
             const configuration_type &));
 
@@ -145,16 +143,6 @@ configuration_type HMCGenerator<configuration_type>::do_HMC_step(const configura
         // Reject
         return phi0;
     }
-}
-
-template<class configuration_type>
-std::vector<double> HMCGenerator<configuration_type>::compute_magnetization() {
-    std::cout << ensembles.size() << std::endl;
-    std::vector<double> ret(ensembles.size());
-    for (int i = 0; i < ensembles.size(); ++i) {
-        ret[i] = model.get_magnetization(ensembles[i]);
-    }
-    return ret;
 }
 
 template<class configuration_type>

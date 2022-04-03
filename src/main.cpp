@@ -145,13 +145,8 @@ void test_multi_level_hmc() {
         HighFive::File file(std::string(DATA_DIR).append(my_time).append(std::to_string(inverse_beta)).append(".h5"),
                             HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
         mygen.dumpToH5(file);
-        auto mag = mygen.compute_magnetization(file);
-        double m{0.};
-        for (auto elem: mag) {
-            m += elem;
-        }
-        m /= static_cast<double>(mag.size());
-        std::cout << "Inverse Beta: " << inverse_beta << "\t Magnetization:" << m << std::endl;
+        mygen.dump_observable(&BaseModel<VectorX>::get_magnetization,"magn",file);
+
     }
 
 
@@ -165,6 +160,6 @@ void test_multi_level_hmc() {
  */
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_leap_frog();
-    //test_multi_level_hmc();
-    test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
+    test_multi_level_hmc();
+    //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
 }

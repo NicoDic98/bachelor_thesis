@@ -54,10 +54,12 @@ public:
                                            size_t amount_of_samples, size_t amount_of_thermalization_steps = 10);
 
     /**
-     * @brief Compute the magnetization of the currently loaded ensembles
-     * @return magnetization
+     * @brief Compute the \p observable_function_pointer of the currently loaded ensemble
+     * @return vector of observable
      */
-    std::vector<double> compute_magnetization(HighFive::File &file);
+    void dump_observable(double (
+    BaseModel<configuration_type>::*observable_function_pointer)(const configuration_type &),
+                         const std::string &name, HighFive::File &file);
 
     void dumpToH5(HighFive::File &file);
 
@@ -195,16 +197,20 @@ void MultiLevelHMCGenerator<configuration_type>::propagate_update() {
     }
 }
 
-template<class configuration_type>
-std::vector<double> MultiLevelHMCGenerator<configuration_type>::compute_magnetization(HighFive::File &file) {
-    auto temp=HMCStack[0].compute_magnetization();
-    H5Easy::dump(file, "/level0/magnetizations", temp);
-    return temp;
-}
 
 template<class configuration_type>
 void MultiLevelHMCGenerator<configuration_type>::dumpToH5(HighFive::File &file) {
     HMCStack[0].dumpToH5(file, "/level0/ensembles");
+}
+
+template<class configuration_type>
+void MultiLevelHMCGenerator<configuration_type>::dump_observable(
+        double (BaseModel<configuration_type>::*observable_function_pointer)(const configuration_type &),
+        const std::string &name, HighFive::File &file) {
+    auto temp = HMCStack[0].compute_observable(observable_function_pointer);
+    std::string l0{"level0/"};
+    H5Easy::dump(file, l0.append(name), temp);
+    std::cout << l0 << std::endl;
 }
 
 
