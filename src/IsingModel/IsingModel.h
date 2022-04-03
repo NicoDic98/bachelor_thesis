@@ -70,7 +70,7 @@ public:
     /**
      * @brief Prints out the interpolation matrix
      */
-    void print_interpolation_matrix();
+    [[maybe_unused]] void print_interpolation_matrix();
 
     /**
      * @brief Sets the value of beta to new_beta
@@ -86,7 +86,7 @@ public:
      * @param phi Field
      * @return True, if all dimension checks are passed. False, if any dimension check fails.
      */
-    bool check_dimensions(const VectorX &phi) const override;
+    [[nodiscard]] bool check_dimensions(const VectorX &phi) const override;
 
     /**
      * @brief Prints the name of the model
@@ -96,7 +96,7 @@ public:
     /**
      * @brief Prints the dimensions of the stored vectors and matrices
      */
-    void print_dimensions();
+    [[maybe_unused]] void print_dimensions();
 
     /**
      * @brief Returns the coarsent model with respect to the given interpolation matrix
@@ -169,6 +169,7 @@ private:
      * @brief Symmetric connectivity matrix
      */
     MatrixX k_sym;
+    MatrixX k_sym_inverse;
 
     /**
      * @brief Asymmetric connectivity matrix
@@ -210,7 +211,9 @@ private:
     /**
      * @brief Checks the dimensions of internal vectors and matrices
      */
-    bool check_internal_dimensions() const { return check_dimensions(h); }
+    [[nodiscard]] bool check_internal_dimensions() const { return check_dimensions(h); }
+
+    void set_k_sym(const MatrixX& k_sym_new);
 
 protected:
 

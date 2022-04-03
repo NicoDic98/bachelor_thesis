@@ -34,7 +34,7 @@ IsingModel::IsingModel(const IsingModel &NewModel, InterpolationType Interpolati
     std::cout << "Isingmodel Interpolation constructor called" << std::endl;
     assert(FinerModel.check_internal_dimensions());
     grid_side_length = fill_interpolation_matrix(InterpolationType_, h.rows(), grid_side_length);
-    k_sym = InterpolationMatrix.transpose() * FinerModel.k_sym * InterpolationMatrix;
+    set_k_sym(InterpolationMatrix.transpose() * FinerModel.k_sym * InterpolationMatrix);
     k_rec = FinerModel.k_rec * InterpolationMatrix;
     h.resize(int_pow(grid_side_length, dimension));
 
@@ -46,10 +46,10 @@ IsingModel::IsingModel(const IsingModel &NewModel, InterpolationType Interpolati
 IsingModel::IsingModel(const IsingModel &NewModel)
         : BaseModel<VectorX>(NewModel.get_beta()), sqrt_beta{sqrt(NewModel.get_beta())}, h{NewModel.h},
           eta{NewModel.eta}, dimension{NewModel.dimension}, grid_side_length{NewModel.grid_side_length},
-          k_sym{NewModel.k_sym}, k_rec{NewModel.k_rec},
+          k_sym(NewModel.k_sym.rows(), NewModel.k_sym.cols()), k_rec{NewModel.k_rec},
           InterpolationMatrix{NewModel.InterpolationMatrix}, FinerModel{*this} {
     std::cout << "Isingmodel copy constructor called" << std::endl;
-
+    set_k_sym(NewModel.k_sym);
     //print_dimensions();
     assert(check_internal_dimensions());
 }
@@ -77,7 +77,7 @@ VectorX IsingModel::get_force(const VectorX &phi) {
 
 double IsingModel::get_magnetization(const VectorX &phi) {
 
-    return (phi / sqrt_beta - (k_sym.inverse()) * h).sum() / phi.rows();
+    return (phi / sqrt_beta - (k_sym_inverse) * h).sum() / static_cast<double>(phi.rows());
 }
 
 void IsingModel::fill_connectivity_matrix(int neighbour_extent, int grid_size) {
@@ -99,12 +99,13 @@ void IsingModel::fill_connectivity_matrix(int neighbour_extent, int grid_size) {
         }
 
     }
+    set_k_sym(k_sym);
 }
 
 void IsingModel::add_offset_to_connectivity_matrix(double offset) {
     MatrixX OffsetMatrix(k_sym.rows(), k_sym.cols());
     OffsetMatrix.setIdentity();
-    k_sym += offset * OffsetMatrix;
+    set_k_sym(k_sym + offset * OffsetMatrix);
 }
 
 void IsingModel::print_connectivity_matrix() {
@@ -150,7 +151,7 @@ IsingModel *IsingModel::get_copy_of_model() {
 int
 IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_, long fine_size, int fine_grid_side_length) {
     int coarse_grid_side_length{1};
-    int coarse_lambda{1};
+    int coarse_lambda;
     switch (InterpolationType_) {
         case InterpolationType::Checkerboard:
 
@@ -172,7 +173,7 @@ IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_, long
 
             for (long m = 0; m < InterpolationMatrix.rows(); ++m) {
                 long base_offset{1};
-                long coarse_offset{1};
+                long coarse_offset;
                 double factor{1};
                 /*
                  * Get ids of fine level sources of the current m
@@ -227,7 +228,7 @@ IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_, long
     return coarse_grid_side_length;
 }
 
-void IsingModel::print_dimensions() {
+[[maybe_unused]] void IsingModel::print_dimensions() {
     std::cout << "h dimensions:\t (" << h.rows() << ", " << h.cols() << ')' << std::endl;
     std::cout << "eta dimensions:\t (" << eta.rows() << ", " << eta.cols() << ')' << std::endl;
     std::cout << "k_sym dimensions:\t (" << k_sym.rows() << ", " << k_sym.cols() << ')' << std::endl;
@@ -236,7 +237,7 @@ void IsingModel::print_dimensions() {
               << InterpolationMatrix.cols() << ')' << std::endl;
 }
 
-void IsingModel::print_interpolation_matrix() {
+[[maybe_unused]] void IsingModel::print_interpolation_matrix() {
     std::cout << InterpolationMatrix << std::endl;
 }
 
@@ -272,6 +273,11 @@ void IsingModel::dumpToH5(HighFive::File &file, std::string path) {
 void IsingModel::pull_attributes_from_finer_level() {
     set_beta(FinerModel.get_beta());
     //TODO maybe add some more attributes to be pulled
+}
+
+void IsingModel::set_k_sym(const MatrixX &k_sym_new) {
+    k_sym = k_sym_new;
+    k_sym_inverse = k_sym.inverse();
 }
 
 
