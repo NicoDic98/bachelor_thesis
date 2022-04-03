@@ -64,6 +64,24 @@ IsingModel::IsingModel(const IsingModel &NewModel)
     assert(check_internal_dimensions());
 }
 
+IsingModel::IsingModel(HighFive::File &file, const std::string &path)
+        : BaseModel<VectorX>(file, path, Ising_name),
+          sqrt_beta{sqrt(get_beta())}, FinerModel{*this} {
+
+    dimension = H5Easy::loadAttribute<int>(file, path, dimension_name);
+    grid_side_length = H5Easy::loadAttribute<int>(file, path, grid_side_length_name);
+    h = H5Easy::loadAttribute<VectorX>(file, path, h_name);
+    eta = H5Easy::loadAttribute<VectorX>(file, path, eta_name);
+    k_sym = H5Easy::loadAttribute<MatrixX>(file, path, k_sym_name);
+    k_rec = H5Easy::loadAttribute<MatrixX>(file, path, k_rec_name);
+
+    try {//TODO: check if I can prevent the red lines
+        InterpolationMatrix = H5Easy::loadAttribute<MatrixX>(file, path, InterpolationMatrix_name);
+    } catch (HighFive::AttributeException &) {
+    }
+
+}
+
 double IsingModel::get_action(const VectorX &phi) {
     VectorX var_phi{k_rec * phi};
     double ret{0.};
@@ -266,7 +284,7 @@ VectorX IsingModel::get_empty_field() {
     return temp;
 }
 
-void IsingModel::dumpToH5(HighFive::File &file, const std::string& path) {
+void IsingModel::dumpToH5(HighFive::File &file, const std::string &path) {
     BaseModel<VectorX>::dumpToH5(file, path);
     H5Easy::dumpAttribute(file, path, dimension_name, dimension);
     H5Easy::dumpAttribute(file, path, grid_side_length_name, grid_side_length);

@@ -47,6 +47,8 @@ public:
      */
     IsingModel(const IsingModel &NewModel);
 
+    IsingModel(HighFive::File &file, const std::string &path);
+
 
     /**
      * @brief Calculates the action for the given field phi

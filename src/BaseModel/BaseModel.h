@@ -36,7 +36,7 @@ public:
 
     BaseModel(HighFive::File &file, const std::string &path, const std::string &default_name_ = "BaseModel") {
         beta = H5Easy::loadAttribute<double>(file, path, beta_name);
-        try {
+        try {//TODO: check if I can prevent the red lines
             name = H5Easy::loadAttribute<std::string>(file, path, model_name_key);
         } catch (HighFive::AttributeException &) {
             name = default_name_;
