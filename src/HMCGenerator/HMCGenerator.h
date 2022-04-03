@@ -76,6 +76,13 @@ public:
      */
     void dumpToH5(HighFive::File &file, std::string path);
 
+    /**
+     * @brief Dump the \p observable_function_pointer of the currently loaded ensemble to \p file at \p path
+     */
+    void dump_observable(double (
+    BaseModel<configuration_type>::*observable_function_pointer)(const configuration_type &),
+                         const std::string &path, HighFive::File &file);
+
 
 private:
     /**
@@ -213,6 +220,14 @@ std::vector<double> HMCGenerator<configuration_type>::compute_observable(
         ret[i] = (model.*observable_function_pointer)(ensembles[i]);
     }
     return ret;
+}
+
+template<class configuration_type>
+void
+HMCGenerator<configuration_type>::dump_observable(
+        double (BaseModel<configuration_type>::*observable_function_pointer)(const configuration_type &),
+        const std::string &path, HighFive::File &file) {
+    H5Easy::dump(file, path, compute_observable(observable_function_pointer));
 }
 
 

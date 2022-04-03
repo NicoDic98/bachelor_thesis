@@ -12,9 +12,19 @@
 #include "IsingModel.h"
 
 
+const char *IsingModel::dimension_name{"dimension"};
+const char *IsingModel::grid_side_length_name{"grid_side_length"};
+const char *IsingModel::h_name{"h"};
+const char *IsingModel::eta_name{"eta"};
+const char *IsingModel::k_sym_name{"k_sym"};
+const char *IsingModel::k_rec_name{"k_rec"};
+const char *IsingModel::InterpolationMatrix_name{"InterpolationMatrix"};
+
+const char *Ising_name{"IsingModel"};
+
 IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, int dimension_,
                        int neighbour_extent_, int grid_size_)
-        : BaseModel<VectorX>(beta_), sqrt_beta{sqrt(beta_)}, h{std::move(h_)}, eta{std::move(eta_)},
+        : BaseModel<VectorX>(beta_, Ising_name), sqrt_beta{sqrt(beta_)}, h{std::move(h_)}, eta{std::move(eta_)},
           dimension{dimension_}, grid_side_length{grid_size_},
           k_sym(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)),
           k_rec(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)),
@@ -28,7 +38,7 @@ IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, i
 }
 
 IsingModel::IsingModel(const IsingModel &NewModel, InterpolationType InterpolationType_)
-        : BaseModel<VectorX>(NewModel.get_beta()), sqrt_beta{sqrt(NewModel.get_beta())}, h{NewModel.h},
+        : BaseModel<VectorX>(NewModel), sqrt_beta{sqrt(NewModel.get_beta())}, h{NewModel.h},
           eta{NewModel.eta}, dimension{NewModel.dimension}, grid_side_length{NewModel.grid_side_length},
           InterpolationMatrix{}, FinerModel{NewModel} {
     std::cout << "Isingmodel Interpolation constructor called" << std::endl;
@@ -44,7 +54,7 @@ IsingModel::IsingModel(const IsingModel &NewModel, InterpolationType Interpolati
 }
 
 IsingModel::IsingModel(const IsingModel &NewModel)
-        : BaseModel<VectorX>(NewModel.get_beta()), sqrt_beta{sqrt(NewModel.get_beta())}, h{NewModel.h},
+        : BaseModel<VectorX>(NewModel), sqrt_beta{sqrt(NewModel.get_beta())}, h{NewModel.h},
           eta{NewModel.eta}, dimension{NewModel.dimension}, grid_side_length{NewModel.grid_side_length},
           k_sym(NewModel.k_sym.rows(), NewModel.k_sym.cols()), k_rec{NewModel.k_rec},
           InterpolationMatrix{NewModel.InterpolationMatrix}, FinerModel{*this} {
@@ -137,7 +147,7 @@ bool IsingModel::check_dimensions(const VectorX &phi) const {
 }
 
 void IsingModel::print_name() {
-    std::cout << "I'm the IsingModel" << std::endl;
+    std::cout << name << std::endl;
 }
 
 IsingModel *IsingModel::get_coarser_model(InterpolationType InterpolationType_) {
@@ -229,11 +239,11 @@ IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_, long
 }
 
 [[maybe_unused]] void IsingModel::print_dimensions() {
-    std::cout << "h dimensions:\t (" << h.rows() << ", " << h.cols() << ')' << std::endl;
-    std::cout << "eta dimensions:\t (" << eta.rows() << ", " << eta.cols() << ')' << std::endl;
-    std::cout << "k_sym dimensions:\t (" << k_sym.rows() << ", " << k_sym.cols() << ')' << std::endl;
-    std::cout << "k_rec dimensions:\t (" << k_rec.rows() << ", " << k_rec.cols() << ')' << std::endl;
-    std::cout << "InterpolationMatrix dimensions:\t (" << InterpolationMatrix.rows() << ", "
+    std::cout << h_name << " dimensions:\t (" << h.rows() << ", " << h.cols() << ')' << std::endl;
+    std::cout << eta_name << " dimensions:\t (" << eta.rows() << ", " << eta.cols() << ')' << std::endl;
+    std::cout << k_sym_name << " dimensions:\t (" << k_sym.rows() << ", " << k_sym.cols() << ')' << std::endl;
+    std::cout << k_rec_name << " dimensions:\t (" << k_rec.rows() << ", " << k_rec.cols() << ')' << std::endl;
+    std::cout << InterpolationMatrix_name << " dimensions:\t (" << InterpolationMatrix.rows() << ", "
               << InterpolationMatrix.cols() << ')' << std::endl;
 }
 
@@ -257,15 +267,15 @@ VectorX IsingModel::get_empty_field() {
 }
 
 void IsingModel::dumpToH5(HighFive::File &file, std::string path) {
-    H5Easy::dumpAttribute(file, path, "beta", get_beta());
-    H5Easy::dumpAttribute(file, path, "dimension", dimension);
-    H5Easy::dumpAttribute(file, path, "grid_side_length", grid_side_length);
-    H5Easy::dumpAttribute(file, path, "h", h);
-    H5Easy::dumpAttribute(file, path, "eta", eta);
-    H5Easy::dumpAttribute(file, path, "k_sym", k_sym);
-    H5Easy::dumpAttribute(file, path, "k_rec", k_rec);
+    H5Easy::dumpAttribute(file, path, beta_name, get_beta());
+    H5Easy::dumpAttribute(file, path, dimension_name, dimension);
+    H5Easy::dumpAttribute(file, path, grid_side_length_name, grid_side_length);
+    H5Easy::dumpAttribute(file, path, h_name, h);
+    H5Easy::dumpAttribute(file, path, eta_name, eta);
+    H5Easy::dumpAttribute(file, path, k_sym_name, k_sym);
+    H5Easy::dumpAttribute(file, path, k_rec_name, k_rec);
     if (InterpolationMatrix.size() != 0) {
-        H5Easy::dumpAttribute(file, path, "InterpolationMatrix", InterpolationMatrix);
+        H5Easy::dumpAttribute(file, path, InterpolationMatrix_name, InterpolationMatrix);
     }
 
 }
@@ -279,11 +289,3 @@ void IsingModel::set_k_sym(const MatrixX &k_sym_new) {
     k_sym = k_sym_new;
     k_sym_inverse = k_sym.inverse();
 }
-
-
-
-
-
-
-
-

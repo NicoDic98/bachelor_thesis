@@ -149,37 +149,44 @@ private:
      * @brief Dimension of the hypercube
      */
     int dimension;
+    static const char *dimension_name;
 
     /**
      * @brief Side length of the hypercube
      */
     int grid_side_length;
+    static const char *grid_side_length_name;
 
     /**
      * @brief External field
      */
     VectorX h;
+    static const char *h_name;
 
     /**
      * @brief Generalization field
      */
     VectorX eta;
+    static const char *eta_name;
 
     /**
      * @brief Symmetric connectivity matrix
      */
     MatrixX k_sym;
     MatrixX k_sym_inverse;
+    static const char *k_sym_name;
 
     /**
      * @brief Asymmetric connectivity matrix
      */
     MatrixX k_rec;
+    static const char *k_rec_name;
 
     /**
      * @brief Interpolation matrix
      */
     MatrixX InterpolationMatrix;
+    static const char *InterpolationMatrix_name;
 
     /**
      * @brief Reference to the next finer Level in Multi Level mode, otherwise reference to \c *this.
@@ -213,7 +220,7 @@ private:
      */
     [[nodiscard]] bool check_internal_dimensions() const { return check_dimensions(h); }
 
-    void set_k_sym(const MatrixX& k_sym_new);
+    void set_k_sym(const MatrixX &k_sym_new);
 
 protected:
 

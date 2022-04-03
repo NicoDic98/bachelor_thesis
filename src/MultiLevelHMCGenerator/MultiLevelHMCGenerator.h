@@ -207,10 +207,8 @@ template<class configuration_type>
 void MultiLevelHMCGenerator<configuration_type>::dump_observable(
         double (BaseModel<configuration_type>::*observable_function_pointer)(const configuration_type &),
         const std::string &name, HighFive::File &file) {
-    auto temp = HMCStack[0].compute_observable(observable_function_pointer);
     std::string l0{"level0/"};
-    H5Easy::dump(file, l0.append(name), temp);
-    std::cout << l0 << std::endl;
+    HMCStack[0].dump_observable(observable_function_pointer, l0.append(name), file);
 }
 
 

@@ -12,6 +12,7 @@
 
 #include <iostream>
 #include <highfive/H5Easy.hpp>
+#include <utility>
 
 /**
  * @brief Template for the Abstract Class BaseModel
@@ -25,22 +26,13 @@ public:
      * @brief Most Basic constructor of BaseModel
      * @param beta_ Inverse temperature of the model
      */
-    explicit BaseModel(double beta_);
+    explicit BaseModel(double beta_, std::string name_ = "BaseModel") : beta{beta_}, name{std::move(name_)} {}
 
     /**
      * @brief Copy constructor of BaseModel
      * @param NewModel Model to copy
      */
-    BaseModel(const BaseModel<configuration_type> &NewModel) : beta{NewModel.beta} {}
-
-    /**
-     * @brief Coarsening constructor of BaseModel
-     * @param NewModel Finer model
-     * @param InterpolationType_ Interpolation type to use for the coarsening
-     */
-    BaseModel(const BaseModel<configuration_type> &NewModel, InterpolationType InterpolationType_)
-            : beta{NewModel.beta} {}
-
+    BaseModel(const BaseModel<configuration_type> &NewModel) : beta{NewModel.beta}, name{NewModel.name} {}
 
     /**
      * @brief Destructor of BaseModel
@@ -71,7 +63,7 @@ public:
      * @param phi Field
      * @return m(phi) (magnetization)
      */
-    virtual double get_magnetization(const configuration_type &phi){return 0;}
+    virtual double get_magnetization(const configuration_type &phi) { return 0; }
 
 
     /**
@@ -160,6 +152,10 @@ protected:
      */
     virtual configuration_type get_force(const configuration_type &phi) = 0;
 
+    static const char *beta_name;
+
+    std::string name;
+
 private:
     /**
      * @brief Inverse temperature
@@ -167,8 +163,7 @@ private:
     double beta;
 };
 
-template<class configuration_type>
-BaseModel<configuration_type>::BaseModel(double beta_) : beta{beta_} {}
+template<class configuration_type> const char *BaseModel<configuration_type>::beta_name{"beta"};
 
 template<class configuration_type>
 inline double BaseModel<configuration_type>::get_beta() const {
@@ -197,7 +192,7 @@ configuration_type BaseModel<configuration_type>::get_dof_sample() {
 
 template<class configuration_type>
 void BaseModel<configuration_type>::print_name() {
-    std::cout << "I'm the BaseModel" << std::endl;
+    std::cout << name << std::endl;
 }
 
 

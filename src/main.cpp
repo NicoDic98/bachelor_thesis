@@ -142,13 +142,22 @@ void test_multi_level_hmc() {
         for (auto acceptance_rate: acceptance_rates) {
             std::cout << "Acceptance rate:" << acceptance_rate << std::endl;
         }
-        HighFive::File file(std::string(DATA_DIR).append(my_time).append(std::to_string(inverse_beta)).append(".h5"),
+        std::string filename{std::string(DATA_DIR).append(my_time).append(std::to_string(inverse_beta)).append(".h5")};
+        HighFive::File file(filename,
                             HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
         mygen.dumpToH5(file);
-        mygen.dump_observable(&BaseModel<VectorX>::get_magnetization,"magn",file);
+        mygen.dump_observable(&BaseModel<VectorX>::get_magnetization, "magn", file);
 
     }
 
+
+}
+
+void test_hmc_measurements() {
+    double inverse_beta{0.6};
+    std::string my_time{"%d_%m_%Y__%H_%M_%S_"};
+    std::string filename{std::string(DATA_DIR).append(my_time)
+                                 .append(std::to_string(inverse_beta)).append(".h5")};
 
 }
 
@@ -160,6 +169,7 @@ void test_multi_level_hmc() {
  */
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_leap_frog();
-    test_multi_level_hmc();
+    //test_multi_level_hmc();
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
+    test_hmc_measurements();
 }
