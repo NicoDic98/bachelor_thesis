@@ -34,9 +34,14 @@ public:
      */
     BaseModel(const BaseModel<configuration_type> &NewModel) : beta{NewModel.beta}, name{NewModel.name} {}
 
-    BaseModel(HighFive::File &file, const std::string &path) {
+    BaseModel(HighFive::File &file, const std::string &path, const std::string &default_name_ = "BaseModel") {
         beta = H5Easy::loadAttribute<double>(file, path, beta_name);
-        name = H5Easy::loadAttribute<std::string>(file, path, model_name_key);
+        try {
+            name = H5Easy::loadAttribute<std::string>(file, path, model_name_key);
+        } catch (HighFive::AttributeException &) {
+            name = default_name_;
+        }
+
     }
 
     /**
