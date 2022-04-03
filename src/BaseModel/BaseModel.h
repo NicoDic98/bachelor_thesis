@@ -34,8 +34,9 @@ public:
      */
     BaseModel(const BaseModel<configuration_type> &NewModel) : beta{NewModel.beta}, name{NewModel.name} {}
 
-    BaseModel(HighFive::File &file, const std::string& path) {
+    BaseModel(HighFive::File &file, const std::string &path) {
         beta = H5Easy::loadAttribute<double>(file, path, beta_name);
+        name = H5Easy::loadAttribute<std::string>(file, path, model_name_key);
     }
 
     /**
@@ -140,7 +141,7 @@ public:
      * @param file File to dump to
      * @param path Path to dump to
      */
-    virtual void dumpToH5(HighFive::File &file, const std::string& path);
+    virtual void dumpToH5(HighFive::File &file, const std::string &path);
 
     /**
      * @brief Prints the name of the model
@@ -157,6 +158,7 @@ protected:
     virtual configuration_type get_force(const configuration_type &phi) = 0;
 
     static const char *beta_name;
+    static const char *model_name_key;
 
     std::string name;
 
@@ -168,6 +170,7 @@ private:
 };
 
 template<class configuration_type> const char *BaseModel<configuration_type>::beta_name{"beta"};
+template<class configuration_type> const char *BaseModel<configuration_type>::model_name_key{"model"};
 
 template<class configuration_type>
 inline double BaseModel<configuration_type>::get_beta() const {
@@ -200,8 +203,9 @@ void BaseModel<configuration_type>::print_name() {
 }
 
 template<class configuration_type>
-void BaseModel<configuration_type>::dumpToH5(HighFive::File &file, const std::string& path) {
-    H5Easy::dumpAttribute(file, path, beta_name, get_beta());
+void BaseModel<configuration_type>::dumpToH5(HighFive::File &file, const std::string &path) {
+    H5Easy::dumpAttribute(file, path, beta_name, beta);
+    H5Easy::dumpAttribute(file, path, model_name_key, name);
 }
 
 
