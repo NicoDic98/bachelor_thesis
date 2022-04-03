@@ -50,6 +50,9 @@ public:
      */
     std::vector<double> compute_magnetization();
 
+    std::vector<double> compute_observable(double (BaseModel<configuration_type>::*observable_function_pointer)(
+            const configuration_type &));
+
     /**
      * @brief Returns beta of the used model
      * @return Inverse Temperature
@@ -149,7 +152,7 @@ std::vector<double> HMCGenerator<configuration_type>::compute_magnetization() {
     std::cout << ensembles.size() << std::endl;
     std::vector<double> ret(ensembles.size());
     for (int i = 0; i < ensembles.size(); ++i) {
-        ret[i]= model.get_magnetization(ensembles[i]);
+        ret[i] = model.get_magnetization(ensembles[i]);
     }
     return ret;
 }
@@ -211,6 +214,17 @@ template<class configuration_type>
 void HMCGenerator<configuration_type>::dumpToH5(HighFive::File &file, std::string path) {
     H5Easy::dump(file, path, ensembles);
     model.dumpToH5(file, path);
+}
+
+template<class configuration_type>
+std::vector<double> HMCGenerator<configuration_type>::compute_observable(
+        double (BaseModel<configuration_type>::*observable_function_pointer)(const configuration_type &)) {
+    std::cout << ensembles.size() << std::endl;
+    std::vector<double> ret(ensembles.size());
+    for (int i = 0; i < ensembles.size(); ++i) {
+        ret[i] = (model.*observable_function_pointer)(ensembles[i]);
+    }
+    return ret;
 }
 
 

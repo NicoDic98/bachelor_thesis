@@ -91,7 +91,7 @@ void test_HMC(const std::string &filename) {
     for (double inverse_beta = 0.3; inverse_beta < 4.05; inverse_beta += 0.1) {
         test.set_beta(1. / inverse_beta);
         std::cout << "Acceptance rate:" << HMCTest.generate_ensembles(phi0, 20000, 1000, false) << std::endl;
-        auto mag = HMCTest.compute_magnetization();
+        auto mag = HMCTest.compute_observable(&BaseModel<VectorX>::get_magnetization);
         double m{0.};
         for (auto elem: mag) {
             m += elem;
@@ -165,6 +165,6 @@ void test_multi_level_hmc() {
  */
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_leap_frog();
-    test_multi_level_hmc();
-    test_HMC(std::string(DATA_DIR).append("HMCTest.dat"));
+    //test_multi_level_hmc();
+    test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
 }
