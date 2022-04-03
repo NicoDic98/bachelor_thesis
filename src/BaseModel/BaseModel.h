@@ -71,7 +71,7 @@ public:
      * @param phi Field
      * @return m(phi) (magnetization)
      */
-    virtual double get_magnetization(const configuration_type &phi) = 0;
+    virtual double get_magnetization(const configuration_type &phi){return 0;}
 
 
     /**
