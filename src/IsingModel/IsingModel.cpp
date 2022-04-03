@@ -266,8 +266,8 @@ VectorX IsingModel::get_empty_field() {
     return temp;
 }
 
-void IsingModel::dumpToH5(HighFive::File &file, std::string path) {
-    H5Easy::dumpAttribute(file, path, beta_name, get_beta());
+void IsingModel::dumpToH5(HighFive::File &file, const std::string& path) {
+    BaseModel<VectorX>::dumpToH5(file, path);
     H5Easy::dumpAttribute(file, path, dimension_name, dimension);
     H5Easy::dumpAttribute(file, path, grid_side_length_name, grid_side_length);
     H5Easy::dumpAttribute(file, path, h_name, h);

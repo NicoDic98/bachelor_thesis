@@ -74,7 +74,7 @@ public:
      * @param file File to dump to
      * @param path Path to dump to
      */
-    void dumpToH5(HighFive::File &file, std::string path);
+    void dumpToH5(HighFive::File &file, const std::string& path);
 
     /**
      * @brief Dump the \p observable_function_pointer of the currently loaded ensemble to \p file at \p path
@@ -206,7 +206,7 @@ void HMCGenerator<configuration_type>::clear_ensembles() {
 }
 
 template<class configuration_type>
-void HMCGenerator<configuration_type>::dumpToH5(HighFive::File &file, std::string path) {
+void HMCGenerator<configuration_type>::dumpToH5(HighFive::File &file, const std::string& path) {
     H5Easy::dump(file, path, ensembles);
     model.dumpToH5(file, path);
 }

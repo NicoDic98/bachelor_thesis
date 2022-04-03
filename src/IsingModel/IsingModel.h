@@ -137,7 +137,7 @@ public:
      * @param file File to dump to
      * @param path Path to dump to
      */
-    void dumpToH5(HighFive::File &file, std::string path) override;
+    void dumpToH5(HighFive::File &file, const std::string& path) override;
 
 private:
     /**

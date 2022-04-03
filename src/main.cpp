@@ -172,4 +172,15 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_multi_level_hmc();
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     test_hmc_measurements();
+    HighFive::File file(std::string(DATA_DIR).append("03_04_2022__19_22_19_0.400000.h5"),
+                        HighFive::File::ReadOnly);
+
+    try {
+        auto name = H5Easy::loadAttribute<double>(file, "/level0/ensembles", "name");
+        std::cout << name << std::endl;
+    }
+    catch (HighFive::AttributeException &) {
+        std::cout << "nope" << std::endl;
+    }
+
 }
