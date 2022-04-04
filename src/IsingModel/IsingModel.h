@@ -134,12 +134,7 @@ public:
      */
     VectorX get_empty_field() override;
 
-    /**
-     * @brief Dumps all data as attributes to the H5 \p file at \p path
-     * @param file File to dump to
-     * @param path Path to dump to
-     */
-    void dumpToH5(HighFive::File &file, const std::string& path) override;
+    void dumpToH5(HighFive::Group &root) override;
 
     void load_ensemble(std::vector<VectorX> &target,HighFive::File &file, const std::string& path) override;
 

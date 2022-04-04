@@ -200,13 +200,20 @@ void MultiLevelHMCGenerator<configuration_type>::propagate_update() {
 
 template<class configuration_type>
 void MultiLevelHMCGenerator<configuration_type>::dumpToH5(HighFive::File &file) {
-    HMCStack[0].dumpToH5(file, "/level0/ensembles");
+    HighFive::Group level0 = file.getGroup(file.getPath());
+    if (file.exist("level0")) {
+        level0 = file.getGroup("level0");
+    } else {
+        level0 = file.createGroup("level0");
+    }
+    HMCStack[0].dumpToH5(level0);
 }
 
 template<class configuration_type>
 void MultiLevelHMCGenerator<configuration_type>::dump_observable(
         double (BaseModel<configuration_type>::*observable_function_pointer)(const configuration_type &),
         const std::string &name, HighFive::File &file) {
+
     std::string l0{"level0/"};
     HMCStack[0].dump_observable(observable_function_pointer, l0.append(name), file);
 }

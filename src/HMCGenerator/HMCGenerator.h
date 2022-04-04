@@ -76,12 +76,7 @@ public:
      */
     void clear_ensembles();
 
-    /**
-     * @brief Dumps all data from \a model as attributes and \a ensembles as dataset to the H5 \p file at \p path
-     * @param file File to dump to
-     * @param path Path to dump to
-     */
-    void dumpToH5(HighFive::File &file, const std::string &path);
+    void dumpToH5(HighFive::Group &root, std::string sub_name = std::string("ensembles"));
 
     /**
      * @brief Dump the \p observable_function_pointer of the currently loaded ensemble to \p file at \p path
@@ -213,7 +208,7 @@ HMCGenerator<configuration_type>::HMCGenerator(BaseModel<configuration_type> &mo
     amount_of_steps = H5Easy::loadAttribute<size_t>(file, path, amount_of_steps_name);
     step_size = H5Easy::loadAttribute<double>(file, path, step_size_name);
 
-    model.load_ensemble(ensembles,file,path);
+    model.load_ensemble(ensembles, file, path);
 }
 
 template<class configuration_type>
@@ -223,7 +218,7 @@ HMCGenerator<configuration_type>::HMCGenerator(BaseModel<configuration_type> &mo
         :model{model_}, amount_of_steps{amount_of_steps_}, step_size{step_size_}, integrator{model_},
          generator{generator_} {
 
-    model.load_ensemble(ensembles,file,path);
+    model.load_ensemble(ensembles, file, path);
 }
 
 template<class configuration_type>
@@ -241,11 +236,19 @@ void HMCGenerator<configuration_type>::clear_ensembles() {
 }
 
 template<class configuration_type>
-void HMCGenerator<configuration_type>::dumpToH5(HighFive::File &file, const std::string &path) {
-    H5Easy::dump(file, path, ensembles);
-    H5Easy::dumpAttribute(file, path, amount_of_steps_name, amount_of_steps);
-    H5Easy::dumpAttribute(file, path, step_size_name, step_size);
-    model.dumpToH5(file, path);
+void HMCGenerator<configuration_type>::dumpToH5(HighFive::Group &root, std::string sub_name) {
+    auto path = root.getPath();
+    model.dumpToH5(root);
+
+    if (path.back() != '/') {
+        sub_name.insert(0, "/");
+
+    }
+    path.append(sub_name);
+    auto ensemble_dataset = H5Easy::dump(root.getFile(), path, ensembles);
+    ensemble_dataset.createAttribute(amount_of_steps_name, amount_of_steps);
+    ensemble_dataset.createAttribute(step_size_name, step_size);
+
 }
 
 template<class configuration_type>

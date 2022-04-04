@@ -141,12 +141,7 @@ public:
      */
     virtual configuration_type get_empty_field() = 0;
 
-    /**
-     * @brief Dumps all data as attributes to the H5 \p file at \p path
-     * @param file File to dump to
-     * @param path Path to dump to
-     */
-    virtual void dumpToH5(HighFive::File &file, const std::string &path);
+    virtual void dumpToH5(HighFive::Group &root);
 
     virtual void load_ensemble(std::vector<configuration_type> &target,HighFive::File &file, const std::string& path)=0;
 
@@ -210,9 +205,19 @@ void BaseModel<configuration_type>::print_name() {
 }
 
 template<class configuration_type>
-void BaseModel<configuration_type>::dumpToH5(HighFive::File &file, const std::string &path) {
-    H5Easy::dumpAttribute(file, path, beta_name, beta);
-    H5Easy::dumpAttribute(file, path, model_name_key, name);
+void BaseModel<configuration_type>::dumpToH5(HighFive::Group &root) {
+    if (root.hasAttribute(beta_name)){
+        HighFive::Attribute temp =root.getAttribute(beta_name);
+        temp.write(beta);//type should always be double, no size checks
+    }else{
+        root.createAttribute(beta_name,beta);
+    }
+    if (root.hasAttribute(model_name_key)){
+        HighFive::Attribute temp =root.getAttribute(model_name_key);
+        temp.write(name);
+    }else{
+        root.createAttribute(model_name_key,name);
+    }
 }
 
 

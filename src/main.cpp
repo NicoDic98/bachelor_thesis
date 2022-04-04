@@ -15,6 +15,7 @@
 #include <fstream>
 #include <iomanip>
 
+
 /**
  * @brief Tests the Leap Frog integrator
  */
@@ -168,7 +169,8 @@ void test_hmc_measurements() {
     HMCGenerator HMCTest(test, file, "/level0/ensembles", 8, 1. / 8, myengine);
     HighFive::File file_write_out(std::string(DATA_DIR).append("test_out.h5"),
                                   HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
-    HMCTest.dumpToH5(file_write_out, "/hello");
+    auto ead=file_write_out.getGroup(file_write_out.getPath());
+    HMCTest.dumpToH5(ead);
 }
 
 /**
@@ -182,5 +184,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_multi_level_hmc();
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     test_hmc_measurements();
-
 }
+
+

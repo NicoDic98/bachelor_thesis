@@ -284,16 +284,57 @@ VectorX IsingModel::get_empty_field() {
     return temp;
 }
 
-void IsingModel::dumpToH5(HighFive::File &file, const std::string &path) {
-    BaseModel<VectorX>::dumpToH5(file, path);
-    H5Easy::dumpAttribute(file, path, dimension_name, dimension);
-    H5Easy::dumpAttribute(file, path, grid_side_length_name, grid_side_length);
-    H5Easy::dumpAttribute(file, path, h_name, h);
-    H5Easy::dumpAttribute(file, path, eta_name, eta);
-    H5Easy::dumpAttribute(file, path, k_sym_name, k_sym);
-    H5Easy::dumpAttribute(file, path, k_rec_name, k_rec);
+void IsingModel::dumpToH5(HighFive::Group &root) {
+    BaseModel<VectorX>::dumpToH5(root);
+    if (root.hasAttribute(dimension_name)) {
+        HighFive::Attribute temp = root.getAttribute(dimension_name);
+        temp.write(dimension);
+    } else {
+        root.createAttribute(dimension_name, dimension);
+    }
+
+    if (root.hasAttribute(grid_side_length_name)) {
+        HighFive::Attribute temp = root.getAttribute(grid_side_length_name);
+        temp.write(grid_side_length);
+    } else {
+        root.createAttribute(grid_side_length_name, grid_side_length);
+    }
+
+    if (root.hasAttribute(h_name)) {
+        HighFive::Attribute temp = root.getAttribute(h_name);
+        temp.write(h);//TODO:check size, maybe use deleteAttribute
+    } else {
+        root.createAttribute(h_name, h);
+    }
+
+    if (root.hasAttribute(eta_name)) {
+        HighFive::Attribute temp = root.getAttribute(eta_name);
+        temp.write(eta);//TODO:check size, maybe use deleteAttribute
+    } else {
+        root.createAttribute(eta_name, eta);
+    }
+
+    if (root.hasAttribute(k_sym_name)) {
+        HighFive::Attribute temp = root.getAttribute(k_sym_name);
+        temp.write(k_sym);//TODO:check size, maybe use deleteAttribute
+    } else {
+        root.createAttribute(k_sym_name, k_sym);
+    }
+
+    if (root.hasAttribute(k_rec_name)) {
+        HighFive::Attribute temp = root.getAttribute(k_rec_name);
+        temp.write(k_rec);//TODO:check size, maybe use deleteAttribute
+    } else {
+        root.createAttribute(k_rec_name, k_rec);
+    }
+
     if (InterpolationMatrix.size() != 0) {
-        H5Easy::dumpAttribute(file, path, InterpolationMatrix_name, InterpolationMatrix);
+        if (root.hasAttribute(InterpolationMatrix_name)) {
+            HighFive::Attribute temp = root.getAttribute(InterpolationMatrix_name);
+            temp.write(InterpolationMatrix);//TODO:check size, maybe use deleteAttribute
+        } else {
+            root.createAttribute(InterpolationMatrix_name, InterpolationMatrix);
+        }
     }
 
 }
