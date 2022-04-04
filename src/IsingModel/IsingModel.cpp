@@ -67,12 +67,13 @@ IsingModel::IsingModel(const IsingModel &NewModel)
 [[maybe_unused]] IsingModel::IsingModel(HighFive::Group &root)
         : BaseModel<VectorX>(root, IsingModel_name),
           sqrt_beta{sqrt(get_beta())}, dimension{}, grid_side_length{}, FinerModel{*this} {
-    assert(name==IsingModel_name);
+    assert(name == IsingModel_name);
     root.getAttribute(dimension_name).read(dimension);
     root.getAttribute(grid_side_length_name).read(grid_side_length);
     root.getAttribute(h_name).read(h);
     root.getAttribute(eta_name).read(eta);
     root.getAttribute(k_sym_name).read(k_sym);
+    set_k_sym(k_sym);
     root.getAttribute(k_rec_name).read(k_rec);
 
     if (root.hasAttribute(InterpolationMatrix_name)) {

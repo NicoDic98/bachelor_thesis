@@ -82,6 +82,7 @@ public:
     BaseModel<configuration_type>::*observable_function_pointer)(const configuration_type &),
                          const std::string &name, HighFive::Group &root);
 
+    HighFive::DataSet get_dataset(HighFive::Group &root);
 
 private:
     /**
@@ -244,6 +245,11 @@ HighFive::DataSet HMCGenerator<configuration_type>::dumpToH5(HighFive::Group &ro
     ensemble_dataset.createAttribute(amount_of_steps_name, amount_of_steps);
     ensemble_dataset.createAttribute(step_size_name, step_size);
     return ensemble_dataset;
+}
+
+template<class configuration_type>
+HighFive::DataSet HMCGenerator<configuration_type>::get_dataset(HighFive::Group &root) {
+    return root.getDataSet(ensembles_name);
 }
 
 template<class configuration_type>

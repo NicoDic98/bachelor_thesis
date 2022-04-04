@@ -42,6 +42,10 @@ public:
                            const std::vector<size_t> &amount_of_steps_, const std::vector<double> &step_sizes_,
                            std::default_random_engine &generator_);
 
+    MultiLevelHMCGenerator(BaseModel<configuration_type> &model_,
+                           HighFive::File &file,
+                           std::default_random_engine &generator_);
+
     /**
      * @brief Generate \p amount_of_samples amount of ensembles, starting from \p phiStart and doing
      *        \p amount_of_thermalization_steps thermalization steps in advance
@@ -99,6 +103,7 @@ private:
      * @brief Interpolation type used to generate the coarser levels
      */
     InterpolationType inter_type;
+    static const char *inter_type_name;
 
     /**
      * @brief Random number generator to be used for the HMC process
@@ -119,12 +124,17 @@ private:
      * @brief Saves the Acceptance rate at each level
      */
     std::vector<double> AcceptanceRates;
+    static const char *AcceptanceRate_name;
 };
 
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::level_name{"level"};
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::nu_pre_name{"nu_pre"};
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::nu_post_name{"nu_post"};
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::gamma_name{"gamma"};
+template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::inter_type_name{
+        "inter_type"};
+template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::AcceptanceRate_name{
+        "AcceptanceRate"};
 
 
 template<class configuration_type>
@@ -157,6 +167,61 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
         HMCStack.push_back(HMCGenerator(*ModelStack[i], amount_of_steps_[i], step_sizes_[i], generator));
     }
 
+}
+
+template<class configuration_type>
+MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<configuration_type> &model_,
+                                                                   HighFive::File &file,
+                                                                   std::default_random_engine &generator_)
+        : gamma{}, generator{generator_}, AcceptanceRates{} {
+
+    std::string current_level_name{level_name};
+    current_level_name.append(std::to_string(0));
+    assert(file.exist(current_level_name));
+
+    HighFive::Group current_level = file.getGroup(current_level_name);
+
+    ModelStack.push_back(std::unique_ptr<BaseModel<configuration_type>>(model_.get_copy_of_model()));
+    HMCStack.push_back(HMCGenerator(model_, current_level, generator));
+    HighFive::DataSet current_level_dataset = HMCStack[0].get_dataset(current_level);
+
+    size_t buffer;
+    current_level_dataset.getAttribute(nu_pre_name).read(buffer);
+    nu_pre.push_back(buffer);
+    current_level_dataset.getAttribute(nu_post_name).read(buffer);
+    nu_post.push_back(buffer);
+    current_level_dataset.getAttribute(gamma_name).read(gamma);
+    assert(nu_pre[0] + nu_post[0] > 0);
+
+    for (int i = 1; i < 1000; ++i) {
+        current_level_name = level_name;
+        current_level_name.append(std::to_string(i));
+        if (!file.exist(current_level_name)) {
+            break;
+        }
+
+        current_level = file.getGroup(current_level_name);
+
+
+        ModelStack.push_back(
+                std::unique_ptr<BaseModel<configuration_type>>(
+                        (ModelStack[i - 1])->get_model_at(current_level)));
+        HMCStack.push_back(HMCGenerator(*ModelStack[i], current_level, generator));
+        current_level_dataset = HMCStack[i].get_dataset(current_level);
+
+        current_level_dataset.getAttribute(nu_pre_name).read(buffer);
+        nu_pre.push_back(buffer);
+        current_level_dataset.getAttribute(nu_post_name).read(buffer);
+        nu_post.push_back(buffer);
+        current_level_dataset.getAttribute(gamma_name).read(gamma);
+        int iBuffer;
+        current_level_dataset.getAttribute(inter_type_name).read(iBuffer);
+        inter_type = static_cast<InterpolationType>(iBuffer);
+        double dBuffer;
+        current_level_dataset.getAttribute(AcceptanceRate_name).read(dBuffer);
+        AcceptanceRates.push_back(dBuffer);
+        assert(nu_pre[i] + nu_post[i] > 0);
+    }
 }
 
 template<class configuration_type>
@@ -226,6 +291,8 @@ void MultiLevelHMCGenerator<configuration_type>::dumpToH5(HighFive::File &file) 
         ensemble_dataset.createAttribute(nu_pre_name, nu_pre[i]);
         ensemble_dataset.createAttribute(nu_post_name, nu_post[i]);
         ensemble_dataset.createAttribute(gamma_name, gamma);
+        ensemble_dataset.createAttribute(inter_type_name, static_cast<int>(inter_type));
+        ensemble_dataset.createAttribute(AcceptanceRate_name, AcceptanceRates[i]);
     }
 }
 
