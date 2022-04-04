@@ -76,7 +76,7 @@ public:
      */
     void clear_ensembles();
 
-    void dumpToH5(HighFive::Group &root, std::string sub_name = std::string("ensembles"));
+    void dumpToH5(HighFive::Group &root, std::string sub_name = std::string(ensembles_name));
 
     /**
      * @brief Dump the \p observable_function_pointer of the currently loaded ensemble to \p file at \p path
@@ -98,6 +98,8 @@ private:
      * @brief Model used in the HMC evolution
      */
     BaseModel<configuration_type> &model;
+
+    static const char *ensembles_name;
 
     /**
      * @brief Amount of molecular dynamic steps used in the integration process
@@ -131,6 +133,12 @@ private:
      */
     int accepted_configurations{0};
 };
+
+template<class configuration_type> const char *HMCGenerator<configuration_type>::amount_of_steps_name{
+        "amount_of_steps"};
+template<class configuration_type> const char *HMCGenerator<configuration_type>::step_size_name{"step_size"};
+template<class configuration_type> const char *HMCGenerator<configuration_type>::ensembles_name{"ensembles"};
+
 
 template<class configuration_type>
 configuration_type HMCGenerator<configuration_type>::do_HMC_step(const configuration_type &phi0) {
@@ -187,10 +195,6 @@ HMCGenerator<configuration_type>::generate_ensembles(const configuration_type &p
 
 
 }
-
-template<class configuration_type> const char *HMCGenerator<configuration_type>::amount_of_steps_name{
-        "amount_of_steps"};
-template<class configuration_type> const char *HMCGenerator<configuration_type>::step_size_name{"step_size"};
 
 template<class configuration_type>
 HMCGenerator<configuration_type>::HMCGenerator(BaseModel<configuration_type> &model_, size_t amount_of_steps_,

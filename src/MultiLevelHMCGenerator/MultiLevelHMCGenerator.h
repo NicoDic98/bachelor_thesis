@@ -200,6 +200,7 @@ void MultiLevelHMCGenerator<configuration_type>::propagate_update() {
 
 template<class configuration_type>
 void MultiLevelHMCGenerator<configuration_type>::dumpToH5(HighFive::File &file) {
+    //TODO
     HighFive::Group level0 = file.getGroup(file.getPath());
     if (file.exist("level0")) {
         level0 = file.getGroup("level0");
