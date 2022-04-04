@@ -159,13 +159,13 @@ void test_hmc_measurements() {
     std::string my_time{"04_04_2022__23_25_31_"};
     std::string filename{std::string(DATA_DIR).append(my_time).append(std::to_string(inverse_beta)).append(".h5")};
     HighFive::File file(filename, HighFive::File::ReadOnly);
-    auto helper = file.getGroup("level0");
+    auto helper = file.getGroup("level0");//todo see if this step can be removed to be needed
     IsingModel test(helper);
 
     std::default_random_engine myengine{42L};
     MultiLevelHMCGenerator mygen(test, file, myengine);
     HighFive::File out_file(std::string(DATA_DIR).append("out.h5"),
-                        HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
+                            HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
     mygen.dumpToH5(out_file);
     mygen.dump_observable(&BaseModel<VectorX>::get_magnetization, "magnetization", out_file);
 }
