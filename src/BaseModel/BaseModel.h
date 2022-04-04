@@ -35,7 +35,7 @@ public:
     BaseModel(const BaseModel<configuration_type> &NewModel) : beta{NewModel.beta}, name{NewModel.name} {}
 
     explicit BaseModel(HighFive::Group &root, const std::string &default_name_ = BaseModel_name)
-             :beta{}{
+            : beta{} {
         root.getAttribute(beta_name).read(beta);
         if (root.hasAttribute(model_name_key)) {
             root.getAttribute(model_name_key).read(name);
@@ -119,6 +119,8 @@ public:
      * @return Copy of the model
      */
     virtual BaseModel<configuration_type> *get_copy_of_model() = 0;
+
+    virtual BaseModel<configuration_type> *get_model_at(HighFive::Group &root) = 0;
 
     /**
      * @brief Update internal Fields with the d.o.f. field \p phi of the finer level

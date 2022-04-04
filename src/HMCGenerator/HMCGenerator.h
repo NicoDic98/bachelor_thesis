@@ -76,7 +76,7 @@ public:
      */
     void clear_ensembles();
 
-    void dumpToH5(HighFive::Group &root, std::string sub_name = ensembles_name);
+    HighFive::DataSet dumpToH5(HighFive::Group &root, std::string sub_name = ensembles_name);
 
     void dump_observable(double (
     BaseModel<configuration_type>::*observable_function_pointer)(const configuration_type &),
@@ -204,7 +204,7 @@ HMCGenerator<configuration_type>::HMCGenerator(BaseModel<configuration_type> &mo
                                                std::default_random_engine &generator_)
         :model{model_}, amount_of_steps{}, step_size{}, integrator{model_}, generator{generator_} {
 
-    auto ensembles_dataset=root.getDataSet(ensembles_name);
+    auto ensembles_dataset = root.getDataSet(ensembles_name);
     ensembles_dataset.getAttribute(amount_of_steps_name).read(amount_of_steps);
     ensembles_dataset.getAttribute(step_size_name).read(step_size);
 
@@ -217,7 +217,7 @@ HMCGenerator<configuration_type>::HMCGenerator(BaseModel<configuration_type> &mo
                                                double step_size_, std::default_random_engine &generator_)
         :model{model_}, amount_of_steps{amount_of_steps_}, step_size{step_size_}, integrator{model_},
          generator{generator_} {
-    auto ensembles_dataset=root.getDataSet(ensembles_name);
+    auto ensembles_dataset = root.getDataSet(ensembles_name);
     model.load_ensemble(ensembles, ensembles_dataset);
 }
 
@@ -236,14 +236,14 @@ void HMCGenerator<configuration_type>::clear_ensembles() {
 }
 
 template<class configuration_type>
-void HMCGenerator<configuration_type>::dumpToH5(HighFive::Group &root, std::string sub_name) {
+HighFive::DataSet HMCGenerator<configuration_type>::dumpToH5(HighFive::Group &root, std::string sub_name) {
     auto path = root.getPath();
     model.dumpToH5(root);
 
-    auto ensemble_dataset = root.createDataSet(sub_name,ensembles);
+    auto ensemble_dataset = root.createDataSet(sub_name, ensembles);
     ensemble_dataset.createAttribute(amount_of_steps_name, amount_of_steps);
     ensemble_dataset.createAttribute(step_size_name, step_size);
-
+    return ensemble_dataset;
 }
 
 template<class configuration_type>
@@ -261,7 +261,7 @@ void
 HMCGenerator<configuration_type>::dump_observable(
         double (BaseModel<configuration_type>::*observable_function_pointer)(const configuration_type &),
         const std::string &name, HighFive::Group &root) {
-    root.createDataSet(name,compute_observable(observable_function_pointer));
+    root.createDataSet(name, compute_observable(observable_function_pointer));
 }
 
 

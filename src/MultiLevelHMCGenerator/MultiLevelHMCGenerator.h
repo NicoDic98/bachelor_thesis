@@ -81,17 +81,19 @@ private:
      * @brief Amount of pre coarsening steps to take at each level
      */
     std::vector<size_t> nu_pre;
-
+    static const char *nu_pre_name;
 
     /**
      * @brief Amount of post coarsening steps to take at each level
      */
     std::vector<size_t> nu_post;
+    static const char *nu_post_name;
 
     /**
      * @brief Amount of repetitions at each level (determines if a 'V' or 'W' or ... cycle is performed)
      */
     size_t gamma;
+    static const char *gamma_name;
 
     /**
      * @brief Interpolation type used to generate the coarser levels
@@ -120,6 +122,9 @@ private:
 };
 
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::level_name{"level"};
+template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::nu_pre_name{"nu_pre"};
+template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::nu_post_name{"nu_post"};
+template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::gamma_name{"gamma"};
 
 
 template<class configuration_type>
@@ -217,7 +222,10 @@ void MultiLevelHMCGenerator<configuration_type>::dumpToH5(HighFive::File &file) 
         } else {
             current_level = file.createGroup(current_level_name);
         }
-        HMCStack[i].dumpToH5(current_level);
+        auto ensemble_dataset = HMCStack[i].dumpToH5(current_level);
+        ensemble_dataset.createAttribute(nu_pre_name, nu_pre[i]);
+        ensemble_dataset.createAttribute(nu_post_name, nu_post[i]);
+        ensemble_dataset.createAttribute(gamma_name, gamma);
     }
 }
 

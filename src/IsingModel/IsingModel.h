@@ -47,6 +47,7 @@ public:
      */
     IsingModel(const IsingModel &NewModel);
 
+
     [[maybe_unused]] explicit IsingModel(HighFive::Group &root);
 
 
@@ -112,6 +113,8 @@ public:
      * @return Copy of the model
      */
     IsingModel *get_copy_of_model() override;
+
+    IsingModel *get_model_at(HighFive::Group &root) override;
 
     /**
      * @brief Update internal Fields with the d.o.f. field \p phi of the finer level.

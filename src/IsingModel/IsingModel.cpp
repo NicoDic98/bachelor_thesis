@@ -67,6 +67,7 @@ IsingModel::IsingModel(const IsingModel &NewModel)
 [[maybe_unused]] IsingModel::IsingModel(HighFive::Group &root)
         : BaseModel<VectorX>(root, IsingModel_name),
           sqrt_beta{sqrt(get_beta())}, dimension{}, grid_side_length{}, FinerModel{*this} {
+    assert(name==IsingModel_name);
     root.getAttribute(dimension_name).read(dimension);
     root.getAttribute(grid_side_length_name).read(grid_side_length);
     root.getAttribute(h_name).read(h);
@@ -173,6 +174,10 @@ IsingModel *IsingModel::get_coarser_model(InterpolationType InterpolationType_) 
 
 IsingModel *IsingModel::get_copy_of_model() {
     return new IsingModel(*this);
+}
+
+IsingModel *IsingModel::get_model_at(HighFive::Group &root) {
+    return new IsingModel(root);
 }
 
 int
