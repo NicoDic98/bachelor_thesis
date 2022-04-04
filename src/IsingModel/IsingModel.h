@@ -141,6 +141,8 @@ public:
      */
     void dumpToH5(HighFive::File &file, const std::string& path) override;
 
+    void load_ensemble(std::vector<VectorX> &target,HighFive::File &file, const std::string& path) override;
+
 private:
     /**
      * @brief sqrt(Inverse temperature)

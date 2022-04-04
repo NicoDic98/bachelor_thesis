@@ -154,11 +154,21 @@ void test_multi_level_hmc() {
 }
 
 void test_hmc_measurements() {
-    double inverse_beta{0.6};
-    std::string my_time{"%d_%m_%Y__%H_%M_%S_"};
+    double inverse_beta{0.4};
+    std::string my_time{"03_04_2022__19_22_19_"};
     std::string filename{std::string(DATA_DIR).append(my_time)
                                  .append(std::to_string(inverse_beta)).append(".h5")};
+    HighFive::File file(filename, HighFive::File::ReadOnly);
+    IsingModel test(file, "/level0/ensembles");
 
+    VectorX phi0(64);
+    phi0.setRandom();
+    std::cout << test.get_action(phi0) << std::endl;
+    std::default_random_engine myengine{42L};
+    HMCGenerator HMCTest(test, file, "/level0/ensembles", 8, 1. / 8, myengine);
+    HighFive::File file_write_out(std::string(DATA_DIR).append("test_out.h5"),
+                                  HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
+    HMCTest.dumpToH5(file_write_out, "/hello");
 }
 
 /**
@@ -172,15 +182,5 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_multi_level_hmc();
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     test_hmc_measurements();
-    HighFive::File file(std::string(DATA_DIR).append("03_04_2022__19_22_19_0.400000.h5"),
-                        HighFive::File::ReadOnly);
-
-    try {
-        auto name = H5Easy::loadAttribute<double>(file, "/level0/ensembles", "name");
-        std::cout << name << std::endl;
-    }
-    catch (HighFive::AttributeException &) {
-        std::cout << "nope" << std::endl;
-    }
 
 }

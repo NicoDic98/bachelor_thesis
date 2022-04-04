@@ -148,6 +148,8 @@ public:
      */
     virtual void dumpToH5(HighFive::File &file, const std::string &path);
 
+    virtual void load_ensemble(std::vector<configuration_type> &target,HighFive::File &file, const std::string& path)=0;
+
     /**
      * @brief Prints the name of the model
      */

@@ -307,3 +307,22 @@ void IsingModel::set_k_sym(const MatrixX &k_sym_new) {
     k_sym = k_sym_new;
     k_sym_inverse = k_sym.inverse();
 }
+
+void IsingModel::load_ensemble(std::vector<VectorX> &target, HighFive::File &file, const std::string &path) {
+    const std::vector<size_t> shape{H5Easy::getShape(file, path)};
+    for (auto elem: shape) {
+        std::cout << elem << ',';
+    }
+    std::cout << std::endl;
+    target.resize(shape[0]);
+    auto temp = H5Easy::load<std::vector<std::vector<double>>>(file, path);
+
+    for (int i = 0; i < shape[0]; ++i) {
+        VectorX vec_temp(shape[1]);
+        vec_temp = VectorX::Map(&temp[i][0], vec_temp.size());
+        /*for (int j = 0; j < shape[1]; ++j) {
+            vec_temp(j) = temp[i][j];
+        }*/
+        target[i] = vec_temp;
+    }
+}

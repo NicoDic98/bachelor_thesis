@@ -33,6 +33,13 @@ public:
     HMCGenerator(BaseModel<configuration_type> &model_, size_t amount_of_steps_, double step_size_,
                  std::default_random_engine &generator_);
 
+    HMCGenerator(BaseModel<configuration_type> &model_, HighFive::File &file,
+                 const std::string &path, std::default_random_engine &generator_);
+
+    HMCGenerator(BaseModel<configuration_type> &model_, HighFive::File &file,
+                 const std::string &path, size_t amount_of_steps_, double step_size_,
+                 std::default_random_engine &generator_);
+
     /**
      * @brief Generate amount_of_samples amount of ensembles, starting from phiStart and doing
      *        amount_of_thermalization_steps thermalization steps in advance
@@ -55,7 +62,7 @@ public:
      * @brief Returns beta of the used model
      * @return Inverse Temperature
      */
-    double get_beta() const { return model.get_beta(); }
+    [[maybe_unused]] [[nodiscard]] double get_beta() const { return model.get_beta(); }
 
 
     /**
@@ -74,7 +81,7 @@ public:
      * @param file File to dump to
      * @param path Path to dump to
      */
-    void dumpToH5(HighFive::File &file, const std::string& path);
+    void dumpToH5(HighFive::File &file, const std::string &path);
 
     /**
      * @brief Dump the \p observable_function_pointer of the currently loaded ensemble to \p file at \p path
@@ -90,7 +97,7 @@ private:
      * @param phi0 Starting field
      * @return New field (after accept/reject)
      */
-    configuration_type do_HMC_step(const configuration_type &phi0);
+    configuration_type do_HMC_step([[maybe_unused]] const configuration_type &phi0);
 
     /**
      * @brief Model used in the HMC evolution
@@ -101,11 +108,13 @@ private:
      * @brief Amount of molecular dynamic steps used in the integration process
      */
     size_t amount_of_steps;
+    [[maybe_unused]] static const char *amount_of_steps_name;
 
     /**
      * @brief Step size to use in the molecular dynamics integration
      */
     double step_size;
+    [[maybe_unused]] static const char *step_size_name;
 
     /**
      * @brief Random number generator used for the conjugate momenta sampling
@@ -184,11 +193,37 @@ HMCGenerator<configuration_type>::generate_ensembles(const configuration_type &p
 
 }
 
+template<class configuration_type> const char *HMCGenerator<configuration_type>::amount_of_steps_name{
+        "amount_of_steps"};
+template<class configuration_type> const char *HMCGenerator<configuration_type>::step_size_name{"step_size"};
+
 template<class configuration_type>
 HMCGenerator<configuration_type>::HMCGenerator(BaseModel<configuration_type> &model_, size_t amount_of_steps_,
                                                double step_size_, std::default_random_engine &generator_)
         : model{model_}, amount_of_steps{amount_of_steps_}, step_size{step_size_}, integrator{model_},
           generator{generator_} {
+}
+
+template<class configuration_type>
+HMCGenerator<configuration_type>::HMCGenerator(BaseModel<configuration_type> &model_, HighFive::File &file,
+                                               const std::string &path,
+                                               std::default_random_engine &generator_)
+        :model{model_}, integrator{model_}, generator{generator_} {
+
+    amount_of_steps = H5Easy::loadAttribute<size_t>(file, path, amount_of_steps_name);
+    step_size = H5Easy::loadAttribute<double>(file, path, step_size_name);
+
+    model.load_ensemble(ensembles,file,path);
+}
+
+template<class configuration_type>
+HMCGenerator<configuration_type>::HMCGenerator(BaseModel<configuration_type> &model_, HighFive::File &file,
+                                               const std::string &path, size_t amount_of_steps_,
+                                               double step_size_, std::default_random_engine &generator_)
+        :model{model_}, amount_of_steps{amount_of_steps_}, step_size{step_size_}, integrator{model_},
+         generator{generator_} {
+
+    model.load_ensemble(ensembles,file,path);
 }
 
 template<class configuration_type>
@@ -206,8 +241,10 @@ void HMCGenerator<configuration_type>::clear_ensembles() {
 }
 
 template<class configuration_type>
-void HMCGenerator<configuration_type>::dumpToH5(HighFive::File &file, const std::string& path) {
+void HMCGenerator<configuration_type>::dumpToH5(HighFive::File &file, const std::string &path) {
     H5Easy::dump(file, path, ensembles);
+    H5Easy::dumpAttribute(file, path, amount_of_steps_name, amount_of_steps);
+    H5Easy::dumpAttribute(file, path, step_size_name, step_size);
     model.dumpToH5(file, path);
 }
 
