@@ -75,10 +75,13 @@ private:
      */
     configuration_type LevelRecursion(int level, const configuration_type &phi);
 
+    static const char *level_name;
+
     /**
      * @brief Amount of pre coarsening steps to take at each level
      */
     std::vector<size_t> nu_pre;
+
 
     /**
      * @brief Amount of post coarsening steps to take at each level
@@ -115,6 +118,9 @@ private:
      */
     std::vector<double> AcceptanceRates;
 };
+
+template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::level_name{"level"};
+
 
 template<class configuration_type>
 MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<configuration_type> &model_,
@@ -200,28 +206,38 @@ void MultiLevelHMCGenerator<configuration_type>::propagate_update() {
 
 template<class configuration_type>
 void MultiLevelHMCGenerator<configuration_type>::dumpToH5(HighFive::File &file) {
-    //TODO
-    HighFive::Group level0 = file.getGroup(file.getPath());
-    if (file.exist("level0")) {
-        level0 = file.getGroup("level0");
-    } else {
-        level0 = file.createGroup("level0");
+    for (int i = 0; i < HMCStack.size(); ++i) {
+        HighFive::Group current_level = file.getGroup(file.getPath());
+
+        std::string current_level_name{level_name};
+        current_level_name.append(std::to_string(i));
+
+        if (file.exist(current_level_name)) {
+            current_level = file.getGroup(current_level_name);
+        } else {
+            current_level = file.createGroup(current_level_name);
+        }
+        HMCStack[i].dumpToH5(current_level);
     }
-    HMCStack[0].dumpToH5(level0);
 }
 
 template<class configuration_type>
 void MultiLevelHMCGenerator<configuration_type>::dump_observable(
         double (BaseModel<configuration_type>::*observable_function_pointer)(const configuration_type &),
         const std::string &name, HighFive::File &file) {
+    for (int i = 0; i < HMCStack.size(); ++i) {
+        HighFive::Group current_level = file.getGroup(file.getPath());
 
-    HighFive::Group level0 = file.getGroup(file.getPath());
-    if (file.exist("level0")) {
-        level0 = file.getGroup("level0");
-    } else {
-        level0 = file.createGroup("level0");
+        std::string current_level_name{level_name};
+        current_level_name.append(std::to_string(i));
+
+        if (file.exist(current_level_name)) {
+            current_level = file.getGroup(current_level_name);
+        } else {
+            current_level = file.createGroup(current_level_name);
+        }
+        HMCStack[i].dump_observable(observable_function_pointer, name, current_level);
     }
-    HMCStack[0].dump_observable(observable_function_pointer, name, level0);
 }
 
 

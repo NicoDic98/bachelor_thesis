@@ -96,8 +96,6 @@ private:
      */
     BaseModel<configuration_type> &model;
 
-    static const char *ensembles_name;
-
     /**
      * @brief Amount of molecular dynamic steps used in the integration process
      */
@@ -124,6 +122,7 @@ private:
      * @brief Array of configurations
      */
     std::vector<configuration_type> ensembles;
+    static const char *ensembles_name;
 
     /**
      * @brief Amount of accepted configurations
@@ -250,7 +249,6 @@ void HMCGenerator<configuration_type>::dumpToH5(HighFive::Group &root, std::stri
 template<class configuration_type>
 std::vector<double> HMCGenerator<configuration_type>::compute_observable(
         double (BaseModel<configuration_type>::*observable_function_pointer)(const configuration_type &)) {
-    std::cout << ensembles.size() << std::endl;
     std::vector<double> ret(ensembles.size());
     for (int i = 0; i < ensembles.size(); ++i) {
         ret[i] = (model.*observable_function_pointer)(ensembles[i]);
