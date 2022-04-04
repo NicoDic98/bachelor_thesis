@@ -157,19 +157,21 @@ void test_multi_level_hmc() {
 void test_hmc_measurements() {
     double inverse_beta{0.4};
     std::string my_time{"03_04_2022__19_22_19_"};
-    std::string filename{std::string(DATA_DIR).append(my_time)
-                                 .append(std::to_string(inverse_beta)).append(".h5")};
+    std::string filename{std::string(DATA_DIR).append("test_out.h5")};
     HighFive::File file(filename, HighFive::File::ReadOnly);
-    IsingModel test(file, "/level0/ensembles");
+    auto helper=file.getGroup(file.getPath());
+    IsingModel test(helper);
 
     VectorX phi0(64);
     phi0.setRandom();
     std::cout << test.get_action(phi0) << std::endl;
     std::default_random_engine myengine{42L};
-    HMCGenerator HMCTest(test, file, "/level0/ensembles", 8, 1. / 8, myengine);
-    HighFive::File file_write_out(std::string(DATA_DIR).append("test_out.h5"),
+    HMCGenerator HMCTest(test, helper, 8, 1. / 8, myengine);
+    HighFive::File file_write_out(std::string(DATA_DIR).append("test_out2.h5"),
                                   HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
-    auto ead=file_write_out.getGroup(file_write_out.getPath());
+
+    auto ead=file_write_out.createGroup("level0");
+    test.dumpToH5(ead);
     HMCTest.dumpToH5(ead);
 }
 
@@ -181,9 +183,9 @@ void test_hmc_measurements() {
  */
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_leap_frog();
-    //test_multi_level_hmc();
+    test_multi_level_hmc();
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
-    test_hmc_measurements();
+    //test_hmc_measurements();
 }
 
 

@@ -19,12 +19,12 @@ const char *IsingModel::eta_name{"eta"};
 const char *IsingModel::k_sym_name{"k_sym"};
 const char *IsingModel::k_rec_name{"k_rec"};
 const char *IsingModel::InterpolationMatrix_name{"InterpolationMatrix"};
+const char *IsingModel::IsingModel_name{"IsingModel"};
 
-const char *Ising_name{"IsingModel"};
 
 IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, int dimension_,
                        int neighbour_extent_, int grid_size_)
-        : BaseModel<VectorX>(beta_, Ising_name), sqrt_beta{sqrt(beta_)}, h{std::move(h_)}, eta{std::move(eta_)},
+        : BaseModel<VectorX>(beta_, IsingModel_name), sqrt_beta{sqrt(beta_)}, h{std::move(h_)}, eta{std::move(eta_)},
           dimension{dimension_}, grid_side_length{grid_size_},
           k_sym(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)),
           k_rec(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)),
@@ -64,22 +64,21 @@ IsingModel::IsingModel(const IsingModel &NewModel)
     assert(check_internal_dimensions());
 }
 
-IsingModel::IsingModel(HighFive::File &file, const std::string &path)
-        : BaseModel<VectorX>(file, path, Ising_name),
-          sqrt_beta{sqrt(get_beta())}, FinerModel{*this} {
+[[maybe_unused]] IsingModel::IsingModel(HighFive::Group &root)
+        : BaseModel<VectorX>(root, IsingModel_name),
+          sqrt_beta{sqrt(get_beta())}, dimension{}, grid_side_length{}, FinerModel{*this} {
+    root.getAttribute(dimension_name).read(dimension);
+    root.getAttribute(grid_side_length_name).read(grid_side_length);
+    root.getAttribute(h_name).read(h);
+    root.getAttribute(eta_name).read(eta);
+    root.getAttribute(k_sym_name).read(k_sym);
+    root.getAttribute(k_rec_name).read(k_rec);
 
-    dimension = H5Easy::loadAttribute<int>(file, path, dimension_name);
-    grid_side_length = H5Easy::loadAttribute<int>(file, path, grid_side_length_name);
-    h = H5Easy::loadAttribute<VectorX>(file, path, h_name);
-    eta = H5Easy::loadAttribute<VectorX>(file, path, eta_name);
-    k_sym = H5Easy::loadAttribute<MatrixX>(file, path, k_sym_name);
-    k_rec = H5Easy::loadAttribute<MatrixX>(file, path, k_rec_name);
+    if (root.hasAttribute(InterpolationMatrix_name)) {
+        root.getAttribute(InterpolationMatrix_name).read(InterpolationMatrix);
+    } else {
 
-    try {//TODO: check if I can prevent the red lines
-        InterpolationMatrix = H5Easy::loadAttribute<MatrixX>(file, path, InterpolationMatrix_name);
-    } catch (HighFive::AttributeException &) {
     }
-
 }
 
 double IsingModel::get_action(const VectorX &phi) {
@@ -349,21 +348,15 @@ void IsingModel::set_k_sym(const MatrixX &k_sym_new) {
     k_sym_inverse = k_sym.inverse();
 }
 
-void IsingModel::load_ensemble(std::vector<VectorX> &target, HighFive::File &file, const std::string &path) {
-    const std::vector<size_t> shape{H5Easy::getShape(file, path)};
-    for (auto elem: shape) {
-        std::cout << elem << ',';
-    }
-    std::cout << std::endl;
+void IsingModel::load_ensemble(std::vector<VectorX> &target, HighFive::DataSet &root) {
+    const std::vector<size_t> shape{root.getDimensions()};
     target.resize(shape[0]);
-    auto temp = H5Easy::load<std::vector<std::vector<double>>>(file, path);
+    std::vector<std::vector<double>> temp;
+    root.read(temp);
 
     for (int i = 0; i < shape[0]; ++i) {
         VectorX vec_temp(shape[1]);
         vec_temp = VectorX::Map(&temp[i][0], vec_temp.size());
-        /*for (int j = 0; j < shape[1]; ++j) {
-            vec_temp(j) = temp[i][j];
-        }*/
         target[i] = vec_temp;
     }
 }

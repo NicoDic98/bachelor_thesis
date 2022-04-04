@@ -47,7 +47,7 @@ public:
      */
     IsingModel(const IsingModel &NewModel);
 
-    IsingModel(HighFive::File &file, const std::string &path);
+    [[maybe_unused]] explicit IsingModel(HighFive::Group &root);
 
 
     /**
@@ -136,7 +136,7 @@ public:
 
     void dumpToH5(HighFive::Group &root) override;
 
-    void load_ensemble(std::vector<VectorX> &target,HighFive::File &file, const std::string& path) override;
+    void load_ensemble(std::vector<VectorX> &target, HighFive::DataSet &root) override;
 
 private:
     /**
@@ -191,6 +191,8 @@ private:
      * @brief Reference to the next finer Level in Multi Level mode, otherwise reference to \c *this.
      */
     const IsingModel &FinerModel;
+
+    static const char *IsingModel_name;
 
     /**
      * @brief Fills the connectivity matrix \a k_sym for the given hyper cube of dimension \a dimension and side length \p grid_size

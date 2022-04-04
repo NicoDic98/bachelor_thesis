@@ -26,7 +26,7 @@ public:
      * @brief Most Basic constructor of BaseModel
      * @param beta_ Inverse temperature of the model
      */
-    explicit BaseModel(double beta_, std::string name_ = "BaseModel") : beta{beta_}, name{std::move(name_)} {}
+    explicit BaseModel(double beta_, std::string name_ = BaseModel_name) : beta{beta_}, name{std::move(name_)} {}
 
     /**
      * @brief Copy constructor of BaseModel
@@ -34,14 +34,14 @@ public:
      */
     BaseModel(const BaseModel<configuration_type> &NewModel) : beta{NewModel.beta}, name{NewModel.name} {}
 
-    BaseModel(HighFive::File &file, const std::string &path, const std::string &default_name_ = "BaseModel") {
-        beta = H5Easy::loadAttribute<double>(file, path, beta_name);
-        try {//TODO: check if I can prevent the red lines
-            name = H5Easy::loadAttribute<std::string>(file, path, model_name_key);
-        } catch (HighFive::AttributeException &) {
+    explicit BaseModel(HighFive::Group &root, const std::string &default_name_ = BaseModel_name)
+             :beta{}{
+        root.getAttribute(beta_name).read(beta);
+        if (root.hasAttribute(model_name_key)) {
+            root.getAttribute(model_name_key).read(name);
+        } else {
             name = default_name_;
         }
-
     }
 
     /**
@@ -143,7 +143,8 @@ public:
 
     virtual void dumpToH5(HighFive::Group &root);
 
-    virtual void load_ensemble(std::vector<configuration_type> &target,HighFive::File &file, const std::string& path)=0;
+    virtual void
+    load_ensemble(std::vector<configuration_type> &target, HighFive::DataSet &root) = 0;
 
     /**
      * @brief Prints the name of the model
@@ -161,6 +162,7 @@ protected:
 
     static const char *beta_name;
     static const char *model_name_key;
+    static const char *BaseModel_name;
 
     std::string name;
 
@@ -173,6 +175,7 @@ private:
 
 template<class configuration_type> const char *BaseModel<configuration_type>::beta_name{"beta"};
 template<class configuration_type> const char *BaseModel<configuration_type>::model_name_key{"model"};
+template<class configuration_type> const char *BaseModel<configuration_type>::BaseModel_name{"BaseModel"};
 
 template<class configuration_type>
 inline double BaseModel<configuration_type>::get_beta() const {
@@ -206,17 +209,17 @@ void BaseModel<configuration_type>::print_name() {
 
 template<class configuration_type>
 void BaseModel<configuration_type>::dumpToH5(HighFive::Group &root) {
-    if (root.hasAttribute(beta_name)){
-        HighFive::Attribute temp =root.getAttribute(beta_name);
+    if (root.hasAttribute(beta_name)) {
+        HighFive::Attribute temp = root.getAttribute(beta_name);
         temp.write(beta);//type should always be double, no size checks
-    }else{
-        root.createAttribute(beta_name,beta);
+    } else {
+        root.createAttribute(beta_name, beta);
     }
-    if (root.hasAttribute(model_name_key)){
-        HighFive::Attribute temp =root.getAttribute(model_name_key);
+    if (root.hasAttribute(model_name_key)) {
+        HighFive::Attribute temp = root.getAttribute(model_name_key);
         temp.write(name);
-    }else{
-        root.createAttribute(model_name_key,name);
+    } else {
+        root.createAttribute(model_name_key, name);
     }
 }
 
