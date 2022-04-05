@@ -147,7 +147,7 @@ void test_multi_level_hmc() {
         HighFive::File file(filename,
                             HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
         mygen.dumpToH5(file);
-        mygen.dump_observable(&BaseModel<VectorX>::get_magnetization, "magn", file);
+        //mygen.dump_observable(&BaseModel<VectorX>::get_magnetization, "magnetization", file);
 
     }
 
