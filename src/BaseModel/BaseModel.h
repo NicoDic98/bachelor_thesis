@@ -11,6 +11,7 @@
 #define BACHELOR_THESIS_BASEMODEL_H
 
 #include <iostream>
+//TODO: change to #include <highfive/H5File.hpp>, and change alongside to the rowmajor writing
 #include <highfive/H5Easy.hpp>
 #include <utility>
 

@@ -113,22 +113,21 @@ double IsingModel::get_magnetization_squared(const VectorX &phi) {
 
     double m_squared{0.};
     VectorX k_sym_inv_h{k_sym_inverse * h};
-    MatrixX phi_phi(phi.rows(),phi.rows());
-    MatrixX phi_k_sym_inv_h(phi.rows(),phi.rows());
-    MatrixX k_sym_inv_h_k_sym_inv_h(phi.rows(),phi.rows());
-
+    MatrixX phi_phi(phi.rows(), phi.rows());
+    MatrixX phi_k_sym_inv_h(phi.rows(), phi.rows());
+    MatrixX k_sym_inv_h_k_sym_inv_h(phi.rows(), phi.rows());
 
 
     for (int i = 0; i < phi.rows(); ++i) {
         for (int j = 0; j < phi.rows(); ++j) {
-            phi_phi(i,j)=phi(i)*phi(j);
-            phi_k_sym_inv_h(i,j)=phi(i)*k_sym_inv_h(j);
-            k_sym_inv_h_k_sym_inv_h(i,j)=k_sym_inv_h(i)*k_sym_inv_h(j);
+            phi_phi(i, j) = phi(i) * phi(j);
+            phi_k_sym_inv_h(i, j) = phi(i) * k_sym_inv_h(j);
+            k_sym_inv_h_k_sym_inv_h(i, j) = k_sym_inv_h(i) * k_sym_inv_h(j);
         }
     }
     m_squared -= k_sym_inverse.sum() / get_beta();
     m_squared += phi_phi.sum() / get_beta();
-    m_squared -= 2*phi_k_sym_inv_h.sum() / sqrt_beta;
+    m_squared -= 2 * phi_k_sym_inv_h.sum() / sqrt_beta;
     m_squared += k_sym_inv_h_k_sym_inv_h.sum();
 
     return m_squared / static_cast<double>(phi.rows() * phi.rows());
@@ -389,10 +388,10 @@ void IsingModel::set_k_sym(const MatrixX &k_sym_new) {
     k_sym_inverse = k_sym.inverse();
 }
 
-void IsingModel::load_ensemble(std::vector <VectorX> &target, HighFive::DataSet &root) {
-    const std::vector <size_t> shape{root.getDimensions()};
+void IsingModel::load_ensemble(std::vector<VectorX> &target, HighFive::DataSet &root) {
+    const std::vector<size_t> shape{root.getDimensions()};
     target.resize(shape[0]);
-    std::vector <std::vector<double>> temp;
+    std::vector<std::vector<double>> temp;
     root.read(temp);
 
     for (int i = 0; i < shape[0]; ++i) {

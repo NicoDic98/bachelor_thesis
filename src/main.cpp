@@ -107,7 +107,7 @@ void test_HMC(const std::string &filename) {
 
 
 void test_multi_level_hmc() {
-    const int grid_size = 8;
+    const int grid_size = 4;
     const int dim = 2;
     const int lambda = int_pow(grid_size, dim);
     const double C{0.1};
@@ -154,13 +154,55 @@ void test_multi_level_hmc() {
 
 }
 
+void MultiLevelTime() {
+    const int grid_size = 8;
+    const int dim = 2;
+    const int lambda = int_pow(grid_size, dim);
+    const double C{0.1};
+    const double beta{1. / 0.8};
+
+    VectorX phi0(lambda);
+    phi0.setZero();
+    VectorX h0(lambda);
+    h0.setZero();
+    VectorX eta0(lambda);
+    eta0.setZero();
+    std::default_random_engine myengine{42L};
+
+    IsingModel test(beta, h0, eta0, C, dim, 1, grid_size);
+
+
+    auto t = std::time(nullptr);
+    auto tm = *std::localtime(&t);
+    std::ostringstream oss;
+    oss << std::put_time(&tm, "%d_%m_%Y__%H_%M_%S_");
+    std::string my_time{oss.str()};
+    auto my_test=test.get_coarser_model(InterpolationType::Checkerboard);
+    my_test->print_interpolation_matrix();
+    my_test->print_connectivity_matrix();
+
+    MultiLevelHMCGenerator mygen(test, {1, 2, 3}, {1, 2, 3}, 2, InterpolationType::Checkerboard, {8, 12, 16},
+                                 {1. / 8, 1. / 12, 1. / 16},
+                                 myengine);
+    std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 10000, 1000);
+    for (auto acceptance_rate: acceptance_rates) {
+        std::cout << "Acceptance rate:" << acceptance_rate << std::endl;
+    }
+    std::string filename{std::string(DATA_DIR).append(my_time).append(std::to_string(1. / beta)).append(".h5")};
+    HighFive::File file(filename, HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
+    mygen.dumpToH5(file);
+}
+
 void test_hmc_measurements() {
-    double inverse_beta{0.3};
-    std::string my_time{"04_04_2022__23_25_31_"};
+    double inverse_beta{0.8};
+    std::string my_time{"05_04_2022__18_36_13_"};
     std::string filename{std::string(DATA_DIR).append(my_time).append(std::to_string(inverse_beta)).append(".h5")};
     HighFive::File file(filename, HighFive::File::ReadOnly);
     auto helper = file.getGroup("level0");//todo see if this step can be removed to be needed
     IsingModel test(helper);
+    auto my_test=test.get_coarser_model(InterpolationType::Checkerboard);
+    my_test->print_interpolation_matrix();
+    my_test->print_connectivity_matrix();
 
     std::default_random_engine myengine{42L};
     MultiLevelHMCGenerator mygen(test, file, myengine);
@@ -179,9 +221,10 @@ void test_hmc_measurements() {
  */
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_leap_frog();
-    test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
-    test_multi_level_hmc();
+    //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
+    //test_multi_level_hmc();
     //test_hmc_measurements();
+    MultiLevelTime();
 }
 
 

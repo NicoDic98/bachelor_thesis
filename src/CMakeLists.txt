@@ -23,7 +23,7 @@ find_package(HDF5)
 FetchContent_Declare(
         HighFive
         GIT_REPOSITORY https://github.com/BlueBrain/HighFive.git
-        GIT_TAG 5db7df453cd32811cd63b75627236cf13d337b66
+        GIT_TAG 34bbc607182b8eab3f5dee539e428cfe403542f6
 )
 FetchContent_MakeAvailable(HighFive)
 set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} "${highfive_SOURCE_DIR}/include")
