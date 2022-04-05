@@ -168,6 +168,7 @@ void test_hmc_measurements() {
                             HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
     mygen.dumpToH5(out_file);
     mygen.dump_observable(&BaseModel<VectorX>::get_magnetization, "magnetization", out_file);
+    mygen.dump_observable(&BaseModel<VectorX>::get_magnetization_squared, "magnetization_squared", out_file);
 }
 
 /**

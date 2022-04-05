@@ -65,6 +65,12 @@ public:
      */
     double get_magnetization(const VectorX &phi) override;
 
+    double get_magnetization_squared(const VectorX &phi) override;
+
+    double get_energy(const VectorX &phi) override;
+
+    double get_energy_squared(const VectorX &phi) override;
+
     /**
      * @brief Prints out the connectivity matrix
      */

@@ -75,6 +75,12 @@ public:
      */
     virtual double get_magnetization(const configuration_type &phi) { return 0; }
 
+    virtual double get_magnetization_squared(const configuration_type &phi) { return 0; }
+
+    virtual double get_energy(const configuration_type &phi) { return 0; }
+
+    virtual double get_energy_squared(const configuration_type &phi) { return 0; }
+
 
     /**
      * @brief Checks the dimensions of internal vectors and matrices with regard to the given field phi
