@@ -177,7 +177,7 @@ void MultiLevelTime() {
     std::ostringstream oss;
     oss << std::put_time(&tm, "%d_%m_%Y__%H_%M_%S_");
     std::string my_time{oss.str()};
-    auto my_test=test.get_coarser_model(InterpolationType::Checkerboard);
+    auto my_test = test.get_coarser_model(InterpolationType::Checkerboard);
     my_test->print_interpolation_matrix();
     my_test->print_connectivity_matrix();
 
@@ -200,9 +200,6 @@ void test_hmc_measurements() {
     HighFive::File file(filename, HighFive::File::ReadOnly);
     auto helper = file.getGroup("level0");//todo see if this step can be removed to be needed
     IsingModel test(helper);
-    auto my_test=test.get_coarser_model(InterpolationType::Checkerboard);
-    my_test->print_interpolation_matrix();
-    my_test->print_connectivity_matrix();
 
     std::default_random_engine myengine{42L};
     MultiLevelHMCGenerator mygen(test, file, myengine);
@@ -211,6 +208,24 @@ void test_hmc_measurements() {
     mygen.dumpToH5(out_file);
     mygen.dump_observable(&BaseModel<VectorX>::get_magnetization, "magnetization", out_file);
     mygen.dump_observable(&BaseModel<VectorX>::get_magnetization_squared, "magnetization_squared", out_file);
+}
+
+void matrix_testing() {
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> a{{1, 2},
+                                                                             {3, 4}};
+    std::cout << a << std::endl;
+    std::vector<double> b(a.data(), a.data() + a.size());
+    for (auto elem: b) {
+        std::cout << elem << std::endl;
+    }
+    std::vector<std::vector<double>> c{{1, 2},
+                                       {3, 4}};
+    MatrixX d(2, 2);
+    d.row(0) = VectorX::Map(c[0].data(), 2);
+    d.row(1) = VectorX::Map(c[1].data(), 2);
+    std::cout << d << std::endl;
+    c[0][0] = 42;
+    std::cout << d << std::endl;
 }
 
 /**
@@ -224,7 +239,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     //test_multi_level_hmc();
     //test_hmc_measurements();
-    MultiLevelTime();
+    //MultiLevelTime();
+    matrix_testing();
 }
 
 
