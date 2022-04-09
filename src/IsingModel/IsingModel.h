@@ -159,6 +159,9 @@ private:
     int dimension;
     static const char *dimension_name;
 
+    int neighbour_extent;
+    static const char *neighbour_extent_name;
+
     /**
      * @brief Side length of the hypercube
      */
@@ -176,6 +179,9 @@ private:
      */
     VectorX eta;
     static const char *eta_name;
+
+    double connectivity_offset;
+    static const char *connectivity_offset_name;
 
     /**
      * @brief Symmetric connectivity matrix

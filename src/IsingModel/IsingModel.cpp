@@ -14,8 +14,10 @@
 
 const char *IsingModel::dimension_name{"dimension"};
 const char *IsingModel::grid_side_length_name{"grid_side_length"};
+const char *IsingModel::neighbour_extent_name{"neighbour_extent"};
 const char *IsingModel::h_name{"h"};
 const char *IsingModel::eta_name{"eta"};
+const char *IsingModel::connectivity_offset_name{"connectivity_offset"};
 const char *IsingModel::k_sym_name{"k_sym"};
 const char *IsingModel::k_rec_name{"k_rec"};
 const char *IsingModel::InterpolationMatrix_name{"InterpolationMatrix"};
@@ -24,8 +26,9 @@ const char *IsingModel::IsingModel_name{"IsingModel"};
 
 IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, int dimension_,
                        int neighbour_extent_, int grid_size_)
-        : BaseModel<VectorX>(beta_, IsingModel_name), sqrt_beta{sqrt(beta_)}, h{std::move(h_)}, eta{std::move(eta_)},
-          dimension{dimension_}, grid_side_length{grid_size_},
+        : BaseModel<VectorX>(beta_, IsingModel_name), sqrt_beta{sqrt(beta_)}, h{std::move(h_)},
+          eta{std::move(eta_)}, connectivity_offset{offset_},
+          dimension{dimension_}, neighbour_extent{neighbour_extent_}, grid_side_length{grid_size_},
           k_sym(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)),
           k_rec(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)),
           InterpolationMatrix{}, FinerModel{*this} {
@@ -39,7 +42,8 @@ IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, i
 
 IsingModel::IsingModel(const IsingModel &NewModel, InterpolationType InterpolationType_)
         : BaseModel<VectorX>(NewModel), sqrt_beta{sqrt(NewModel.get_beta())}, h{NewModel.h},
-          eta{NewModel.eta}, dimension{NewModel.dimension}, grid_side_length{NewModel.grid_side_length},
+          eta{NewModel.eta}, connectivity_offset{NewModel.connectivity_offset}, dimension{NewModel.dimension},
+          neighbour_extent{NewModel.neighbour_extent}, grid_side_length{NewModel.grid_side_length},
           InterpolationMatrix{}, FinerModel{NewModel} {
     std::cout << "Isingmodel Interpolation constructor called" << std::endl;
     assert(FinerModel.check_internal_dimensions());
@@ -55,7 +59,8 @@ IsingModel::IsingModel(const IsingModel &NewModel, InterpolationType Interpolati
 
 IsingModel::IsingModel(const IsingModel &NewModel)
         : BaseModel<VectorX>(NewModel), sqrt_beta{sqrt(NewModel.get_beta())}, h{NewModel.h},
-          eta{NewModel.eta}, dimension{NewModel.dimension}, grid_side_length{NewModel.grid_side_length},
+          eta{NewModel.eta}, connectivity_offset{NewModel.connectivity_offset}, dimension{NewModel.dimension},
+          neighbour_extent{NewModel.neighbour_extent}, grid_side_length{NewModel.grid_side_length},
           k_sym(NewModel.k_sym.rows(), NewModel.k_sym.cols()), k_rec{NewModel.k_rec},
           InterpolationMatrix{NewModel.InterpolationMatrix}, FinerModel{*this} {
     std::cout << "Isingmodel copy constructor called" << std::endl;
@@ -66,12 +71,15 @@ IsingModel::IsingModel(const IsingModel &NewModel)
 
 [[maybe_unused]] IsingModel::IsingModel(HighFive::Group &root)
         : BaseModel<VectorX>(root, IsingModel_name),
-          sqrt_beta{sqrt(get_beta())}, dimension{}, grid_side_length{}, FinerModel{*this} {
+          sqrt_beta{sqrt(get_beta())}, dimension{}, neighbour_extent{}, grid_side_length{}, connectivity_offset{},
+          FinerModel{*this} {
     assert(name == IsingModel_name);
     root.getAttribute(dimension_name).read(dimension);
+    root.getAttribute(neighbour_extent_name).read(neighbour_extent);
     root.getAttribute(grid_side_length_name).read(grid_side_length);
     root.getAttribute(h_name).read(h);
     root.getAttribute(eta_name).read(eta);
+    root.getAttribute(connectivity_offset_name).read(connectivity_offset);
     root.getAttribute(k_sym_name).read(k_sym);
     set_k_sym(k_sym);
     root.getAttribute(k_rec_name).read(k_rec);
@@ -134,8 +142,8 @@ double IsingModel::get_magnetization_squared(const VectorX &phi) {
 }
 
 double IsingModel::get_energy(const VectorX &phi) {
-
-    return 0;
+    double e{0.};
+    return e;
 }
 
 double IsingModel::get_energy_squared(const VectorX &phi) {
@@ -332,6 +340,13 @@ void IsingModel::dumpToH5(HighFive::Group &root) {
         root.createAttribute(dimension_name, dimension);
     }
 
+    if (root.hasAttribute(neighbour_extent_name)) {
+        HighFive::Attribute temp = root.getAttribute(neighbour_extent_name);
+        temp.write(neighbour_extent);
+    } else {
+        root.createAttribute(neighbour_extent_name, neighbour_extent);
+    }
+
     if (root.hasAttribute(grid_side_length_name)) {
         HighFive::Attribute temp = root.getAttribute(grid_side_length_name);
         temp.write(grid_side_length);
@@ -351,6 +366,13 @@ void IsingModel::dumpToH5(HighFive::Group &root) {
         temp.write(eta);//TODO:check size, maybe use deleteAttribute
     } else {
         root.createAttribute(eta_name, eta);
+    }
+
+    if (root.hasAttribute(connectivity_offset_name)) {
+        HighFive::Attribute temp = root.getAttribute(connectivity_offset_name);
+        temp.write(connectivity_offset);
+    } else {
+        root.createAttribute(connectivity_offset_name, connectivity_offset);
     }
 
     if (root.hasAttribute(k_sym_name)) {
