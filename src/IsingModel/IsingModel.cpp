@@ -143,12 +143,41 @@ double IsingModel::get_magnetization_squared(const VectorX &phi) {
 
 double IsingModel::get_energy(const VectorX &phi) {
     double e{0.};
+
+    e += 0.5 * h.transpose() * k_sym_inverse * h;
+
+    e -= 0.5 / sqrt_beta * h.transpose() * phi;
+
+    VectorX var_phi{k_rec * phi};
+    VectorX temp{eta + sqrt_beta * var_phi};
+    for (int i = 0; i < var_phi.rows(); ++i) {
+        temp(i) = tanh(temp(i)) * var_phi(i);
+    }
+    e -= 0.5 * temp.sum() / sqrt_beta;
+
+    e /= static_cast<double >(phi.rows());
+    e += 0.5 * connectivity_offset;
     return e;
 }
 
 double IsingModel::get_energy_squared(const VectorX &phi) {
+    double e_squared{0.};
 
-    return 0;
+    e_squared += 1. / (sqrt_beta) * h.transpose() * phi;
+
+    VectorX var_phi{k_rec * phi};
+    VectorX temp{eta + sqrt_beta * var_phi};
+    for (int i = 0; i < var_phi.rows(); ++i) {
+        temp(i) = tanh(temp(i)) * var_phi(i) / sqrt_beta
+                  - var_phi(i) * var_phi(i) / pow(cos(temp(i)), 2);
+    }
+    e_squared += temp.sum();
+
+    e_squared *= 0.25 / (static_cast<double>(phi.rows()) * get_beta());
+
+    e_squared += pow(get_energy(phi), 2);
+
+    return e_squared;
 }
 
 void IsingModel::fill_connectivity_matrix(int neighbour_extent, int grid_size) {
