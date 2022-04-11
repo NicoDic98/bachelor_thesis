@@ -77,15 +77,15 @@ IsingModel::IsingModel(const IsingModel &NewModel)
     root.getAttribute(dimension_name).read(dimension);
     root.getAttribute(neighbour_extent_name).read(neighbour_extent);
     root.getAttribute(grid_side_length_name).read(grid_side_length);
-    root.getAttribute(h_name).read(h);
-    root.getAttribute(eta_name).read(eta);
+    ReadVectorX(h, root, h_name);
+    ReadVectorX(eta, root, eta_name);
     root.getAttribute(connectivity_offset_name).read(connectivity_offset);
-    root.getAttribute(k_sym_name).read(k_sym);
+    ReadMatrixX(k_sym, root, k_sym_name);
     set_k_sym(k_sym);
-    root.getAttribute(k_rec_name).read(k_rec);
+    ReadMatrixX(k_rec, root, k_rec_name);
 
     if (root.hasAttribute(InterpolationMatrix_name)) {
-        root.getAttribute(InterpolationMatrix_name).read(InterpolationMatrix);
+        ReadMatrixX(InterpolationMatrix, root, InterpolationMatrix_name);
     } else {
 
     }
@@ -383,19 +383,9 @@ void IsingModel::dumpToH5(HighFive::Group &root) {
         root.createAttribute(grid_side_length_name, grid_side_length);
     }
 
-    if (root.hasAttribute(h_name)) {
-        HighFive::Attribute temp = root.getAttribute(h_name);
-        temp.write(h);//TODO:check size, maybe use deleteAttribute
-    } else {
-        root.createAttribute(h_name, h);
-    }
+    WriteVectorX(h, root, h_name);
 
-    if (root.hasAttribute(eta_name)) {
-        HighFive::Attribute temp = root.getAttribute(eta_name);
-        temp.write(eta);//TODO:check size, maybe use deleteAttribute
-    } else {
-        root.createAttribute(eta_name, eta);
-    }
+    WriteVectorX(eta, root, eta_name);
 
     if (root.hasAttribute(connectivity_offset_name)) {
         HighFive::Attribute temp = root.getAttribute(connectivity_offset_name);
@@ -404,27 +394,11 @@ void IsingModel::dumpToH5(HighFive::Group &root) {
         root.createAttribute(connectivity_offset_name, connectivity_offset);
     }
 
-    if (root.hasAttribute(k_sym_name)) {
-        HighFive::Attribute temp = root.getAttribute(k_sym_name);
-        temp.write(k_sym);//TODO:check size, maybe use deleteAttribute
-    } else {
-        root.createAttribute(k_sym_name, k_sym);
-    }
-
-    if (root.hasAttribute(k_rec_name)) {
-        HighFive::Attribute temp = root.getAttribute(k_rec_name);
-        temp.write(k_rec);//TODO:check size, maybe use deleteAttribute
-    } else {
-        root.createAttribute(k_rec_name, k_rec);
-    }
+    WriteMatrixX(k_sym, root, k_sym_name);
+    WriteMatrixX(k_rec, root, k_rec_name);
 
     if (InterpolationMatrix.size() != 0) {
-        if (root.hasAttribute(InterpolationMatrix_name)) {
-            HighFive::Attribute temp = root.getAttribute(InterpolationMatrix_name);
-            temp.write(InterpolationMatrix);//TODO:check size, maybe use deleteAttribute
-        } else {
-            root.createAttribute(InterpolationMatrix_name, InterpolationMatrix);
-        }
+        WriteMatrixX(InterpolationMatrix, root, InterpolationMatrix_name);
     }
 
 }
@@ -453,5 +427,52 @@ void IsingModel::load_ensemble(std::vector<VectorX> &target, HighFive::DataSet &
 }
 
 HighFive::DataSet IsingModel::dump_ensemble(std::vector<VectorX> &target, HighFive::Group &root, std::string sub_name) {
+    HighFive::DataSet target_dataset;
+    std::vector<size_t> offset{0, 0};
+    std::vector<size_t> count{1, 0};
+    if (root.exist(sub_name)) {
+        target_dataset = root.getDataSet(sub_name);
+        const std::vector<size_t> shape{target_dataset.getDimensions()};
 
+        if (shape.size() == 2) {
+            if (shape[1] != target[0].rows()) {
+                std::cerr << "Vector sizes not matching\n";
+                exit(-1);
+            }
+            offset[0] = shape[0];
+            count[1] = shape[1];
+            target_dataset.resize({shape[0] + target.size(), shape[1]});
+
+        } else if (shape.size() == 3) {
+            if (shape[2] != 1) {
+                std::cerr << "Shapes not matching\n";
+                exit(-1);
+            }
+            if (shape[1] != target[0].rows()) {
+                std::cerr << "Vector sizes not matching\n";
+                exit(-1);
+            }
+            //TODO
+
+        } else {
+            std::cerr << "Can't extend dataset\n";
+            exit(-1);
+        }
+
+    } else {
+        auto my_dataspace = HighFive::DataSpace(
+                {target.size(), static_cast<unsigned long>(target[0].rows())},
+                {HighFive::DataSpace::UNLIMITED, static_cast<unsigned long>(target[0].rows())});
+        HighFive::DataSetCreateProps props;
+        props.add(HighFive::Chunking({1, static_cast<unsigned long>(target[0].rows())}));
+        target_dataset = root.createDataSet(sub_name, my_dataspace,
+                                            HighFive::create_datatype<double>(), props);
+        count[1] = target[0].rows();
+    }
+    for (auto & elem : target) {
+        target_dataset.select(offset,count).write_raw(elem.data());
+        offset[0]++;
+    }
+
+    return target_dataset;
 }

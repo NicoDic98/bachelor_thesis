@@ -195,7 +195,7 @@ void MultiLevelTime() {
 
 void test_hmc_measurements() {
     double inverse_beta{0.8};
-    std::string my_time{"05_04_2022__18_36_13_"};
+    std::string my_time{"05_04_2022__12_47_58_"};
     std::string filename{std::string(DATA_DIR).append(my_time).append(std::to_string(inverse_beta)).append(".h5")};
     HighFive::File file(filename, HighFive::File::ReadOnly);
     auto helper = file.getGroup("level0");//todo see if this step can be removed to be needed
@@ -210,24 +210,6 @@ void test_hmc_measurements() {
     mygen.dump_observable(&BaseModel<VectorX>::get_magnetization_squared, "magnetization_squared", out_file);
 }
 
-void matrix_testing() {
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> a{{1, 2},
-                                                                             {3, 4}};
-    std::cout << a << std::endl;
-    std::vector<double> b(a.data(), a.data() + a.size());
-    for (auto elem: b) {
-        std::cout << elem << std::endl;
-    }
-    std::vector<std::vector<double>> c{{1, 2},
-                                       {3, 4}};
-    MatrixX d(2, 2);
-    d.row(0) = VectorX::Map(c[0].data(), 2);
-    d.row(1) = VectorX::Map(c[1].data(), 2);
-    std::cout << d << std::endl;
-    c[0][0] = 42;
-    std::cout << d << std::endl;
-}
-
 /**
  * @brief Main function
  * @param argc
@@ -238,9 +220,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_leap_frog();
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     //test_multi_level_hmc();
-    //test_hmc_measurements();
+    test_hmc_measurements();
     //MultiLevelTime();
-    matrix_testing();
 }
 
 
