@@ -146,6 +146,7 @@ public:
     void dumpToH5(HighFive::Group &root) override;
 
     void load_ensemble(std::vector<VectorX> &target, HighFive::DataSet &root) override;
+    HighFive::DataSet dump_ensemble(std::vector<VectorX> &target, HighFive::Group &root, std::string sub_name) override;
 
 private:
     /**

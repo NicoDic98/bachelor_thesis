@@ -11,8 +11,7 @@
 #define BACHELOR_THESIS_BASEMODEL_H
 
 #include <iostream>
-//TODO: change to #include <highfive/H5File.hpp>, and change alongside to the rowmajor writing
-#include <highfive/H5Easy.hpp>
+#include <highfive/H5File.hpp>
 #include <utility>
 
 /**
@@ -155,6 +154,9 @@ public:
     virtual void
     load_ensemble(std::vector<configuration_type> &target, HighFive::DataSet &root) = 0;
 
+    virtual HighFive::DataSet
+    dump_ensemble(std::vector<configuration_type> &target, HighFive::Group &root, std::string sub_name) = 0;
+
     /**
      * @brief Prints the name of the model
      */
@@ -225,8 +227,11 @@ void BaseModel<configuration_type>::dumpToH5(HighFive::Group &root) {
         root.createAttribute(beta_name, beta);
     }
     if (root.hasAttribute(model_name_key)) {
-        HighFive::Attribute temp = root.getAttribute(model_name_key);
-        temp.write(name);
+        root.deleteAttribute(model_name_key);
+        root.createAttribute(model_name_key, name);
+        //TODO maybe there is a nicer fix for this
+        //HighFive::Attribute temp = root.getAttribute(model_name_key);
+        //temp.write(name);
     } else {
         root.createAttribute(model_name_key, name);
     }

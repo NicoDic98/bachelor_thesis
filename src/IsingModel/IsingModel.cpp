@@ -451,3 +451,7 @@ void IsingModel::load_ensemble(std::vector<VectorX> &target, HighFive::DataSet &
         target[i] = vec_temp;
     }
 }
+
+HighFive::DataSet IsingModel::dump_ensemble(std::vector<VectorX> &target, HighFive::Group &root, std::string sub_name) {
+
+}

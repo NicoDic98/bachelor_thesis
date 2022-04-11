@@ -237,10 +237,9 @@ void HMCGenerator<configuration_type>::clear_ensembles() {
 
 template<class configuration_type>
 HighFive::DataSet HMCGenerator<configuration_type>::dumpToH5(HighFive::Group &root, std::string sub_name) {
-    auto path = root.getPath();
     model.dumpToH5(root);
 
-    auto ensemble_dataset = root.createDataSet(sub_name, ensembles);
+    auto ensemble_dataset = model.dump_ensemble(ensembles, root, sub_name);
     ensemble_dataset.createAttribute(amount_of_steps_name, amount_of_steps);
     ensemble_dataset.createAttribute(step_size_name, step_size);
     return ensemble_dataset;
