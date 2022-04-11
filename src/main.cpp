@@ -107,7 +107,7 @@ void test_HMC(const std::string &filename) {
 
 
 void test_multi_level_hmc() {
-    const int grid_size = 4;
+    const int grid_size = 8;
     const int dim = 2;
     const int lambda = int_pow(grid_size, dim);
     const double C{0.1};
@@ -195,7 +195,7 @@ void MultiLevelTime() {
 
 void test_hmc_measurements() {
     double inverse_beta{0.8};
-    std::string my_time{"05_04_2022__12_47_58_"};
+    std::string my_time{"12_04_2022__00_34_44_"};
     std::string filename{std::string(DATA_DIR).append(my_time).append(std::to_string(inverse_beta)).append(".h5")};
     HighFive::File file(filename, HighFive::File::ReadOnly);
     auto helper = file.getGroup("level0");//todo see if this step can be removed to be needed

@@ -21,7 +21,7 @@ typedef Eigen::VectorXd VectorX;
 /**
  * @brief Matrix type definition
  */
-typedef Eigen::MatrixXd MatrixX;
+typedef Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> MatrixX;
 
 /**
  * @brief Interpolation types
