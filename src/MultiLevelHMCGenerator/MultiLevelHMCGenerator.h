@@ -191,6 +191,9 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
     current_level_dataset.getAttribute(nu_post_name).read(buffer);
     nu_post.push_back(buffer);
     current_level_dataset.getAttribute(gamma_name).read(gamma);
+    double dBuffer;
+    current_level_dataset.getAttribute(AcceptanceRate_name).read(dBuffer);
+    AcceptanceRates.push_back(dBuffer);
     assert(nu_pre[0] + nu_post[0] > 0);
 
     for (int i = 1; i < 1000; ++i) {
@@ -217,7 +220,6 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
         int iBuffer;
         current_level_dataset.getAttribute(inter_type_name).read(iBuffer);
         inter_type = static_cast<InterpolationType>(iBuffer);
-        double dBuffer;
         current_level_dataset.getAttribute(AcceptanceRate_name).read(dBuffer);
         AcceptanceRates.push_back(dBuffer);
         assert(nu_pre[i] + nu_post[i] > 0);
