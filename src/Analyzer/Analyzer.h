@@ -18,13 +18,18 @@ class Analyzer {
 public:
     explicit Analyzer(std::vector<double> data_);
 
-    explicit Analyzer(HighFive::DataSet& dataset_);
+    explicit Analyzer(HighFive::DataSet &dataset_);
 
     std::vector<double> auto_correlation(size_t max_t);
 
+    void block_data(size_t block_size);
+
 private:
     std::vector<double> data;
+    std::vector<double> blocked_data;
+
     void set_mean();
+
     double mean;
 };
 

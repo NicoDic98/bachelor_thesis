@@ -46,3 +46,20 @@ void Analyzer::set_mean() {
     }
     mean /= static_cast<double>(data.size());
 }
+
+void Analyzer::block_data(size_t block_size) {
+    blocked_data.clear();
+    blocked_data.resize(data.size() / block_size);
+
+    for (auto &elem: blocked_data) {
+        elem = 0.;
+    }
+
+    for (int i = 0; i < blocked_data.size() * block_size; ++i) {
+        blocked_data[i / block_size] += data[i];
+    }
+
+    for (auto &elem: blocked_data) {
+        elem /= static_cast<double>(block_size);
+    }
+}
