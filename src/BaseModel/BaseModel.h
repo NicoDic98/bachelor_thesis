@@ -217,6 +217,16 @@ protected:
     virtual configuration_type get_force(const configuration_type &phi) = 0;
 
     /**
+     * @brief Name of the current object
+     */
+    std::string name;
+
+private:
+    /**
+     * @brief Inverse temperature
+     */
+    double beta;
+    /**
      * @brief String to be used as key for \a beta in H5 files
      */
     static const char *beta_name;
@@ -230,17 +240,6 @@ protected:
      * @brief Default name of the BaseModel
      */
     static const char *BaseModel_name;
-
-    /**
-     * @brief Name of the current object
-     */
-    std::string name;
-
-private:
-    /**
-     * @brief Inverse temperature
-     */
-    double beta;
 };
 
 template<class configuration_type> const char *BaseModel<configuration_type>::beta_name{"beta"};
