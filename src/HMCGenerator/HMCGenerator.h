@@ -128,7 +128,7 @@ private:
      * @param phi0 Starting field
      * @return New field (after accept/reject)
      */
-    configuration_type do_HMC_step([[maybe_unused]] const configuration_type &phi0);
+    configuration_type do_HMC_step([[maybe_unused]] [[maybe_unused]] const configuration_type &phi0);
 
     /**
      * @brief Model used in the HMC evolution
@@ -170,7 +170,7 @@ private:
     /**
      * @brief String to be used as key for the \a ensembles vector in H5 files
      */
-    static const char *ensembles_name;
+    [[maybe_unused]] static const char *ensembles_name;
 
     /**
      * @brief Amount of accepted configurations
@@ -185,16 +185,16 @@ template<class configuration_type> const char *HMCGenerator<configuration_type>:
 
 
 template<class configuration_type>
-configuration_type HMCGenerator<configuration_type>::do_HMC_step(const configuration_type &phi0) {
+configuration_type HMCGenerator<configuration_type>::do_HMC_step([[maybe_unused]] const configuration_type &phi0) {
     configuration_type pi(phi0.rows());
     configuration_type phi(phi0);
     std::normal_distribution<double> gauss(0, 1);
-    for (auto &elem: pi) {
+    for ([[maybe_unused]] auto &elem: pi) {
         elem = gauss(generator);
     }
-    double H_start = pi.dot(pi) * 0.5 + model.get_action(phi);
+    [[maybe_unused]] double H_start = pi.dot(pi) * 0.5 + model.get_action(phi);
     integrator.integrate(amount_of_steps, step_size, phi, pi); //updates in place
-    double H_end = pi.dot(pi) * 0.5 + model.get_action(phi);
+    [[maybe_unused]] double H_end = pi.dot(pi) * 0.5 + model.get_action(phi);
 
     std::uniform_real_distribution<double> uniformRealDistribution(0., 1.);
 
@@ -232,7 +232,7 @@ HMCGenerator<configuration_type>::generate_ensembles(const configuration_type &p
 
     double ret{1.};
     if (amount_of_samples) {
-        return ret * accepted_configurations / amount_of_samples;
+        return ret * accepted_configurations / static_cast<double>(amount_of_samples);
     } else {
         return 0.;
     }

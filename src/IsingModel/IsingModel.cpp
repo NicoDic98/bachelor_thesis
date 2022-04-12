@@ -11,7 +11,6 @@
 #include <utility>
 #include "IsingModel.h"
 
-
 const char *IsingModel::dimension_name{"dimension"};
 const char *IsingModel::grid_side_length_name{"grid_side_length"};
 const char *IsingModel::neighbour_extent_name{"neighbour_extent"};
@@ -23,7 +22,6 @@ const char *IsingModel::k_rec_name{"k_rec"};
 const char *IsingModel::InterpolationMatrix_name{"InterpolationMatrix"};
 const char *IsingModel::IsingModel_name{"IsingModel"};
 
-
 IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, int dimension_,
                        int neighbour_extent_, int grid_size_)
         : BaseModel<VectorX>(beta_, IsingModel_name), sqrt_beta{sqrt(beta_)}, h{std::move(h_)},
@@ -33,7 +31,7 @@ IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, i
           k_rec(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)),
           InterpolationMatrix{}, FinerModel{*this} {
 
-    fill_connectivity_matrix(neighbour_extent_, grid_size_);
+    fill_connectivity_matrix(grid_size_);
     add_offset_to_connectivity_matrix(offset_ + (2 * neighbour_extent_ * dimension));
     //todo: test that this really yields a positive definit connectivity matrix (search for min eigenvalue before adding the offset)
     k_rec = k_sym;
@@ -180,7 +178,7 @@ double IsingModel::get_energy_squared(const VectorX &phi) {
     return e_squared;
 }
 
-void IsingModel::fill_connectivity_matrix(int neighbour_extent, int grid_size) {
+void IsingModel::fill_connectivity_matrix(int grid_size) {
     k_sym.setZero();
 
     long lambda = k_sym.rows();
@@ -469,8 +467,8 @@ HighFive::DataSet IsingModel::dump_ensemble(std::vector<VectorX> &target, HighFi
                                             HighFive::create_datatype<double>(), props);
         count[1] = target[0].rows();
     }
-    for (auto & elem : target) {
-        target_dataset.select(offset,count).write_raw(elem.data());
+    for (auto &elem: target) {
+        target_dataset.select(offset, count).write_raw(elem.data());
         offset[0]++;
     }
 

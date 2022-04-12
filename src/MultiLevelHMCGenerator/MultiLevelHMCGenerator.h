@@ -2,7 +2,7 @@
  * @file       MultiLevelHMCGenerator.h
  * @brief      Declarations of Multi level HMC
  * @author     nico
- * @version    0.0.1
+ * @version    0.0.2
  * @date       26.03.22
  */
 
@@ -42,6 +42,12 @@ public:
                            const std::vector<size_t> &amount_of_steps_, const std::vector<double> &step_sizes_,
                            std::default_random_engine &generator_);
 
+    /**
+     * @brief Loads the MultiLevelHMCGenerator from \ p file
+     * @param model_ Model for which to generate ensembles
+     * @param file File which has the levels as groups, which hold the level attributes
+     * @param generator_ Random number generator to be used for the HMC process
+     */
     MultiLevelHMCGenerator(BaseModel<configuration_type> &model_,
                            HighFive::File &file,
                            std::default_random_engine &generator_);
@@ -58,16 +64,29 @@ public:
                                            size_t amount_of_samples, size_t amount_of_thermalization_steps = 10);
 
     /**
-     * @brief Compute the \p observable_function_pointer of the currently loaded ensemble
-     * @return vector of observable
+     * @brief Calculates and dumps the observable \a observable_function_pointer for each level to \p file
+     *        into subgroups for each level intern into the \p name dataset
+     * @param observable_function_pointer Pointer to function, which returns the value of the observable
+     *                                    for the given configuration
+     * @param name Name under which the dataset will be stored
+     * @param file File to dump to
      */
     void dump_observable(double (
     BaseModel<configuration_type>::*observable_function_pointer)(const configuration_type &),
                          const std::string &name, HighFive::File &file);
 
+    /**
+     * @brief Dumps the MultiLevelHMCGenerator, including all sub models and sub HMCGenerators
+     *        into different subgroups with corresponding level parameters
+     * @param file File to dump to
+     */
     void dumpToH5(HighFive::File &file);
 
-    void propagate_update();
+    /**
+     * @brief Propagates the change of attributes from the fine level model to all coarser levels
+     * @todo Change model saving such that the model_ parameter of the constructors references the fine level model and doesn't just get copied
+     */
+    [[maybe_unused]] void propagate_update();
 
 
 private:
@@ -79,31 +98,46 @@ private:
      */
     configuration_type LevelRecursion(int level, const configuration_type &phi);
 
-    static const char *level_name;
+    /**
+     * @brief Prefix for the level groups in H5 files
+     */
+    [[maybe_unused]] static const char *level_name;
 
     /**
      * @brief Amount of pre coarsening steps to take at each level
      */
     std::vector<size_t> nu_pre;
-    static const char *nu_pre_name;
+    /**
+     * @brief String to be used as key for the \a nu_pre in H5 files
+     */
+    [[maybe_unused]] static const char *nu_pre_name;
 
     /**
      * @brief Amount of post coarsening steps to take at each level
      */
     std::vector<size_t> nu_post;
-    static const char *nu_post_name;
+    /**
+     * @brief String to be used as key for the \a nu_post in H5 files
+     */
+    [[maybe_unused]] static const char *nu_post_name;
 
     /**
      * @brief Amount of repetitions at each level (determines if a 'V' or 'W' or ... cycle is performed)
      */
     size_t gamma;
-    static const char *gamma_name;
+    /**
+     * @brief String to be used as key for the \a gamma in H5 files
+     */
+    [[maybe_unused]] static const char *gamma_name;
 
     /**
      * @brief Interpolation type used to generate the coarser levels
      */
     InterpolationType inter_type;
-    static const char *inter_type_name;
+    /**
+     * @brief String to be used as key for the \a inter_type in H5 files
+     */
+    [[maybe_unused]] static const char *inter_type_name;
 
     /**
      * @brief Random number generator to be used for the HMC process
@@ -124,17 +158,20 @@ private:
      * @brief Saves the Acceptance rate at each level
      */
     std::vector<double> AcceptanceRates;
-    static const char *AcceptanceRate_name;
+    /**
+     * @brief String to be used as key for the \a AcceptanceRate in H5 files
+     */
+    [[maybe_unused]] static const char *AcceptanceRate_name;
 };
 
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::level_name{"level"};
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::nu_pre_name{"nu_pre"};
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::nu_post_name{"nu_post"};
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::gamma_name{"gamma"};
-template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::inter_type_name{
-        "inter_type"};
-template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::AcceptanceRate_name{
-        "AcceptanceRate"};
+template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::
+        inter_type_name{"inter_type"};
+template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::
+        AcceptanceRate_name{"AcceptanceRate"};
 
 
 template<class configuration_type>
@@ -157,7 +194,7 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
 
     AcceptanceRates.resize(nu_pre.size());
     ModelStack.push_back(std::unique_ptr<BaseModel<configuration_type>>(model_.get_copy_of_model()));
-    HMCStack.push_back(HMCGenerator(model_, amount_of_steps_[0], step_sizes_[0], generator));
+    HMCStack.push_back(HMCGenerator(*ModelStack[0], amount_of_steps_[0], step_sizes_[0], generator));
 
     for (int i = 1; i < nu_pre.size(); ++i) {
         assert(nu_pre[i] + nu_post[i] > 0);
@@ -182,7 +219,7 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
     HighFive::Group current_level = file.getGroup(current_level_name);
 
     ModelStack.push_back(std::unique_ptr<BaseModel<configuration_type>>(model_.get_copy_of_model()));
-    HMCStack.push_back(HMCGenerator(model_, current_level, generator));
+    HMCStack.push_back(HMCGenerator(*ModelStack[0], current_level, generator));
     HighFive::DataSet current_level_dataset = HMCStack[0].get_dataset(current_level);
 
     size_t buffer;
@@ -269,7 +306,7 @@ MultiLevelHMCGenerator<configuration_type>::LevelRecursion(int level, const conf
 }
 
 template<class configuration_type>
-void MultiLevelHMCGenerator<configuration_type>::propagate_update() {
+[[maybe_unused]] void MultiLevelHMCGenerator<configuration_type>::propagate_update() {
     for (int i = 1; i < ModelStack.size(); ++i) {
         ModelStack[i]->pull_attributes_from_finer_level();
     }

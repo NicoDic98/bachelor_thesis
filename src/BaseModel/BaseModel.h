@@ -79,28 +79,28 @@ public:
      * @param phi Field
      * @return m(phi) (magnetization)
      */
-    virtual double get_magnetization(const configuration_type &phi) { return 0; }
+    [[maybe_unused]] virtual double get_magnetization(const configuration_type &phi) { return 0; }
 
     /**
      * @brief Calculates the magnetization squared for the given field \p phi
      * @param phi Field
      * @return m²(phi) (magnetization squared)
      */
-    virtual double get_magnetization_squared(const configuration_type &phi) { return 0; }
+    [[maybe_unused]] virtual double get_magnetization_squared(const configuration_type &phi) { return 0; }
 
     /**
      * @brief Calculates the average energy per site for the given field \p phi
      * @param phi Field
      * @return E(phi) (average energy per site)
      */
-    virtual double get_energy(const configuration_type &phi) { return 0; }
+    [[maybe_unused]] virtual double get_energy(const configuration_type &phi) { return 0; }
 
     /**
      * @brief Calculates the average energy per site squared for the given field \p phi
      * @param phi Field
      * @return e²(phi) (average energy per site squared)
      */
-    virtual double get_energy_squared(const configuration_type &phi) { return 0; }
+    [[maybe_unused]] virtual double get_energy_squared(const configuration_type &phi) { return 0; }
 
 
     /**
@@ -132,7 +132,7 @@ public:
      * @brief Returns a configuration using the standard constructor of the configuration type
      * @return Sample object, which represents a configuration
      */
-    virtual configuration_type get_dof_sample();
+    [[maybe_unused]] [[maybe_unused]] virtual configuration_type get_dof_sample();
 
     /**
      * @brief Returns the coarsent model with respect to the given \p InterpolationType_
@@ -205,7 +205,7 @@ public:
     /**
      * @brief Prints the name of the model
      */
-    virtual void print_name();
+    [[maybe_unused]] virtual void print_name();
 
 protected:
 
@@ -229,17 +229,17 @@ private:
     /**
      * @brief String to be used as key for \a beta in H5 files
      */
-    static const char *beta_name;
+    [[maybe_unused]] static const char *beta_name;
 
     /**
      * @brief String to be used as key for the model \a name in H5 files
      */
-    static const char *model_name_key;
+    [[maybe_unused]] static const char *model_name_key;
 
     /**
      * @brief Default name of the BaseModel
      */
-    static const char *BaseModel_name;
+    [[maybe_unused]] static const char *BaseModel_name;
 };
 
 template<class configuration_type> const char *BaseModel<configuration_type>::beta_name{"beta"};
@@ -267,12 +267,12 @@ void BaseModel<configuration_type>::update_phi(configuration_type &phi, configur
 }
 
 template<class configuration_type>
-configuration_type BaseModel<configuration_type>::get_dof_sample() {
+[[maybe_unused]] configuration_type BaseModel<configuration_type>::get_dof_sample() {
     return configuration_type();
 }
 
 template<class configuration_type>
-void BaseModel<configuration_type>::print_name() {
+[[maybe_unused]] void BaseModel<configuration_type>::print_name() {
     std::cout << name << std::endl;
 }
 

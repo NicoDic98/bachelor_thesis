@@ -2,7 +2,7 @@
  * @file       IsingModel.h
  * @brief      Declaration of the Ising Model
  * @author     nico
- * @version    0.0.1
+ * @version    0.0.2
  * @date       23.03.22
  * @todo       Use sparse matrices for the connectivity matrices
  */
@@ -302,10 +302,9 @@ private:
 
     /**
      * @brief Fills the connectivity matrix \a k_sym for the given hyper cube of dimension \a dimension and side length \p grid_size
-     * @param neighbour_extent Range at which nearest neighbours interact (along the axis)
      * @param grid_size Side length
      */
-    void fill_connectivity_matrix(int neighbour_extent, int grid_size);
+    void fill_connectivity_matrix(int grid_size);
 
     /**
      * @brief Fills the \a InterpolationMatrix
