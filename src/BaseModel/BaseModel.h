@@ -217,12 +217,12 @@ protected:
     virtual configuration_type get_force(const configuration_type &phi) = 0;
 
     /**
-     * @brief String to be used as key for beta in H5 files
+     * @brief String to be used as key for \a beta in H5 files
      */
     static const char *beta_name;
 
     /**
-     * @brief String to be used as key for the model name in H5 files
+     * @brief String to be used as key for the model \a name in H5 files
      */
     static const char *model_name_key;
 

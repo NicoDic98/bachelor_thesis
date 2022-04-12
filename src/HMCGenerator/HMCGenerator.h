@@ -2,7 +2,7 @@
  * @file       HMCGenerator.h
  * @brief      Declarations of standard HMC
  * @author     nico
- * @version    0.0.1
+ * @version    0.0.2
  * @date       24.03.22
  */
 
@@ -23,7 +23,7 @@ template<class configuration_type>
 class HMCGenerator {
 public:
     /**
-     * @brief Constructor of the HMC generator
+     * @brief Standard constructor of the HMC generator
      * @param model_ Model for which to generate ensembles
      * @param amount_of_steps_ Amount of steps to be used in the integration process
      * @param step_size_ Step size in the integration process
@@ -32,26 +32,43 @@ public:
     HMCGenerator(BaseModel<configuration_type> &model_, size_t amount_of_steps_, double step_size_,
                  std::default_random_engine &generator_);
 
+    /**
+     * @brief Loads the HMCGenerator from \ p root
+     * @param model_ Model for which to generate ensembles
+     * @param root Group which has the HMCGenerator parameters as Attributes and ensemble as dataset
+     * @param generator_ Random number generator to be used for the HMC
+     */
     HMCGenerator(BaseModel<configuration_type> &model_, HighFive::Group &root,
                  std::default_random_engine &generator_);
 
+    /**
+     * @brief Loads the HMCGenerator from \ p root
+     * @param model_ Model for which to generate ensembles
+     * @param root Group which has the HMCGenerator parameters as Attributes and ensemble as dataset
+     * @param amount_of_steps_ Amount of steps to be used in the integration process
+     * @param step_size_ Step size in the integration process
+     * @param generator_ Random number generator to be used for the HMC
+     */
     HMCGenerator(BaseModel<configuration_type> &model_, HighFive::Group &root,
                  size_t amount_of_steps_, double step_size_,
                  std::default_random_engine &generator_);
 
     /**
-     * @brief Generate amount_of_samples amount of ensembles, starting from phiStart and doing
-     *        amount_of_thermalization_steps thermalization steps in advance
+     * @brief Generate \p amount_of_samples amount of ensembles, starting from \p phiStart and doing
+     *        \p amount_of_thermalization_steps thermalization steps in advance
      * @param phiStart Starting field
      * @param amount_of_samples Amount of samples to take
      * @param amount_of_thermalization_steps Amount of thermalization steps
+     * @param expand Rather to expand the internal \a ensembles vector or not
      * @return Acceptance rate
      */
     double generate_ensembles(const configuration_type &phiStart, size_t amount_of_samples,
                               size_t amount_of_thermalization_steps, bool expand);
 
     /**
-     * @brief Compute the \p observable_function_pointer of the currently loaded ensemble
+     * @brief Compute the \p observable_function_pointer of the currently loaded \a ensembles vector
+     * @param observable_function_pointer Pointer to function, which returns the value of the observable
+     *                                    for the given configuration
      * @return vector of observable
      */
     std::vector<double> compute_observable(double (BaseModel<configuration_type>::*observable_function_pointer)(
@@ -65,22 +82,44 @@ public:
 
 
     /**
-     * @brief Returns the last element of \a ensembles
-     * @return Last element of \a ensembles
+     * @brief Returns the last element of the \a ensembles vector
+     * @param default_phi Default configuration to be returned,
+     *        if no configurations are present in the \a ensembles vector
+     * @return Last element of the \a ensembles vector
      */
     configuration_type get_last_configuration(const configuration_type &default_phi);
 
     /**
-     * @brief Clear \a ensembles
+     * @brief Clear the \a ensembles vector
      */
     void clear_ensembles();
 
+    /**
+     * @brief Dumps the HMCGenerator, including the currently loaded \a ensembles vector
+     *        and the used \a model to \p root
+     * @param root Group which gets to hold the model attributes
+     *             and the dataset to which the \a ensembles vector gets dumped to
+     * @param sub_name Name of the ensemble dataset under \p root
+     * @return Dataset to which the \a ensembles vector was dumped to
+     */
     HighFive::DataSet dumpToH5(HighFive::Group &root, std::string sub_name = ensembles_name);
 
+    /**
+     * @brief Calculates and dumps the observable \a observable_function_pointer to \p root into the \p name dataset
+     * @param observable_function_pointer Pointer to function, which returns the value of the observable
+     *                                    for the given configuration
+     * @param name Name under which the dataset will be stored
+     * @param root Group under which to create the dataset \p name
+     */
     void dump_observable(double (
     BaseModel<configuration_type>::*observable_function_pointer)(const configuration_type &),
                          const std::string &name, HighFive::Group &root);
 
+    /**
+     * @brief Returns the dataset inside \p root, which holds an ensembles vector
+     * @param root Group under which th ensembles vector dataset should reside
+     * @return Ensembles vector dataset
+     */
     HighFive::DataSet get_dataset(HighFive::Group &root);
 
 private:
@@ -100,18 +139,24 @@ private:
      * @brief Amount of molecular dynamic steps used in the integration process
      */
     size_t amount_of_steps;
+    /**
+     * @brief String to be used as key for the \a amount_of_steps in H5 files
+     */
     [[maybe_unused]] static const char *amount_of_steps_name;
 
     /**
      * @brief Step size to use in the molecular dynamics integration
      */
     double step_size;
+    /**
+     * @brief String to be used as key for the \a step_size in H5 files
+     */
     [[maybe_unused]] static const char *step_size_name;
 
     /**
      * @brief Random number generator used for the conjugate momenta sampling
      */
-    std::default_random_engine &generator; //TODO Maybe make this static?
+    std::default_random_engine &generator;
 
     /**
      * @brief Integrator used for the molecular dynamics integration
@@ -122,6 +167,9 @@ private:
      * @brief Array of configurations
      */
     std::vector<configuration_type> ensembles;
+    /**
+     * @brief String to be used as key for the \a ensembles vector in H5 files
+     */
     static const char *ensembles_name;
 
     /**
@@ -130,8 +178,8 @@ private:
     int accepted_configurations{0};
 };
 
-template<class configuration_type> const char *HMCGenerator<configuration_type>::amount_of_steps_name{
-        "amount_of_steps"};
+template<class configuration_type> const char *HMCGenerator<configuration_type>::
+        amount_of_steps_name{"amount_of_steps"};
 template<class configuration_type> const char *HMCGenerator<configuration_type>::step_size_name{"step_size"};
 template<class configuration_type> const char *HMCGenerator<configuration_type>::ensembles_name{"ensembles"};
 
