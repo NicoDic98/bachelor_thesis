@@ -21,13 +21,12 @@ class LeapFrogIntegrator {
 public:
     /**
      * @brief Constructor of the Leap Frog Integrator
-     * @param N Dimension of the vectors which should be integrated
-     * @param model Force function to use in the updates of the momenta
+     * @param model Model to be used for integration
      */
     explicit LeapFrogIntegrator(BaseModel<configuration_type> &model_);
 
     /**
-     * @brief Integrates the field phi with momentum pi along the Hamiltonian equations of motion.
+     * @brief Integrates the field \p phi with momentum \p pi along the Hamiltonian equations of motion.
      * @note  Integration happens inplace.
      * @param amount_of_steps Amount of integration steps
      * @param step_size Step size for each integration step
