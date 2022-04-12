@@ -2,7 +2,7 @@
  * @file       BaseModel.h
  * @brief      Base physical models
  * @author     nico
- * @version    0.0.1
+ * @version    0.0.2
  * @date       27.03.22
  */
 
@@ -25,6 +25,7 @@ public:
     /**
      * @brief Most Basic constructor of BaseModel
      * @param beta_ Inverse temperature of the model
+     * @param name_ Name of the Model, default="BaseModel"
      */
     explicit BaseModel(double beta_, std::string name_ = BaseModel_name) : beta{beta_}, name{std::move(name_)} {}
 
@@ -34,6 +35,11 @@ public:
      */
     BaseModel(const BaseModel<configuration_type> &NewModel) : beta{NewModel.beta}, name{NewModel.name} {}
 
+    /**
+     * @brief Load model from \p root
+     * @param root Group which holds the model attributes
+     * @param default_name_ Default name to be used, when there is no model name present in \p root
+     */
     explicit BaseModel(HighFive::Group &root, const std::string &default_name_ = BaseModel_name)
             : beta{} {
         root.getAttribute(beta_name).read(beta);
@@ -60,7 +66,7 @@ public:
      * @brief Returns beta
      * @return Inverse temperature
      */
-    virtual inline double get_beta() const;
+    [[nodiscard]] virtual inline double get_beta() const;
 
     /**
      * @brief Sets the value of beta to new_beta
@@ -69,28 +75,43 @@ public:
     virtual inline void set_beta(double new_beta);
 
     /**
-     * @brief Calculates the magnetization for the given field phi
+     * @brief Calculates the magnetization for the given field \p phi
      * @param phi Field
      * @return m(phi) (magnetization)
      */
     virtual double get_magnetization(const configuration_type &phi) { return 0; }
 
+    /**
+     * @brief Calculates the magnetization squared for the given field \p phi
+     * @param phi Field
+     * @return m²(phi) (magnetization squared)
+     */
     virtual double get_magnetization_squared(const configuration_type &phi) { return 0; }
 
+    /**
+     * @brief Calculates the average energy per site for the given field \p phi
+     * @param phi Field
+     * @return E(phi) (average energy per site)
+     */
     virtual double get_energy(const configuration_type &phi) { return 0; }
 
+    /**
+     * @brief Calculates the average energy per site squared for the given field \p phi
+     * @param phi Field
+     * @return e²(phi) (average energy per site squared)
+     */
     virtual double get_energy_squared(const configuration_type &phi) { return 0; }
 
 
     /**
-     * @brief Checks the dimensions of internal vectors and matrices with regard to the given field phi
+     * @brief Checks the dimensions of internal vectors and matrices with regard to the given field \p phi
      * @param phi Field
      * @return True, if all dimension checks are passed. False, if any dimension check fails.
      */
     virtual bool check_dimensions(const configuration_type &phi) const = 0;
 
     /**
-     * @brief Updates the momentum pi and returns the new momentum pi_new
+     * @brief Updates the momentum \p pi and returns the new momentum \c pi_new
      * @param phi
      * @param pi
      * @param step_size
@@ -99,7 +120,7 @@ public:
     virtual void update_pi(configuration_type &phi, configuration_type &pi, double step_size);
 
     /**
-     * @brief Updates the field phi and returns the new field phi_new
+     * @brief Updates the field \p phi and returns the new field \c phi_new
      * @param phi
      * @param pi
      * @param step_size
@@ -114,7 +135,7 @@ public:
     virtual configuration_type get_dof_sample();
 
     /**
-     * @brief Returns the coarsent model with respect to the given interpolation matrix
+     * @brief Returns the coarsent model with respect to the given \p InterpolationType_
      * @param InterpolationType_ Interpolation type to use for the coarsening
      * @return Coursed model
      */
@@ -126,6 +147,11 @@ public:
      */
     virtual BaseModel<configuration_type> *get_copy_of_model() = 0;
 
+    /**
+     * @brief Return the model at \p root
+     * @param root Group with model parameters as attributes
+     * @return Model loaded with parameters at \p root
+     */
     virtual BaseModel<configuration_type> *get_model_at(HighFive::Group &root) = 0;
 
     /**
@@ -141,19 +167,38 @@ public:
      */
     virtual void interpolate(const configuration_type &phi2a, configuration_type &phia) = 0;
 
+    /**
+     * @brief Updates the internal attributes from the finer level model
+     */
     virtual void pull_attributes_from_finer_level() = 0;
 
     /**
      * @brief Returns an empty field, useful for the starting of a Multi Level run
-     * @return Empty field d.o.f. field
+     * @return Empty d.o.f. field
      */
     virtual configuration_type get_empty_field() = 0;
 
+    /**
+     * @brief Dump all parameters of the model as attributes to \p root
+     * @param root Group to dump to
+     */
     virtual void dumpToH5(HighFive::Group &root);
 
+    /**
+     * @brief Load ensemble from \p root into \p target
+     * @param target Target to load to
+     * @param root Dataset to load from
+     */
     virtual void
     load_ensemble(std::vector<configuration_type> &target, HighFive::DataSet &root) = 0;
 
+    /**
+     * @brief Dump ensemble \p target as dataset to \p root, with the name \p sub_name
+     * @param target Ensemble to be dumped
+     * @param root Destination group
+     * @param sub_name Name to be used for the dataset
+     * @return Dataset to which the ensemble was dumped
+     */
     virtual HighFive::DataSet
     dump_ensemble(std::vector<configuration_type> &target, HighFive::Group &root, std::string sub_name) = 0;
 
@@ -165,16 +210,30 @@ public:
 protected:
 
     /**
-     * @brief Calculates the artificial force for the given field phi
+     * @brief Calculates the artificial force for the given field \p phi
      * @param phi Field
      * @return Artificial force according to artificial hamiltonian
      */
     virtual configuration_type get_force(const configuration_type &phi) = 0;
 
+    /**
+     * @brief String to be used as key for beta in H5 files
+     */
     static const char *beta_name;
+
+    /**
+     * @brief String to be used as key for the model name in H5 files
+     */
     static const char *model_name_key;
+
+    /**
+     * @brief Default name of the BaseModel
+     */
     static const char *BaseModel_name;
 
+    /**
+     * @brief Name of the current object
+     */
     std::string name;
 
 private:
