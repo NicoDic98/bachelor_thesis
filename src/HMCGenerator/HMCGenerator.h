@@ -92,10 +92,9 @@ public:
      *        and the used \a model to \p root
      * @param root Group which gets to hold the model attributes
      *             and the dataset to which the \a ensembles vector gets dumped to
-     * @param sub_name Name of the ensemble dataset under \p root
      * @return Dataset to which the \a ensembles vector was dumped to
      */
-    HighFive::DataSet dumpToH5(HighFive::Group &root, std::string sub_name = ensembles_name);
+    HighFive::DataSet dumpToH5(HighFive::Group &root);
 
     /**
      * @brief Calculates and dumps the observable \a observable_function_pointer to \p root into the \p name dataset
@@ -278,10 +277,10 @@ void HMCGenerator<configuration_type>::clear_ensembles() {
 }
 
 template<class configuration_type>
-HighFive::DataSet HMCGenerator<configuration_type>::dumpToH5(HighFive::Group &root, std::string sub_name) {
+HighFive::DataSet HMCGenerator<configuration_type>::dumpToH5(HighFive::Group &root) {
     model.dumpToH5(root);
 
-    auto ensemble_dataset = model.dump_ensemble(ensembles, root, sub_name);
+    auto ensemble_dataset = model.dump_ensemble(ensembles, root, ensembles_name);
     ensemble_dataset.createAttribute(amount_of_steps_name, amount_of_steps);
     ensemble_dataset.createAttribute(step_size_name, step_size);
     return ensemble_dataset;
@@ -308,9 +307,14 @@ HMCGenerator<configuration_type>::dump_observable(
         double (BaseModel<configuration_type>::*observable_function_pointer)(const configuration_type &),
         const std::string &name, HighFive::Group &root) {
     if (root.exist(name)) {
-        //TODO
+        auto temp =root.getDataSet(name);
+        temp.write(compute_observable(observable_function_pointer));
+        //this will cut to the previous size,
+        // and also extend to the prev size, by just reading on in memory
+        return temp;
+    }else{
+        return root.createDataSet(name, compute_observable(observable_function_pointer));
     }
-    return root.createDataSet(name, compute_observable(observable_function_pointer));
 }
 
 

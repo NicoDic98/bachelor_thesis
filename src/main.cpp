@@ -198,7 +198,7 @@ void test_hmc_measurements() {
     double inverse_beta{0.8};
     std::string my_time{"12_04_2022__00_34_44_"};
     std::string filename{std::string(DATA_DIR).append(my_time).append(std::to_string(inverse_beta)).append(".h5")};
-    HighFive::File file(filename, HighFive::File::ReadOnly);
+    HighFive::File file(filename, HighFive::File::ReadWrite);
     auto helper = file.getGroup("level0");//todo see if this step can be removed to be needed
     IsingModel test(helper);
 
@@ -207,8 +207,8 @@ void test_hmc_measurements() {
     HighFive::File out_file(std::string(DATA_DIR).append("out.h5"),
                             HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
     mygen.dumpToH5(out_file);
-    mygen.dump_observable(&BaseModel<VectorX>::get_magnetization, "magnetization", out_file);
-    mygen.dump_observable(&BaseModel<VectorX>::get_magnetization_squared, "magnetization_squared", out_file);
+    mygen.dump_observable(&BaseModel<VectorX>::get_magnetization, "magnetization", file);
+    mygen.dump_observable(&BaseModel<VectorX>::get_magnetization_squared, "magnetization_squared", file);
 }
 
 /**
