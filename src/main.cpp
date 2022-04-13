@@ -195,7 +195,7 @@ void MultiLevelTime() {
 
 void test_hmc_measurements() {
     double inverse_beta{0.8};
-    std::string my_time{"12_04_2022__00_34_44_"};
+    std::string my_time{"14_04_2022__00_57_10_"};
     std::string filename{std::string(DATA_DIR).append(my_time).append(std::to_string(inverse_beta)).append(".h5")};
     HighFive::File file(filename, HighFive::File::ReadWrite);
     auto helper = file.getGroup("level0");//todo see if this step can be removed to be needed
@@ -219,8 +219,8 @@ void test_hmc_measurements() {
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_leap_frog();
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
-    //test_multi_level_hmc();
-    test_hmc_measurements();
+    test_multi_level_hmc();
+    //test_hmc_measurements();
     //MultiLevelTime();
 }
 
