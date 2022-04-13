@@ -408,7 +408,7 @@ HighFive::DataSet IsingModel::dump_ensemble(std::vector<VectorX> &target, HighFi
     HighFive::DataSet target_dataset = add_to_expandable_dataset(
             root, sub_name,
             {target.size(), static_cast<unsigned long>(target[0].rows())},
-            offset);;
+            offset);
 
     std::vector<size_t> count{1, static_cast<unsigned long>(target[0].rows())};
 

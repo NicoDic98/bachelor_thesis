@@ -205,10 +205,10 @@ void test_hmc_measurements() {
     std::default_random_engine myengine{42L};
     MultiLevelHMCGenerator mygen(test, file, myengine);
     HighFive::File out_file(std::string(DATA_DIR).append("out.h5"),
-                            HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
+                            HighFive::File::ReadWrite);
     mygen.dumpToH5(out_file);
-    mygen.dump_observable(&BaseModel<VectorX>::get_magnetization, "magnetization", file);
-    mygen.dump_observable(&BaseModel<VectorX>::get_magnetization_squared, "magnetization_squared", file);
+    mygen.dump_observable(&BaseModel<VectorX>::get_magnetization, "magnetization", out_file);
+    mygen.dump_observable(&BaseModel<VectorX>::get_magnetization_squared, "magnetization_squared", out_file);
 }
 
 /**

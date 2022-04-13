@@ -306,15 +306,15 @@ HighFive::DataSet
 HMCGenerator<configuration_type>::dump_observable(
         double (BaseModel<configuration_type>::*observable_function_pointer)(const configuration_type &),
         const std::string &name, HighFive::Group &root) {
-    if (root.exist(name)) {
-        auto temp =root.getDataSet(name);
-        temp.write(compute_observable(observable_function_pointer));
-        //this will cut to the previous size,
-        // and also extend to the prev size, by just reading on in memory
-        return temp;
-    }else{
-        return root.createDataSet(name, compute_observable(observable_function_pointer));
-    }
+    std::vector<size_t> offset;
+    HighFive::DataSet target_dataset = add_to_expandable_dataset(
+            root, name,
+            {ensembles.size()},
+            offset);
+
+    std::vector<size_t> count{ensembles.size()};
+    target_dataset.select(offset, count).write(compute_observable(observable_function_pointer));
+    return target_dataset;
 }
 
 

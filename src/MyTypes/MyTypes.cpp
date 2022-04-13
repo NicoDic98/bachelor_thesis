@@ -48,7 +48,7 @@ void ReadMatrixX(MatrixX &matrix_to_read_into, HighFive::Group &root, std::strin
     matrix_to_read_into = mat_temp;
 }
 
-HighFive::DataSet add_to_expandable_dataset(HighFive::Group &root, std::string &sub_name,
+HighFive::DataSet add_to_expandable_dataset(HighFive::Group &root, const std::string &sub_name,
                                             const std::vector<size_t> &dims, std::vector<size_t> &offset) {
     offset.clear();
     offset.resize(dims.size());
