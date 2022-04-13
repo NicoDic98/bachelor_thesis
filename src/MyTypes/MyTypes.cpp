@@ -60,7 +60,7 @@ HighFive::DataSet add_to_expandable_dataset(HighFive::Group &root, const std::st
         std::vector<size_t> shape{target_dataset.getDimensions()};
 
         if (shape.size() == dims.size()) {
-            for (int i = 0; i < shape.size(); ++i) {
+            for (int i = 1; i < shape.size(); ++i) {
                 if (shape[i] != dims[i]) {
                     std::cerr << "Vector sizes not matching\n";
                     exit(-1);

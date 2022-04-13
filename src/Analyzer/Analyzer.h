@@ -12,11 +12,13 @@
 
 #include <vector>
 #include <highfive/H5File.hpp>
+#include <random>
+#include <MyTypes.h>
 
 
 class Analyzer {
 public:
-    explicit Analyzer(HighFive::DataSet &dataset_);
+    explicit Analyzer(HighFive::DataSet &dataset_, std::default_random_engine &generator_);
 
     Analyzer() = delete;
 
@@ -24,15 +26,26 @@ public:
 
     void block_data(size_t block_size);
 
+    void bootstrap_data(size_t amount_of_sample_sets);
+
 private:
     HighFive::DataSet &dataset;
     std::vector<double> data;
     std::vector<double> blocked_data;
+    std::vector<double> bootstrapped_data;
 
     void set_mean();
 
     double mean;
     static const char *mean_name;
+
+    double bootstrap_mean;
+    static const char *bootstrap_mean_name;
+
+    double bootstrap_variance;
+    static const char *bootstrap_variance_name;
+
+    std::default_random_engine &generator;
 };
 
 

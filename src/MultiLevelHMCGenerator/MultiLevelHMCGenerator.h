@@ -365,7 +365,11 @@ void MultiLevelHMCGenerator<configuration_type>::dump_observable(
             measurements = current_level.createGroup(measurements_name);
         }
         HighFive::DataSet dataset = HMCStack[i].dump_observable(observable_function_pointer, name, measurements);
-        Analyzer a(dataset);
+        Analyzer a(dataset, generator);
+        if(i==0){
+            a.block_data(16);
+            a.bootstrap_data(200);
+        }
     }
 }
 
