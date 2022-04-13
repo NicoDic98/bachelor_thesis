@@ -49,7 +49,8 @@ void ReadMatrixX(MatrixX &matrix_to_read_into, HighFive::Group &root, std::strin
 }
 
 HighFive::DataSet add_to_expandable_dataset(HighFive::Group &root, const std::string &sub_name,
-                                            const std::vector<size_t> &dims, std::vector<size_t> &offset) {
+                                            const std::vector<size_t> &dims, std::vector<size_t> &offset,
+                                            bool override) {
     offset.clear();
     offset.resize(dims.size());
     std::fill(offset.begin(), offset.end(), 0);
@@ -65,9 +66,14 @@ HighFive::DataSet add_to_expandable_dataset(HighFive::Group &root, const std::st
                     exit(-1);
                 }
             }
-            offset[0] = shape[0];//extend always in first dimension
-            shape[0] += dims[0];
-            target_dataset.resize(shape);
+            if (override) {
+                shape[0] = dims[0];
+                target_dataset.resize(shape);
+            } else {
+                offset[0] = shape[0];//extend always in first dimension
+                shape[0] += dims[0];
+                target_dataset.resize(shape);
+            }
 
         } else {
             std::cerr << "Can't extend dataset\n";
