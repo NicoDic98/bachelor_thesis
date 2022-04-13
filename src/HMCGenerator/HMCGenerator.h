@@ -75,13 +75,6 @@ public:
             const configuration_type &));
 
     /**
-     * @brief Returns beta of the used model
-     * @return Inverse Temperature
-     */
-    [[maybe_unused]] [[nodiscard]] double get_beta() const { return model.get_beta(); }
-
-
-    /**
      * @brief Returns the last element of the \a ensembles vector
      * @param default_phi Default configuration to be returned,
      *        if no configurations are present in the \a ensembles vector
