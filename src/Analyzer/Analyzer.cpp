@@ -6,20 +6,15 @@
  * @date       12.04.22
  */
 
-
 #include "Analyzer.h"
 
 #include <utility>
 
-Analyzer::Analyzer(std::vector<double> data_)
-        : data{std::move(data_)}, mean{0.} {
-    assert(!data.empty());
-    set_mean();
-}
+const char *Analyzer::mean_name{"mean"};
 
 Analyzer::Analyzer(HighFive::DataSet &dataset_)
-        : mean{0.} {
-    dataset_.read(data);
+        : dataset{dataset_}, mean{0.} {
+    dataset.read(data);
     assert(!data.empty());
     set_mean();
 }
@@ -45,6 +40,11 @@ void Analyzer::set_mean() {
         mean += elem;
     }
     mean /= static_cast<double>(data.size());
+    if (dataset.hasAttribute(mean_name)) {
+        dataset.getAttribute(mean_name).write(mean);
+    } else {
+        dataset.createAttribute(mean_name, mean);
+    }
 }
 
 void Analyzer::block_data(size_t block_size) {

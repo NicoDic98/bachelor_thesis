@@ -12,6 +12,7 @@
 #include <LeapFrogIntegrator.h>
 #include <HMCGenerator.h>
 #include <MultiLevelHMCGenerator.h>
+#include <Analyzer.h>
 #include <fstream>
 #include <iomanip>
 

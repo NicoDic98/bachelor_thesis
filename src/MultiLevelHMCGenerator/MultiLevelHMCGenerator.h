@@ -12,6 +12,7 @@
 
 #include <BaseModel.h>
 #include <HMCGenerator.h>
+#include <Analyzer.h>
 #include <random>
 #include <iostream>
 
@@ -104,6 +105,11 @@ private:
     [[maybe_unused]] static const char *level_name;
 
     /**
+     * @brief Name for the measurements groups in H5 files
+     */
+    [[maybe_unused]] static const char *measurements_name;
+
+    /**
      * @brief Amount of pre coarsening steps to take at each level
      */
     std::vector<size_t> nu_pre;
@@ -165,6 +171,8 @@ private:
 };
 
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::level_name{"level"};
+template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::
+        measurements_name{"measurements"};
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::nu_pre_name{"nu_pre"};
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::nu_post_name{"nu_post"};
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::gamma_name{"gamma"};
@@ -341,6 +349,7 @@ void MultiLevelHMCGenerator<configuration_type>::dump_observable(
         const std::string &name, HighFive::File &file) {
     for (int i = 0; i < HMCStack.size(); ++i) {
         HighFive::Group current_level = file.getGroup(file.getPath());
+        HighFive::Group measurements = current_level;
 
         std::string current_level_name{level_name};
         current_level_name.append(std::to_string(i));
@@ -350,7 +359,13 @@ void MultiLevelHMCGenerator<configuration_type>::dump_observable(
         } else {
             current_level = file.createGroup(current_level_name);
         }
-        HMCStack[i].dump_observable(observable_function_pointer, name, current_level);
+        if (current_level.exist(measurements_name)) {
+            measurements = current_level.getGroup(measurements_name);
+        } else {
+            measurements = current_level.createGroup(measurements_name);
+        }
+        HighFive::DataSet dataset = HMCStack[i].dump_observable(observable_function_pointer, name, measurements);
+        Analyzer a(dataset);
     }
 }
 

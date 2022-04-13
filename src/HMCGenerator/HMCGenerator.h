@@ -110,10 +110,11 @@ public:
      *                                    for the given configuration
      * @param name Name under which the dataset will be stored
      * @param root Group under which to create the dataset \p name
+     * @return Dataset to which the observable was dumped to
      */
-    void dump_observable(double (
+    HighFive::DataSet dump_observable(double (
     BaseModel<configuration_type>::*observable_function_pointer)(const configuration_type &),
-                         const std::string &name, HighFive::Group &root);
+                                      const std::string &name, HighFive::Group &root);
 
     /**
      * @brief Returns the dataset inside \p root, which holds an ensembles vector
@@ -309,11 +310,14 @@ std::vector<double> HMCGenerator<configuration_type>::compute_observable(
 }
 
 template<class configuration_type>
-void
+HighFive::DataSet
 HMCGenerator<configuration_type>::dump_observable(
         double (BaseModel<configuration_type>::*observable_function_pointer)(const configuration_type &),
         const std::string &name, HighFive::Group &root) {
-    root.createDataSet(name, compute_observable(observable_function_pointer));
+    if (root.exist(name)) {
+        //TODO
+    }
+    return root.createDataSet(name, compute_observable(observable_function_pointer));
 }
 
 
