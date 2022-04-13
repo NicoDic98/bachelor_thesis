@@ -21,7 +21,7 @@ typedef Eigen::VectorXd VectorX;
 /**
  * @brief Matrix type definition
  */
-typedef Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> MatrixX;
+typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> MatrixX;
 
 /**
  * @brief Interpolation types
@@ -68,8 +68,8 @@ void ReadMatrixX(MatrixX &matrix_to_read_into, HighFive::Group &root, std::strin
  * @param root Group/DataSet to write to
  * @param name Name of the target Attribute
  */
-template<typename T,typename group_dataset>
-void write_static_size(T var, HighFive::AnnotateTraits<group_dataset> &root, std::string name ){
+template<typename T, typename group_dataset>
+void write_static_size(T var, HighFive::AnnotateTraits<group_dataset> &root, std::string name) {
     if (root.hasAttribute(name)) {
         root.getAttribute(name).write(var);
         //type should always be double, no size checks
@@ -77,4 +77,8 @@ void write_static_size(T var, HighFive::AnnotateTraits<group_dataset> &root, std
         root.createAttribute(name, var);
     }
 }
+
+HighFive::DataSet add_to_expandable_dataset(HighFive::Group &root, std::string &sub_name,
+                                            const std::vector<size_t> &dims, std::vector<size_t> &offset);
+
 #endif //BACHELOR_THESIS_MYTYPES_H

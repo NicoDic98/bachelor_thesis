@@ -361,15 +361,15 @@ VectorX IsingModel::get_empty_field() {
 void IsingModel::dumpToH5(HighFive::Group &root) {
     BaseModel<VectorX>::dumpToH5(root);
 
-    write_static_size(dimension,root,dimension_name);
-    write_static_size(neighbour_extent,root,neighbour_extent_name);
-    write_static_size(grid_side_length,root,grid_side_length_name);
+    write_static_size(dimension, root, dimension_name);
+    write_static_size(neighbour_extent, root, neighbour_extent_name);
+    write_static_size(grid_side_length, root, grid_side_length_name);
 
     WriteVectorX(h, root, h_name);
 
     WriteVectorX(eta, root, eta_name);
 
-    write_static_size(connectivity_offset,root,connectivity_offset_name);
+    write_static_size(connectivity_offset, root, connectivity_offset_name);
 
     WriteMatrixX(k_sym, root, k_sym_name);
     WriteMatrixX(k_rec, root, k_rec_name);
@@ -404,48 +404,14 @@ void IsingModel::load_ensemble(std::vector<VectorX> &target, HighFive::DataSet &
 }
 
 HighFive::DataSet IsingModel::dump_ensemble(std::vector<VectorX> &target, HighFive::Group &root, std::string sub_name) {
-    HighFive::DataSet target_dataset;
-    std::vector<size_t> offset{0, 0};
-    std::vector<size_t> count{1, 0};
-    if (root.exist(sub_name)) {
-        target_dataset = root.getDataSet(sub_name);
-        const std::vector<size_t> shape{target_dataset.getDimensions()};
+    std::vector<size_t> offset;
+    HighFive::DataSet target_dataset = add_to_expandable_dataset(
+            root, sub_name,
+            {target.size(), static_cast<unsigned long>(target[0].rows())},
+            offset);;
 
-        if (shape.size() == 2) {
-            if (shape[1] != target[0].rows()) {
-                std::cerr << "Vector sizes not matching\n";
-                exit(-1);
-            }
-            offset[0] = shape[0];
-            count[1] = shape[1];
-            target_dataset.resize({shape[0] + target.size(), shape[1]});
+    std::vector<size_t> count{1, static_cast<unsigned long>(target[0].rows())};
 
-        } else if (shape.size() == 3) {
-            if (shape[2] != 1) {
-                std::cerr << "Shapes not matching\n";
-                exit(-1);
-            }
-            if (shape[1] != target[0].rows()) {
-                std::cerr << "Vector sizes not matching\n";
-                exit(-1);
-            }
-            //TODO
-
-        } else {
-            std::cerr << "Can't extend dataset\n";
-            exit(-1);
-        }
-
-    } else {
-        auto my_dataspace = HighFive::DataSpace(
-                {target.size(), static_cast<unsigned long>(target[0].rows())},
-                {HighFive::DataSpace::UNLIMITED, static_cast<unsigned long>(target[0].rows())});
-        HighFive::DataSetCreateProps props;
-        props.add(HighFive::Chunking({1, static_cast<unsigned long>(target[0].rows())}));
-        target_dataset = root.createDataSet(sub_name, my_dataspace,
-                                            HighFive::create_datatype<double>(), props);
-        count[1] = target[0].rows();
-    }
     for (auto &elem: target) {
         target_dataset.select(offset, count).write_raw(elem.data());
         offset[0]++;
