@@ -170,7 +170,7 @@ public:
     /**
      * @brief Updates the internal attributes from the finer level model
      */
-    virtual void pull_attributes_from_finer_level() = 0;
+    virtual void pull_attributes_from_root() = 0;
 
     /**
      * @brief Returns an empty field, useful for the starting of a Multi Level run

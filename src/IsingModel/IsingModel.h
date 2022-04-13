@@ -139,9 +139,9 @@ public:
     void interpolate(const VectorX &phi2a, VectorX &phia) override;
 
     /**
-     * @brief Updates the internal attributes from the \a FinerModel
+     * @brief Updates the internal attributes from the \a RootModel
      */
-    void pull_attributes_from_finer_level() override;
+    void pull_attributes_from_root() override;
 
     /**
      * @brief Returns an empty field, useful for the starting of a Multi Level run
@@ -291,9 +291,10 @@ private:
     static const char *InterpolationMatrix_name;
 
     /**
-     * @brief Reference to the next finer Level in Multi Level mode, otherwise reference to \c *this.
+     * @brief Reference to the next finer Level in Multi Level mode or the model from which this model is a copy,
+     *        otherwise reference to \c *this.
      */
-    const IsingModel &FinerModel;
+    const IsingModel &RootModel;
 
     /**
      * @brief Default name of the IsingModel

@@ -85,7 +85,6 @@ public:
 
     /**
      * @brief Propagates the change of attributes from the fine level model to all coarser levels
-     * @todo Change model saving such that the model_ parameter of the constructors references the fine level model and doesn't just get copied
      */
     [[maybe_unused]] void propagate_update();
 
@@ -315,8 +314,9 @@ MultiLevelHMCGenerator<configuration_type>::LevelRecursion(int level, const conf
 
 template<class configuration_type>
 [[maybe_unused]] void MultiLevelHMCGenerator<configuration_type>::propagate_update() {
-    for (int i = 1; i < ModelStack.size(); ++i) {
-        ModelStack[i]->pull_attributes_from_finer_level();
+    //Start from 0 because this way also level 0 updates its parameters from the root model
+    for (int i = 0; i < ModelStack.size(); ++i) {
+        ModelStack[i]->pull_attributes_from_root();
     }
 }
 

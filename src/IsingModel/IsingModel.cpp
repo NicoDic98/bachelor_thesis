@@ -29,7 +29,7 @@ IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, i
           dimension{dimension_}, neighbour_extent{neighbour_extent_}, grid_side_length{grid_size_},
           k_sym(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)),
           k_rec(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)),
-          InterpolationMatrix{}, FinerModel{*this} {
+          InterpolationMatrix{}, RootModel{*this} {
 
     fill_connectivity_matrix(grid_size_);
     add_offset_to_connectivity_matrix(offset_ + (2 * neighbour_extent_ * dimension));
@@ -42,12 +42,12 @@ IsingModel::IsingModel(const IsingModel &NewModel, InterpolationType Interpolati
         : BaseModel<VectorX>(NewModel), sqrt_beta{sqrt(NewModel.get_beta())}, h{NewModel.h},
           eta{NewModel.eta}, connectivity_offset{NewModel.connectivity_offset}, dimension{NewModel.dimension},
           neighbour_extent{NewModel.neighbour_extent}, grid_side_length{NewModel.grid_side_length},
-          InterpolationMatrix{}, FinerModel{NewModel} {
+          InterpolationMatrix{}, RootModel{NewModel} {
     std::cout << "Isingmodel Interpolation constructor called" << std::endl;
-    assert(FinerModel.check_internal_dimensions());
+    assert(RootModel.check_internal_dimensions());
     grid_side_length = fill_interpolation_matrix(InterpolationType_, h.rows(), grid_side_length);
-    set_k_sym(InterpolationMatrix.transpose() * FinerModel.k_sym * InterpolationMatrix);
-    k_rec = FinerModel.k_rec * InterpolationMatrix;
+    set_k_sym(InterpolationMatrix.transpose() * RootModel.k_sym * InterpolationMatrix);
+    k_rec = RootModel.k_rec * InterpolationMatrix;
     h.resize(int_pow(grid_side_length, dimension));
 
     //print_dimensions();
@@ -60,7 +60,7 @@ IsingModel::IsingModel(const IsingModel &NewModel)
           eta{NewModel.eta}, connectivity_offset{NewModel.connectivity_offset}, dimension{NewModel.dimension},
           neighbour_extent{NewModel.neighbour_extent}, grid_side_length{NewModel.grid_side_length},
           k_sym(NewModel.k_sym.rows(), NewModel.k_sym.cols()), k_rec{NewModel.k_rec},
-          InterpolationMatrix{NewModel.InterpolationMatrix}, FinerModel{*this} {
+          InterpolationMatrix{NewModel.InterpolationMatrix}, RootModel{NewModel} {
     std::cout << "Isingmodel copy constructor called" << std::endl;
     set_k_sym(NewModel.k_sym);
     //print_dimensions();
@@ -70,7 +70,7 @@ IsingModel::IsingModel(const IsingModel &NewModel)
 [[maybe_unused]] IsingModel::IsingModel(HighFive::Group &root)
         : BaseModel<VectorX>(root, IsingModel_name),
           sqrt_beta{sqrt(get_beta())}, dimension{}, neighbour_extent{}, grid_side_length{}, connectivity_offset{},
-          FinerModel{*this} {
+          RootModel{*this} {
     assert(name == IsingModel_name);
     root.getAttribute(dimension_name).read(dimension);
     root.getAttribute(neighbour_extent_name).read(neighbour_extent);
@@ -344,8 +344,8 @@ IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_, long
 }
 
 void IsingModel::update_fields(const VectorX &phi) {
-    h = (FinerModel.h.transpose() - phi.transpose() * FinerModel.k_sym / sqrt_beta) * InterpolationMatrix;
-    eta = FinerModel.eta + sqrt_beta * FinerModel.k_rec * phi;
+    h = (RootModel.h.transpose() - phi.transpose() * RootModel.k_sym / sqrt_beta) * InterpolationMatrix;
+    eta = RootModel.eta + sqrt_beta * RootModel.k_rec * phi;
 }
 
 void IsingModel::interpolate(const VectorX &phi2a, VectorX &phia) {
@@ -401,8 +401,8 @@ void IsingModel::dumpToH5(HighFive::Group &root) {
 
 }
 
-void IsingModel::pull_attributes_from_finer_level() {
-    set_beta(FinerModel.get_beta());
+void IsingModel::pull_attributes_from_root() {
+    set_beta(RootModel.get_beta());
     //TODO maybe add some more attributes to be pulled
 }
 
