@@ -335,11 +335,11 @@ void MultiLevelHMCGenerator<configuration_type>::dumpToH5(HighFive::File &file) 
             current_level = file.createGroup(current_level_name);
         }
         auto ensemble_dataset = HMCStack[i].dumpToH5(current_level);
-        ensemble_dataset.createAttribute(nu_pre_name, nu_pre[i]);
-        ensemble_dataset.createAttribute(nu_post_name, nu_post[i]);
-        ensemble_dataset.createAttribute(gamma_name, gamma);
-        ensemble_dataset.createAttribute(inter_type_name, static_cast<int>(inter_type));
-        ensemble_dataset.createAttribute(AcceptanceRate_name, AcceptanceRates[i]);
+        write_static_size(nu_pre[i], ensemble_dataset, nu_pre_name);
+        write_static_size(nu_post[i], ensemble_dataset, nu_post_name);
+        write_static_size(gamma, ensemble_dataset, gamma_name);
+        write_static_size(static_cast<int>(inter_type), ensemble_dataset, inter_type_name);
+        write_static_size(AcceptanceRates[i], ensemble_dataset, AcceptanceRate_name);
     }
 }
 

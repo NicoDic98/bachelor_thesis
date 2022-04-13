@@ -360,37 +360,16 @@ VectorX IsingModel::get_empty_field() {
 
 void IsingModel::dumpToH5(HighFive::Group &root) {
     BaseModel<VectorX>::dumpToH5(root);
-    if (root.hasAttribute(dimension_name)) {
-        HighFive::Attribute temp = root.getAttribute(dimension_name);
-        temp.write(dimension);
-    } else {
-        root.createAttribute(dimension_name, dimension);
-    }
 
-    if (root.hasAttribute(neighbour_extent_name)) {
-        HighFive::Attribute temp = root.getAttribute(neighbour_extent_name);
-        temp.write(neighbour_extent);
-    } else {
-        root.createAttribute(neighbour_extent_name, neighbour_extent);
-    }
-
-    if (root.hasAttribute(grid_side_length_name)) {
-        HighFive::Attribute temp = root.getAttribute(grid_side_length_name);
-        temp.write(grid_side_length);
-    } else {
-        root.createAttribute(grid_side_length_name, grid_side_length);
-    }
+    write_static_size(dimension,root,dimension_name);
+    write_static_size(neighbour_extent,root,neighbour_extent_name);
+    write_static_size(grid_side_length,root,grid_side_length_name);
 
     WriteVectorX(h, root, h_name);
 
     WriteVectorX(eta, root, eta_name);
 
-    if (root.hasAttribute(connectivity_offset_name)) {
-        HighFive::Attribute temp = root.getAttribute(connectivity_offset_name);
-        temp.write(connectivity_offset);
-    } else {
-        root.createAttribute(connectivity_offset_name, connectivity_offset);
-    }
+    write_static_size(connectivity_offset,root,connectivity_offset_name);
 
     WriteMatrixX(k_sym, root, k_sym_name);
     WriteMatrixX(k_rec, root, k_rec_name);

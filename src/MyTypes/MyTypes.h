@@ -62,4 +62,19 @@ void WriteMatrixX(MatrixX &matrix_to_write, HighFive::Group &root, std::string n
  */
 void ReadMatrixX(MatrixX &matrix_to_read_into, HighFive::Group &root, std::string name);
 
+/**
+ * @brief Writes constant size \p var to \p root as attribute with the name \p name
+ * @param var Variable to be written
+ * @param root Group/DataSet to write to
+ * @param name Name of the target Attribute
+ */
+template<typename T,typename group_dataset>
+void write_static_size(T var, HighFive::AnnotateTraits<group_dataset> &root, std::string name ){
+    if (root.hasAttribute(name)) {
+        root.getAttribute(name).write(var);
+        //type should always be double, no size checks
+    } else {
+        root.createAttribute(name, var);
+    }
+}
 #endif //BACHELOR_THESIS_MYTYPES_H

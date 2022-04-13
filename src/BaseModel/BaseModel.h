@@ -278,21 +278,12 @@ template<class configuration_type>
 
 template<class configuration_type>
 void BaseModel<configuration_type>::dumpToH5(HighFive::Group &root) {
-    if (root.hasAttribute(beta_name)) {
-        HighFive::Attribute temp = root.getAttribute(beta_name);
-        temp.write(beta);//type should always be double, no size checks
-    } else {
-        root.createAttribute(beta_name, beta);
-    }
+    write_static_size(beta, root, beta_name);
     if (root.hasAttribute(model_name_key)) {
         root.deleteAttribute(model_name_key);
-        root.createAttribute(model_name_key, name);
         //TODO maybe there is a nicer fix for this
-        //HighFive::Attribute temp = root.getAttribute(model_name_key);
-        //temp.write(name);
-    } else {
-        root.createAttribute(model_name_key, name);
     }
+    root.createAttribute(model_name_key, name);
 }
 
 
