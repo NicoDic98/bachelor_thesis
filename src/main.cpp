@@ -223,8 +223,8 @@ void test_hmc_measurements() {
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_leap_frog();
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
-    //test_multi_level_hmc();
-    test_hmc_measurements();
+    test_multi_level_hmc();
+    //test_hmc_measurements();
     //MultiLevelTime();
 }
 
