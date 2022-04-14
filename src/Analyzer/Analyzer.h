@@ -30,6 +30,7 @@ public:
 
 private:
     HighFive::DataSet &dataset;
+    HighFive::Group group;
     std::vector<double> data;
     std::vector<double> blocked_data;
     std::vector<double> bootstrapped_data;

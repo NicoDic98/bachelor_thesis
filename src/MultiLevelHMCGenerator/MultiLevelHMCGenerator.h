@@ -350,6 +350,7 @@ void MultiLevelHMCGenerator<configuration_type>::dump_observable(
     for (int i = 0; i < HMCStack.size(); ++i) {
         HighFive::Group current_level = file.getGroup(file.getPath());
         HighFive::Group measurements = current_level;
+        HighFive::Group observable_group = current_level;
 
         std::string current_level_name{level_name};
         current_level_name.append(std::to_string(i));
@@ -364,9 +365,15 @@ void MultiLevelHMCGenerator<configuration_type>::dump_observable(
         } else {
             measurements = current_level.createGroup(measurements_name);
         }
-        HighFive::DataSet dataset = HMCStack[i].dump_observable(observable_function_pointer, name, measurements);
+        if (current_level.exist(name)) {
+            observable_group = measurements.getGroup(name);
+        } else {
+            observable_group = measurements.createGroup(name);
+        }
+        HighFive::DataSet dataset = HMCStack[i].dump_observable(observable_function_pointer, "data", observable_group);
         Analyzer a(dataset, generator);
         if(i==0){
+            a.auto_correlation(30);
             a.block_data(16);
             a.bootstrap_data(200);
         }
