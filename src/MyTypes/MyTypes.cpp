@@ -35,8 +35,8 @@ void WriteMatrixX(MatrixX &matrix_to_write, HighFive::Group &root, std::string n
 
     HighFive::DataSet target_dataset = add_to_expandable_dataset(
             root, name,
-            {static_cast<unsigned long>(matrix_to_write.rows()),static_cast<unsigned long>(matrix_to_write.cols())},
-            offset, true);
+            {static_cast<unsigned long>(matrix_to_write.rows()), static_cast<unsigned long>(matrix_to_write.cols())},
+            offset, true, {0, 1});
 
     std::vector<size_t> count{static_cast<unsigned long>(matrix_to_write.rows()),
                               static_cast<unsigned long>(matrix_to_write.cols())};
@@ -57,7 +57,7 @@ void ReadMatrixX(MatrixX &matrix_to_read_into, HighFive::Group &root, std::strin
 
 HighFive::DataSet add_to_expandable_dataset(HighFive::Group &root, const std::string &sub_name,
                                             const std::vector<size_t> &dims, std::vector<size_t> &offset,
-                                            bool override) {
+                                            bool override, const std::vector<size_t> &dims_to_resize) {
     offset.clear();
     offset.resize(dims.size());
     std::fill(offset.begin(), offset.end(), 0);
@@ -67,7 +67,12 @@ HighFive::DataSet add_to_expandable_dataset(HighFive::Group &root, const std::st
         std::vector<size_t> shape{target_dataset.getDimensions()};
 
         if (shape.size() == dims.size()) {
-            for (int i = 1; i < shape.size(); ++i) {
+            for (int i = 0; i < shape.size(); ++i) {
+                for (auto resize_dim: dims_to_resize) {
+                    if (i == resize_dim) {
+                        continue;
+                    }
+                }
                 if (shape[i] != dims[i]) {
                     std::cerr << "Vector sizes not matching\n";
                     exit(-1);
@@ -90,7 +95,9 @@ HighFive::DataSet add_to_expandable_dataset(HighFive::Group &root, const std::st
         return target_dataset;
     } else {
         auto max_dims(dims);
-        max_dims[0] = HighFive::DataSpace::UNLIMITED;
+        for (auto resize_dim: dims_to_resize) {
+            max_dims[resize_dim] = HighFive::DataSpace::UNLIMITED;
+        }
         auto my_dataspace = HighFive::DataSpace(dims, max_dims);
 
         HighFive::DataSetCreateProps props;
