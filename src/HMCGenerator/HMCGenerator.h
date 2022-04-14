@@ -281,8 +281,8 @@ HighFive::DataSet HMCGenerator<configuration_type>::dumpToH5(HighFive::Group &ro
     model.dumpToH5(root);
 
     auto ensemble_dataset = model.dump_ensemble(ensembles, root, ensembles_name);
-    write_static_size(amount_of_steps,root,amount_of_steps_name);
-    write_static_size(step_size,root,step_size_name);
+    write_static_size(amount_of_steps,ensemble_dataset,amount_of_steps_name);
+    write_static_size(step_size,ensemble_dataset,step_size_name);
     return ensemble_dataset;
 }
 

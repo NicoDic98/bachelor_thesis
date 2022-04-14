@@ -194,20 +194,24 @@ void MultiLevelTime() {
 }
 
 void test_hmc_measurements() {
-    double inverse_beta{0.8};
-    std::string my_time{"14_04_2022__00_57_10_"};
-    std::string filename{std::string(DATA_DIR).append(my_time).append(std::to_string(inverse_beta)).append(".h5")};
-    HighFive::File file(filename, HighFive::File::ReadWrite);
-    auto helper = file.getGroup("level0");//todo see if this step can be removed to be needed
-    IsingModel test(helper);
+    std::string my_time{"14_04_2022__13_40_03_"};
+    for (double inverse_beta = 0.3; inverse_beta < 4.05; inverse_beta += 0.1) {
+        std::string filename{std::string(DATA_DIR).append(my_time).append(std::to_string(inverse_beta)).append(".h5")};
+        HighFive::File file(filename, HighFive::File::ReadOnly);
+        auto helper = file.getGroup("level0");//todo see if this step can be removed to be needed
+        IsingModel test(helper);
 
-    std::default_random_engine myengine{42L};
-    MultiLevelHMCGenerator mygen(test, file, myengine);
-    HighFive::File out_file(std::string(DATA_DIR).append("out.h5"),
-                            HighFive::File::ReadWrite|HighFive::File::Create|HighFive::File::Truncate);
-    mygen.dumpToH5(out_file);
-    mygen.dump_observable(&BaseModel<VectorX>::get_magnetization, "magnetization", out_file);
-    mygen.dump_observable(&BaseModel<VectorX>::get_magnetization_squared, "magnetization_squared", out_file);
+        std::default_random_engine myengine{42L};
+        MultiLevelHMCGenerator mygen(test, file, myengine);
+        std::string out_filename{
+                std::string(DATA_DIR).append("out_").append(my_time).
+                        append(std::to_string(inverse_beta)).append(".h5")};
+        HighFive::File out_file(out_filename,
+                                HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
+        //mygen.dumpToH5(out_file);
+        mygen.dump_observable(&BaseModel<VectorX>::get_magnetization, "magnetization", out_file);
+        mygen.dump_observable(&BaseModel<VectorX>::get_magnetization_squared, "magnetization_squared", out_file);
+    }
 }
 
 /**
@@ -219,8 +223,8 @@ void test_hmc_measurements() {
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_leap_frog();
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
-    test_multi_level_hmc();
-    //test_hmc_measurements();
+    //test_multi_level_hmc();
+    test_hmc_measurements();
     //MultiLevelTime();
 }
 
