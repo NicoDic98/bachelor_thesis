@@ -230,13 +230,13 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
     HighFive::DataSet current_level_dataset = HMCStack[0].get_dataset(current_level);
 
     size_t buffer;
-    current_level_dataset.getAttribute(nu_pre_name).read(buffer);
+    current_level.getAttribute(nu_pre_name).read(buffer);
     nu_pre.push_back(buffer);
-    current_level_dataset.getAttribute(nu_post_name).read(buffer);
+    current_level.getAttribute(nu_post_name).read(buffer);
     nu_post.push_back(buffer);
-    current_level_dataset.getAttribute(gamma_name).read(gamma);
+    current_level.getAttribute(gamma_name).read(gamma);
     double dBuffer;
-    current_level_dataset.getAttribute(AcceptanceRate_name).read(dBuffer);
+    current_level.getAttribute(AcceptanceRate_name).read(dBuffer);
     AcceptanceRates.push_back(dBuffer);
     assert(nu_pre[0] + nu_post[0] > 0);
 
@@ -256,15 +256,15 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
         HMCStack.push_back(HMCGenerator(*ModelStack[i], current_level, generator));
         current_level_dataset = HMCStack[i].get_dataset(current_level);
 
-        current_level_dataset.getAttribute(nu_pre_name).read(buffer);
+        current_level.getAttribute(nu_pre_name).read(buffer);
         nu_pre.push_back(buffer);
-        current_level_dataset.getAttribute(nu_post_name).read(buffer);
+        current_level.getAttribute(nu_post_name).read(buffer);
         nu_post.push_back(buffer);
-        current_level_dataset.getAttribute(gamma_name).read(gamma);
+        current_level.getAttribute(gamma_name).read(gamma);
         int iBuffer;
-        current_level_dataset.getAttribute(inter_type_name).read(iBuffer);
+        current_level.getAttribute(inter_type_name).read(iBuffer);
         inter_type = static_cast<InterpolationType>(iBuffer);
-        current_level_dataset.getAttribute(AcceptanceRate_name).read(dBuffer);
+        current_level.getAttribute(AcceptanceRate_name).read(dBuffer);
         AcceptanceRates.push_back(dBuffer);
         assert(nu_pre[i] + nu_post[i] > 0);
     }
@@ -335,11 +335,11 @@ void MultiLevelHMCGenerator<configuration_type>::dumpToH5(HighFive::File &file) 
             current_level = file.createGroup(current_level_name);
         }
         auto ensemble_dataset = HMCStack[i].dumpToH5(current_level);
-        write_static_size(nu_pre[i], ensemble_dataset, nu_pre_name);
-        write_static_size(nu_post[i], ensemble_dataset, nu_post_name);
-        write_static_size(gamma, ensemble_dataset, gamma_name);
-        write_static_size(static_cast<int>(inter_type), ensemble_dataset, inter_type_name);
-        write_static_size(AcceptanceRates[i], ensemble_dataset, AcceptanceRate_name);
+        write_static_size(nu_pre[i], current_level, nu_pre_name);
+        write_static_size(nu_post[i], current_level, nu_post_name);
+        write_static_size(gamma, current_level, gamma_name);
+        write_static_size(static_cast<int>(inter_type), current_level, inter_type_name);
+        write_static_size(AcceptanceRates[i], current_level, AcceptanceRate_name);
     }
 }
 

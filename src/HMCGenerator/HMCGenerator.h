@@ -246,8 +246,8 @@ HMCGenerator<configuration_type>::HMCGenerator(BaseModel<configuration_type> &mo
         :model{model_}, amount_of_steps{}, step_size{}, integrator{model_}, generator{generator_} {
 
     auto ensembles_dataset = root.getDataSet(ensembles_name);
-    ensembles_dataset.getAttribute(amount_of_steps_name).read(amount_of_steps);
-    ensembles_dataset.getAttribute(step_size_name).read(step_size);
+    root.getAttribute(amount_of_steps_name).read(amount_of_steps);
+    root.getAttribute(step_size_name).read(step_size);
 
     model.load_ensemble(ensembles, ensembles_dataset);
 }
@@ -281,8 +281,8 @@ HighFive::DataSet HMCGenerator<configuration_type>::dumpToH5(HighFive::Group &ro
     model.dumpToH5(root);
 
     auto ensemble_dataset = model.dump_ensemble(ensembles, root, ensembles_name);
-    write_static_size(amount_of_steps,ensemble_dataset,amount_of_steps_name);
-    write_static_size(step_size,ensemble_dataset,step_size_name);
+    write_static_size(amount_of_steps,root,amount_of_steps_name);
+    write_static_size(step_size,root,step_size_name);
     return ensemble_dataset;
 }
 

@@ -8,36 +8,43 @@
 #include "MyTypes.h"
 
 void WriteVectorX(VectorX &vector_to_write, HighFive::Group &root, std::string name) {
-    if (root.hasAttribute(name)) {
-        root.deleteAttribute(name);
-    }
-    auto temp = root.createAttribute(name, HighFive::DataSpace(vector_to_write.rows()),
-                                     HighFive::create_datatype<double>());
-    temp.write_raw(vector_to_write.data());
+    std::vector<size_t> offset;
+    assert(vector_to_write.rows() >= 0);
+
+    HighFive::DataSet target_dataset = add_to_expandable_dataset(
+            root, name,
+            {static_cast<unsigned long>(vector_to_write.rows())},
+            offset, true);
+
+    std::vector<size_t> count{static_cast<unsigned long>(vector_to_write.rows())};
+    target_dataset.select(offset, count).write_raw(vector_to_write.data());
 }
 
 void ReadVectorX(VectorX &vector_to_read_into, HighFive::Group &root, std::string name) {
-    auto temp = root.getAttribute(name);
+    auto temp = root.getDataSet(name);
     std::vector<double> my_buffer;
     temp.read(my_buffer);
-
-    VectorX vec_temp(my_buffer.size());
-    vec_temp = VectorX::Map(&my_buffer[0], my_buffer.size());
-    vector_to_read_into = vec_temp;
+    vector_to_read_into.resize(my_buffer.size());
+    vector_to_read_into = VectorX::Map(&my_buffer[0], my_buffer.size());
 }
 
 void WriteMatrixX(MatrixX &matrix_to_write, HighFive::Group &root, std::string name) {
-    if (root.hasAttribute(name)) {
-        root.deleteAttribute(name);
-    }
-    auto temp = root.createAttribute(name,
-                                     HighFive::DataSpace(matrix_to_write.rows(), matrix_to_write.cols()),
-                                     HighFive::create_datatype<double>());
-    temp.write_raw(matrix_to_write.data());
+    std::vector<size_t> offset;
+    assert(matrix_to_write.rows() >= 0);
+    assert(matrix_to_write.cols() >= 0);
+
+    HighFive::DataSet target_dataset = add_to_expandable_dataset(
+            root, name,
+            {static_cast<unsigned long>(matrix_to_write.rows()),static_cast<unsigned long>(matrix_to_write.cols())},
+            offset, true);
+
+    std::vector<size_t> count{static_cast<unsigned long>(matrix_to_write.rows()),
+                              static_cast<unsigned long>(matrix_to_write.cols())};
+    target_dataset.select(offset, count).write_raw(matrix_to_write.data());
 }
 
 void ReadMatrixX(MatrixX &matrix_to_read_into, HighFive::Group &root, std::string name) {
-    auto temp = root.getAttribute(name);
+    auto temp = root.getDataSet(name);
     std::vector<std::vector<double>> my_buffer;
     temp.read(my_buffer);
 

@@ -108,7 +108,7 @@ void test_HMC(const std::string &filename) {
 
 
 void test_multi_level_hmc() {
-    const int grid_size = 8;
+    const int grid_size = 16;
     const int dim = 2;
     const int lambda = int_pow(grid_size, dim);
     const double C{0.1};
@@ -194,7 +194,7 @@ void MultiLevelTime() {
 }
 
 void test_hmc_measurements() {
-    std::string my_time{"14_04_2022__13_40_03_"};
+    std::string my_time{"14_04_2022__14_23_13_"};
     for (double inverse_beta = 0.3; inverse_beta < 4.05; inverse_beta += 0.1) {
         std::string filename{std::string(DATA_DIR).append(my_time).append(std::to_string(inverse_beta)).append(".h5")};
         HighFive::File file(filename, HighFive::File::ReadOnly);
