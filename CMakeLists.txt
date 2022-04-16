@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 
 # set the project name and version
-project(bachelor_thesis VERSION 0.2)
+project(MultiLevelHMC VERSION 0.2)
 
 set(SOURCE_DIR_NAME "src")
 set(DOCUMENTATION_DIR_NAME "docs")
