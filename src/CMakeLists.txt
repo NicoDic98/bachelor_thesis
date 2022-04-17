@@ -28,6 +28,20 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(HighFive)
 set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} "${highfive_SOURCE_DIR}/include")
 
+# Set the GPU to compile for
+set(GPU_TARGETS "gfx1012" CACHE STRING "GPU targets to compile for")
+
+# Search for rocm in common locations
+list(APPEND CMAKE_PREFIX_PATH /opt/rocm/hip /opt/rocm)
+# Find hip
+find_package(hip)
+if(hip_FOUND)
+    message(STATUS "Found my hip ${hip_VERSION}: ${hip_INCLUDE_DIRS}")
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} "${hip_INCLUDE_DIRS}")
+endif()
+
+
+
 
 # configure a header file to pass some of the CMake settings
 # to the source code
@@ -48,4 +62,4 @@ add_executable("${PROJECT_NAME}" ${SOURCE_FILES})
 # add the binary tree to the search path for include files
 # so that we will find TutorialConfig.h
 target_include_directories("${PROJECT_NAME}" PUBLIC ${INCLUDE_DIRECTORIES})
-target_link_libraries("${PROJECT_NAME}" PUBLIC ${HDF5_LIBRARIES} Eigen3::Eigen)
+target_link_libraries("${PROJECT_NAME}" PUBLIC ${HDF5_LIBRARIES} Eigen3::Eigen hip::device)
