@@ -9,6 +9,7 @@
 #include "Analyzer.h"
 
 
+const char *Analyzer::auto_correlation_name{"auto_correlation"};
 const char *Analyzer::mean_name{"mean"};
 const char *Analyzer::bootstrap_mean_name{"bootstrap_mean"};
 const char *Analyzer::bootstrap_variance_name{"bootstrap_variance"};
@@ -38,7 +39,7 @@ std::vector<double> Analyzer::auto_correlation(size_t max_t) {
     }
     VectorX vec_temp(ret.size());
     vec_temp = VectorX::Map(&ret[0], ret.size());
-    WriteVectorX(vec_temp,group,"Correl");
+    WriteVectorX(vec_temp,group,auto_correlation_name);
 
     return ret;
 }

@@ -306,7 +306,7 @@ void MultiLevelTime() {
 }
 
 void test_hmc_measurements() {
-    std::string my_time{"14_04_2022__14_23_13_"};
+    std::string my_time{"14_04_2022__14_58_06_"};
     for (double inverse_beta = 0.3; inverse_beta < 4.05; inverse_beta += 0.1) {
         std::string filename{std::string(DATA_DIR).append(my_time).append(std::to_string(inverse_beta)).append(".h5")};
         HighFive::File file(filename, HighFive::File::ReadOnly);
@@ -336,7 +336,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_leap_frog();
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     //test_multi_level_hmc();
-    //test_hmc_measurements();
+    test_hmc_measurements();
     //MultiLevelTime();
     return test_hip();
 }
