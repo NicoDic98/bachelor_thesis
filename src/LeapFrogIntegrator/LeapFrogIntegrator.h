@@ -21,7 +21,7 @@ class LeapFrogIntegrator {
 public:
     /**
      * @brief Constructor of the Leap Frog Integrator
-     * @param model Model to be used for integration
+     * @param model_ Model to be used for integration
      */
     explicit LeapFrogIntegrator(BaseModel<configuration_type> &model_);
 

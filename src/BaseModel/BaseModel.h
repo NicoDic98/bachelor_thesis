@@ -115,7 +115,6 @@ public:
      * @param phi
      * @param pi
      * @param step_size
-     * @return pi_new
      */
     virtual void update_pi(configuration_type &phi, configuration_type &pi, double step_size);
 
@@ -124,7 +123,6 @@ public:
      * @param phi
      * @param pi
      * @param step_size
-     * @return phi_new
      */
     virtual void update_phi(configuration_type &phi, configuration_type &pi, double step_size);
 

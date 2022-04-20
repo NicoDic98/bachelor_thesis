@@ -215,6 +215,9 @@ private:
      */
     static const char *dimension_name;
 
+    /**
+     * @brief Neighbour extent
+     */
     int neighbour_extent;
     /**
      * @brief String to be used as key for \a neighbour_extent in H5 files
@@ -248,6 +251,9 @@ private:
      */
     static const char *eta_name;
 
+    /**
+     * @brief Offset of the connectivity matrix
+     */
     double connectivity_offset;
     /**
      * @brief String to be used as key for \a connectivity_offset in H5 files

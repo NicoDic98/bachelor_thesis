@@ -78,6 +78,16 @@ void write_static_size(T var, HighFive::AnnotateTraits<group_dataset> &root, std
     }
 }
 
+/**
+ * @brief Adds/Creates the dataset \a sub_name under \a root with dimensions \a dims
+ * @param root Group under which the dataset lies
+ * @param sub_name Name of the dataset
+ * @param dims Dimensions of the dataset to be added
+ * @param offset Offset to be used in the following writing task
+ * @param override Rather to overwrite the existing dataset or not
+ * @param dims_to_resize Dimensions which should be/are resizeable
+ * @return Dataset into which a write-task can be done using \a offset
+ */
 HighFive::DataSet add_to_expandable_dataset(HighFive::Group &root, const std::string &sub_name,
                                             const std::vector<size_t> &dims, std::vector<size_t> &offset,
                                             bool override = false, const std::vector<size_t> &dims_to_resize = {0});
