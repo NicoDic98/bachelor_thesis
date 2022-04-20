@@ -6,5 +6,6 @@
 /cmake-build-release-system-1/
 /cmake-build-release-system/
 /cmake-build-release-hip/
+/cmake-build-relwithdebinfo-hip/
 /.idea/
 /venv/

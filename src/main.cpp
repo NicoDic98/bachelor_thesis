@@ -54,7 +54,8 @@ int test_hip() {
     float *deviceC;
 
     hipDeviceProp_t devProp;
-    HIP_ASSERT(hipGetDeviceProperties(&devProp, 0));
+    auto ret = (hipGetDeviceProperties(&devProp, 0));
+    HIP_ASSERT(ret);
     std::cout << " System minor " << devProp.minor << std::endl;
     std::cout << " System major " << devProp.major << std::endl;
     std::cout << " agent prop name " << devProp.name << std::endl;
@@ -76,12 +77,17 @@ int test_hip() {
         hostC[i] = (float) i * 100.0f;
     }
 
-    HIP_ASSERT(hipMalloc((void **) &deviceA, NUM * sizeof(float)));
-    HIP_ASSERT(hipMalloc((void **) &deviceB, NUM * sizeof(float)));
-    HIP_ASSERT(hipMalloc((void **) &deviceC, NUM * sizeof(float)));
+    ret = (hipMalloc((void **) &deviceA, NUM * sizeof(float)));
+    HIP_ASSERT(ret);
+    ret = (hipMalloc((void **) &deviceB, NUM * sizeof(float)));
+    HIP_ASSERT(ret);
+    ret = (hipMalloc((void **) &deviceC, NUM * sizeof(float)));
+    HIP_ASSERT(ret);
 
-    HIP_ASSERT(hipMemcpy(deviceB, hostB, NUM * sizeof(float), hipMemcpyHostToDevice));
-    HIP_ASSERT(hipMemcpy(deviceC, hostC, NUM * sizeof(float), hipMemcpyHostToDevice));
+    ret = (hipMemcpy(deviceB, hostB, NUM * sizeof(float), hipMemcpyHostToDevice));
+    HIP_ASSERT(ret);
+    ret = (hipMemcpy(deviceC, hostC, NUM * sizeof(float), hipMemcpyHostToDevice));
+    HIP_ASSERT(ret);
 
 
     hipLaunchKernelGGL(vectoradd_float,
@@ -91,7 +97,8 @@ int test_hip() {
                        deviceA, deviceB, deviceC, WIDTH, HEIGHT);
 
 
-    HIP_ASSERT(hipMemcpy(hostA, deviceA, NUM * sizeof(float), hipMemcpyDeviceToHost));
+    ret = (hipMemcpy(hostA, deviceA, NUM * sizeof(float), hipMemcpyDeviceToHost));
+    HIP_ASSERT(ret);
 
     // verify the results
     errors = 0;
@@ -106,9 +113,12 @@ int test_hip() {
         std::cout << "PASSED!" << std::endl;
     }
 
-    HIP_ASSERT(hipFree(deviceA));
-    HIP_ASSERT(hipFree(deviceB));
-    HIP_ASSERT(hipFree(deviceC));
+    ret = (hipFree(deviceA));
+    HIP_ASSERT(ret);
+    ret = (hipFree(deviceB));
+    HIP_ASSERT(ret);
+    ret = (hipFree(deviceC));
+    HIP_ASSERT(ret);
 
     free(hostA);
     free(hostB);
