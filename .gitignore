@@ -1,8 +1,10 @@
 /cmake-build-debug/
 /cmake-build-debug-system-1/
 /cmake-build-debug-system/
+/cmake-build-debug-hip/
 /cmake-build-release/
 /cmake-build-release-system-1/
 /cmake-build-release-system/
+/cmake-build-release-hip/
 /.idea/
 /venv/
