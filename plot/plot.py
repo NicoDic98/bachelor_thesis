@@ -37,7 +37,6 @@ def magnetization_exact(beta):
         return (1. - 1. / np.sinh(2 * beta) ** 4) ** (1 / 8)
 
 
-print(magnetizations_errors)
 fig, ax = plt.subplots()
 fig: plt.Figure
 ax: plt.Axes
