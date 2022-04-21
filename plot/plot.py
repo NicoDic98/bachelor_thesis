@@ -16,6 +16,7 @@ energies = []
 energies_errors = []
 energies_squared = []
 energies_squared_errors = []
+
 for file in os.listdir():
     if file.startswith("out"):
         print(file)
@@ -69,8 +70,8 @@ ax: plt.Axes
 ax.errorbar(inverse_betas, magnetizations, magnetizations_errors, fmt='o')
 beta_lin = np.linspace(0.25, 3, 1000)
 m_exact = np.array([magnetization_exact(temp) for temp in beta_lin])
-plt.plot(1. / beta_lin, m_exact)
-plt.plot(1. / beta_lin, -m_exact)
+ax.plot(1. / beta_lin, m_exact)
+ax.plot(1. / beta_lin, -m_exact)
 
 ax.set_xlabel(r"1/$\beta$")
 ax.set_ylabel(r"m")
@@ -79,8 +80,8 @@ ax.clear()
 
 # magnetizations_squared
 ax.errorbar(inverse_betas, magnetizations_squared, magnetizations_squared_errors, fmt='o')
-m_squared_exact = m_exact ** 2
-plt.plot(1. / beta_lin, m_squared_exact)
+m_squared_exact = m_exact ** 2  # todo
+ax.plot(1. / beta_lin, m_squared_exact)
 
 ax.set_xlabel(r"1/$\beta$")
 ax.set_ylabel(r"m²")
@@ -90,7 +91,7 @@ ax.clear()
 # energies
 ax.errorbar(inverse_betas, energies, energies_errors, fmt='o')
 e_exact = np.array([ene_exact(temp) / temp for temp in beta_lin])
-plt.plot(1. / beta_lin, e_exact)
+ax.plot(1. / beta_lin, e_exact)
 
 ax.set_xlabel(r"1/$\beta$")
 ax.set_ylabel(r"e")
@@ -100,7 +101,6 @@ ax.clear()
 # energies_squared
 ax.errorbar(inverse_betas, energies_squared, energies_squared_errors, fmt='o')
 
-fig.tight_layout()
 ax.set_xlabel(r"1/$\beta$")
 ax.set_ylabel(r"e²")
 plt.savefig("energy_squared.png")

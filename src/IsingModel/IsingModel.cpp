@@ -161,17 +161,17 @@ double IsingModel::get_energy(const VectorX &phi) {
 double IsingModel::get_energy_squared(const VectorX &phi) {
     double e_squared{0.};
 
-    e_squared += 1. / (sqrt_beta) * h.transpose() * phi;
+    e_squared += h.dot(phi) / sqrt_beta;
 
     VectorX var_phi{k_rec * phi};
     VectorX temp{eta + sqrt_beta * var_phi};
     for (int i = 0; i < var_phi.rows(); ++i) {
         temp(i) = tanh(temp(i)) * var_phi(i) / sqrt_beta
-                  - var_phi(i) * var_phi(i) / pow(cos(temp(i)), 2);
+                  - var_phi(i) * var_phi(i) / pow(cosh(temp(i)), 2);
     }
     e_squared += temp.sum();
 
-    e_squared *= 0.25 / (static_cast<double>(phi.rows()) * get_beta());
+    e_squared *= (-0.25) / (static_cast<double>(phi.rows()) * static_cast<double>(phi.rows()) * get_beta());
 
     e_squared += pow(get_energy(phi), 2);
 
