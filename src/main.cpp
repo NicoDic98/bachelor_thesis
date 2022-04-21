@@ -323,6 +323,8 @@ void test_hmc_measurements() {
         //mygen.dumpToH5(out_file);
         mygen.dump_observable(&BaseModel<VectorX>::get_magnetization, "magnetization", out_file);
         mygen.dump_observable(&BaseModel<VectorX>::get_magnetization_squared, "magnetization_squared", out_file);
+        mygen.dump_observable(&BaseModel<VectorX>::get_energy, "energy", out_file);
+        mygen.dump_observable(&BaseModel<VectorX>::get_energy_squared, "energy_squared", out_file);
     }
 }
 
