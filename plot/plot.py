@@ -22,12 +22,14 @@ for file in os.listdir():
 
         betas.append(level0_group.attrs["beta"])
         inverse_betas.append(1. / betas[-1])
+
         magnetization_group = measurements_group.get("magnetization")
         magnetizations.append(magnetization_group.attrs["bootstrap_mean"])
         magnetizations_errors.append(np.sqrt(magnetization_group.attrs["bootstrap_variance"]))
 
         magnetization_squared_group = measurements_group.get("magnetization_squared")
-        magnetizations_squared.append(magnetization_squared_group.attrs["mean"])
+        magnetizations_squared.append(magnetization_squared_group.attrs["bootstrap_mean"])
+        magnetizations_squared_errors.append(np.sqrt(magnetization_squared_group.attrs["bootstrap_variance"]))
 
 
 def magnetization_exact(beta):
@@ -40,6 +42,7 @@ def magnetization_exact(beta):
 fig, ax = plt.subplots()
 fig: plt.Figure
 ax: plt.Axes
+# magnetizations
 ax.errorbar(inverse_betas, magnetizations, magnetizations_errors, fmt='o')
 beta_lin = np.linspace(0.25, 3, 1000)
 m_exact = np.array([magnetization_exact(temp) for temp in beta_lin])
@@ -49,3 +52,13 @@ plt.plot(1. / beta_lin, -m_exact)
 ax.set_xlabel(r"1/$\beta$")
 ax.set_ylabel(r"m")
 plt.savefig("magnetisation.png")
+ax.clear()
+
+# magnetizations_squared
+ax.errorbar(inverse_betas, magnetizations_squared, magnetizations_squared_errors, fmt='o')
+m_squared_exact = m_exact ** 2
+plt.plot(1. / beta_lin, m_squared_exact)
+
+ax.set_xlabel(r"1/$\beta$")
+ax.set_ylabel(r"m²")
+plt.savefig("magnetization_squared.png")
