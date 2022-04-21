@@ -25,14 +25,14 @@ const char *IsingModel::IsingModel_name{"IsingModel"};
 IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, int dimension_,
                        int neighbour_extent_, int grid_size_)
         : BaseModel<VectorX>(beta_, IsingModel_name), sqrt_beta{sqrt(beta_)}, h{std::move(h_)},
-          eta{std::move(eta_)}, connectivity_offset{offset_},
+          eta{std::move(eta_)}, connectivity_offset{offset_ + (2 * neighbour_extent_ * dimension)},
           dimension{dimension_}, neighbour_extent{neighbour_extent_}, grid_side_length{grid_size_},
           k_sym(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)),
           k_rec(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)),
           InterpolationMatrix{}, RootModel{*this} {
 
     fill_connectivity_matrix(grid_size_);
-    add_offset_to_connectivity_matrix(offset_ + (2 * neighbour_extent_ * dimension));
+    add_offset_to_connectivity_matrix(connectivity_offset);
     //todo: test that this really yields a positive definit connectivity matrix (search for min eigenvalue before adding the offset)
     k_rec = k_sym;
     assert(check_internal_dimensions());

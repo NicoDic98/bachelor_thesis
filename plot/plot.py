@@ -37,7 +37,7 @@ for file in os.listdir():
         magnetizations_squared_errors.append(np.sqrt(magnetization_squared_group.attrs["bootstrap_variance"]))
 
         energy_group = measurements_group.get("energy")
-        energies.append(energy_group.attrs["bootstrap_mean"])
+        energies.append(energy_group.attrs["bootstrap_mean"]+2)
         energies_errors.append(np.sqrt(energy_group.attrs["bootstrap_variance"]))
 
         energy_squared_group = measurements_group.get("energy_squared")
