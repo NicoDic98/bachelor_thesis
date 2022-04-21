@@ -34,12 +34,19 @@ def magnetization_exact(beta):
     if beta < 0.440686793509772:
         return 0
     else:
-        return (1. - 1 / np.sinh(2 * beta) ** 4) ** (1 / 8)
+        return (1. - 1. / np.sinh(2 * beta) ** 4) ** (1 / 8)
+
 
 print(magnetizations_errors)
 fig, ax = plt.subplots()
+fig: plt.Figure
+ax: plt.Axes
 ax.errorbar(inverse_betas, magnetizations, magnetizations_errors, fmt='o')
-beta_lin = np.linspace(0.25, 2, 100)
-m_exact = [magnetization_exact(temp) for temp in beta_lin]
+beta_lin = np.linspace(0.25, 3, 1000)
+m_exact = np.array([magnetization_exact(temp) for temp in beta_lin])
 plt.plot(1. / beta_lin, m_exact)
-plt.savefig("test")
+plt.plot(1. / beta_lin, -m_exact)
+
+ax.set_xlabel(r"1/$\beta$")
+ax.set_ylabel(r"m")
+plt.savefig("magnetisation.png")
