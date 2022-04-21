@@ -377,7 +377,7 @@ void MultiLevelHMCGenerator<configuration_type>::dump_observable(
         write_static_size(static_cast<int>(inter_type), current_level, inter_type_name);
         write_static_size(AcceptanceRates[i], current_level, AcceptanceRate_name);
         HighFive::DataSet dataset = HMCStack[i].dump_observable(observable_function_pointer, "data", observable_group);
-        Analyzer a(dataset, generator);
+        Analyzer a(dataset, generator);//TODO move this into a separate method
         if (i == 0) {
             a.auto_correlation(30);
             a.block_data(16);
