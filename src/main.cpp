@@ -267,11 +267,11 @@ void test_multi_level_hmc() {
 }
 
 void MultiLevelTime() {
-    const int grid_size = 8;
+    const int grid_size = 16;
     const int dim = 2;
     const int lambda = int_pow(grid_size, dim);
     const double C{0.1};
-    const double beta{1. / 0.8};
+    const double beta{0.440686793509772};
 
     VectorX phi0(lambda);
     phi0.setZero();
@@ -283,26 +283,28 @@ void MultiLevelTime() {
 
     IsingModel test(beta, h0, eta0, C, dim, 1, grid_size);
 
-
     auto t = std::time(nullptr);
     auto tm = *std::localtime(&t);
     std::ostringstream oss;
     oss << std::put_time(&tm, "%d_%m_%Y__%H_%M_%S_");
     std::string my_time{oss.str()};
-    auto my_test = test.get_coarser_model(InterpolationType::Checkerboard);
-    my_test->print_interpolation_matrix();
-    my_test->print_connectivity_matrix();
 
-    MultiLevelHMCGenerator mygen(test, {1, 2, 3}, {1, 2, 3}, 2, InterpolationType::Checkerboard, {8, 12, 16},
-                                 {1. / 8, 1. / 12, 1. / 16},
-                                 myengine);
+    MultiLevelHMCGenerator mygen(test, {1}, {0}, 0, InterpolationType::Checkerboard, {8},
+                                 {1. / 8}, myengine);
     std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 10000, 1000);
     for (auto acceptance_rate: acceptance_rates) {
         std::cout << "Acceptance rate:" << acceptance_rate << std::endl;
     }
-    std::string filename{std::string(DATA_DIR).append(my_time).append(std::to_string(1. / beta)).append(".h5")};
+    std::string filename{std::string(DATA_DIR).append(my_time).append(std::to_string(beta)).append(".h5")};
     HighFive::File file(filename, HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
     mygen.dumpToH5(file);
+    std::string out_filename{std::string(DATA_DIR).append("out_").append(my_time).
+            append(std::to_string(beta)).append(".h5")};
+    HighFive::File out_file(out_filename,
+                            HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
+    //mygen.dumpToH5(out_file);
+    mygen.dump_observable(&BaseModel<VectorX>::get_magnetization, "magnetization", out_file);
+    mygen.analyze_dataset("magnetization", out_file, 16, 200, 30);
 }
 
 void test_hmc_measurements() {
@@ -322,13 +324,13 @@ void test_hmc_measurements() {
                                 HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
         //mygen.dumpToH5(out_file);
         mygen.dump_observable(&BaseModel<VectorX>::get_magnetization, "magnetization", out_file);
-        mygen.analyze_dataset("magnetization",out_file,16,200,30);
+        mygen.analyze_dataset("magnetization", out_file, 16, 200, 30);
         mygen.dump_observable(&BaseModel<VectorX>::get_magnetization_squared, "magnetization_squared", out_file);
-        mygen.analyze_dataset("magnetization_squared",out_file,16,200,30);
+        mygen.analyze_dataset("magnetization_squared", out_file, 16, 200, 30);
         mygen.dump_observable(&BaseModel<VectorX>::get_energy, "energy", out_file);
-        mygen.analyze_dataset("energy",out_file,16,200,30);
+        mygen.analyze_dataset("energy", out_file, 16, 200, 30);
         mygen.dump_observable(&BaseModel<VectorX>::get_energy_squared, "energy_squared", out_file);
-        mygen.analyze_dataset("energy_squared",out_file,16,200,30);
+        mygen.analyze_dataset("energy_squared", out_file, 16, 200, 30);
     }
 }
 
@@ -342,9 +344,9 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_leap_frog();
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     //test_multi_level_hmc();
-    test_hmc_measurements();
-    //MultiLevelTime();
-    return test_hip();
+    //test_hmc_measurements();
+    MultiLevelTime();
+    //return test_hip();
 }
 
 
