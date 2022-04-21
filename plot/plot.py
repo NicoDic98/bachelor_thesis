@@ -17,7 +17,7 @@ energies_errors = []
 energies_squared = []
 energies_squared_errors = []
 
-for file in os.listdir():
+for file in os.listdir("w"):
     if file.startswith("out"):
         print(file)
         f = h5py.File(file, 'r')
