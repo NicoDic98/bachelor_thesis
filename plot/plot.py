@@ -37,7 +37,7 @@ for file in os.listdir():
         magnetizations_squared_errors.append(np.sqrt(magnetization_squared_group.attrs["bootstrap_variance"]))
 
         energy_group = measurements_group.get("energy")
-        energies.append(energy_group.attrs["bootstrap_mean"]+2)
+        energies.append(energy_group.attrs["bootstrap_mean"])
         energies_errors.append(np.sqrt(energy_group.attrs["bootstrap_variance"]))
 
         energy_squared_group = measurements_group.get("energy_squared")
@@ -89,7 +89,7 @@ ax.clear()
 
 # energies
 ax.errorbar(inverse_betas, energies, energies_errors, fmt='o')
-e_exact = np.array([ene_exact(temp)/temp for temp in beta_lin])
+e_exact = np.array([ene_exact(temp) / temp for temp in beta_lin])
 plt.plot(1. / beta_lin, e_exact)
 
 ax.set_xlabel(r"1/$\beta$")
