@@ -370,10 +370,10 @@ void MultiLevelHMCGenerator<configuration_type>::dump_observable(
         } else {
             observable_group = measurements.createGroup(name);
         }
-        HMCStack[i].dumpToH5(current_level);
+        HMCStack[i].dumpToH5(current_level, true);
         HighFive::DataSet dataset = HMCStack[i].dump_observable(observable_function_pointer, "data", observable_group);
         Analyzer a(dataset, generator);
-        if(i==0){
+        if (i == 0) {
             a.auto_correlation(30);
             a.block_data(16);
             a.bootstrap_data(200);
