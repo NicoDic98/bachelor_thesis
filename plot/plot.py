@@ -4,6 +4,7 @@ import os
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy.special
 
 betas = []
 inverse_betas = []
@@ -52,6 +53,14 @@ def magnetization_exact(beta):
         return (1. - 1. / np.sinh(2 * beta) ** 4) ** (1 / 8)
 
 
+def ene_exact(J):  # exact internal energy in thermodynamic limit (for h=0)\n",
+    J2 = 2 * J
+    k = 4 * np.sinh(J2) ** 2 / np.cosh(J2) ** 4
+    eK = scipy.special.ellipk(k)
+    answer = 1 + (2 / np.pi) * (2 * np.tanh(J2) ** 2 - 1) * eK
+    return -J * np.cosh(J2) * answer / np.sinh(J2)
+
+
 fig, ax = plt.subplots()
 fig: plt.Figure
 ax: plt.Axes
@@ -80,6 +89,8 @@ ax.clear()
 
 # energies
 ax.errorbar(inverse_betas, energies, energies_errors, fmt='o')
+e_exact = np.array([ene_exact(temp)/temp for temp in beta_lin])
+plt.plot(1. / beta_lin, e_exact)
 
 ax.set_xlabel(r"1/$\beta$")
 ax.set_ylabel(r"e")
