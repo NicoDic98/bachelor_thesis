@@ -334,7 +334,7 @@ void MultiLevelHMCGenerator<configuration_type>::dumpToH5(HighFive::File &file) 
         } else {
             current_level = file.createGroup(current_level_name);
         }
-        auto ensemble_dataset = HMCStack[i].dumpToH5(current_level);
+        HMCStack[i].dumpToH5(current_level);
         write_static_size(nu_pre[i], current_level, nu_pre_name);
         write_static_size(nu_post[i], current_level, nu_post_name);
         write_static_size(gamma, current_level, gamma_name);
@@ -370,6 +370,7 @@ void MultiLevelHMCGenerator<configuration_type>::dump_observable(
         } else {
             observable_group = measurements.createGroup(name);
         }
+        HMCStack[i].dumpToH5(current_level);
         HighFive::DataSet dataset = HMCStack[i].dump_observable(observable_function_pointer, "data", observable_group);
         Analyzer a(dataset, generator);
         if(i==0){

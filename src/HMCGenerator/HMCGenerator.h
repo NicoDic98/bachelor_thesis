@@ -92,9 +92,9 @@ public:
      *        and the used \a model to \p root
      * @param root Group which gets to hold the model attributes
      *             and the dataset to which the \a ensembles vector gets dumped to
-     * @return Dataset to which the \a ensembles vector was dumped to
+     * @param only_parameters Rather or not to only dump the parameters
      */
-    HighFive::DataSet dumpToH5(HighFive::Group &root);
+    void dumpToH5(HighFive::Group &root, bool only_parameters=false);
 
     /**
      * @brief Calculates and dumps the observable \a observable_function_pointer to \p root into the \p name dataset
@@ -277,13 +277,16 @@ void HMCGenerator<configuration_type>::clear_ensembles() {
 }
 
 template<class configuration_type>
-HighFive::DataSet HMCGenerator<configuration_type>::dumpToH5(HighFive::Group &root) {
+void HMCGenerator<configuration_type>::dumpToH5(HighFive::Group &root, bool only_parameters) {
     model.dumpToH5(root);
-
-    auto ensemble_dataset = model.dump_ensemble(ensembles, root, ensembles_name);
     write_static_size(amount_of_steps,root,amount_of_steps_name);
     write_static_size(step_size,root,step_size_name);
-    return ensemble_dataset;
+
+    if (only_parameters){
+
+    }else{
+        auto ensemble_dataset = model.dump_ensemble(ensembles, root, ensembles_name);
+    }
 }
 
 template<class configuration_type>
