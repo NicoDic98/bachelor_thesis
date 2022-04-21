@@ -76,6 +76,9 @@ public:
     BaseModel<configuration_type>::*observable_function_pointer)(const configuration_type &),
                          const std::string &name, HighFive::File &file);
 
+    void analyze_dataset(const std::string &name, HighFive::File &file,
+                         size_t block_size, size_t amount_of_sample_sets, size_t max_t);
+
     /**
      * @brief Dumps the MultiLevelHMCGenerator, including all sub models and sub HMCGenerators
      *        into different subgroups with corresponding level parameters
@@ -107,6 +110,11 @@ private:
      * @brief Name for the measurements groups in H5 files
      */
     [[maybe_unused]] static const char *measurements_name;
+
+    /**
+     * @brief Name for the data dataset of measurements in H5 files
+     */
+    [[maybe_unused]] static const char *measurements_data_name;
 
     /**
      * @brief Amount of pre coarsening steps to take at each level
@@ -172,6 +180,8 @@ private:
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::level_name{"level"};
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::
         measurements_name{"measurements"};
+template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::
+        measurements_data_name{"data"};
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::nu_pre_name{"nu_pre"};
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::nu_post_name{"nu_post"};
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::gamma_name{"gamma"};
@@ -365,7 +375,7 @@ void MultiLevelHMCGenerator<configuration_type>::dump_observable(
         } else {
             measurements = current_level.createGroup(measurements_name);
         }
-        if (current_level.exist(name)) {
+        if (measurements.exist(name)) {
             observable_group = measurements.getGroup(name);
         } else {
             observable_group = measurements.createGroup(name);
@@ -376,12 +386,47 @@ void MultiLevelHMCGenerator<configuration_type>::dump_observable(
         write_static_size(gamma, current_level, gamma_name);
         write_static_size(static_cast<int>(inter_type), current_level, inter_type_name);
         write_static_size(AcceptanceRates[i], current_level, AcceptanceRate_name);
-        HighFive::DataSet dataset = HMCStack[i].dump_observable(observable_function_pointer, "data", observable_group);
-        Analyzer a(dataset, generator);//TODO move this into a separate method
+        HighFive::DataSet dataset = HMCStack[i].dump_observable(observable_function_pointer, measurements_data_name,
+                                                                observable_group);
+    }
+}
+
+template<class configuration_type>
+void MultiLevelHMCGenerator<configuration_type>::analyze_dataset(const std::string &name, HighFive::File &file,
+                                                                 size_t block_size, size_t amount_of_sample_sets,
+                                                                 size_t max_t) {
+    for (int i = 0; i < HMCStack.size(); ++i) {
+        std::string current_level_name{level_name};
+        current_level_name.append(std::to_string(i));
+        if (!file.exist(current_level_name)) {
+            std::cerr << "No group named " << current_level_name << '\n';
+            return;
+        }
+        HighFive::Group current_level = file.getGroup(current_level_name);
+
+        if (!current_level.exist(measurements_name)) {
+            std::cerr << "No group named " << measurements_name << '\n';
+            return;
+        }
+        HighFive::Group measurements = current_level.getGroup(measurements_name);
+
+        if (!measurements.exist(name)) {
+            std::cerr << "No group named " << name << '\n';
+            return;
+        }
+        HighFive::Group observable_group = measurements.getGroup(name);
+
+        if (!observable_group.exist(measurements_data_name)) {
+            std::cerr << "No dataset named " << measurements_data_name << '\n';
+            return;
+        }
+        HighFive::DataSet observable_data = observable_group.getDataSet(measurements_data_name);
+
+        Analyzer a(observable_data, generator);
         if (i == 0) {
-            a.auto_correlation(30);
-            a.block_data(16);
-            a.bootstrap_data(200);
+            a.auto_correlation(max_t);
+            a.block_data(block_size);
+            a.bootstrap_data(amount_of_sample_sets);
         }
     }
 }
