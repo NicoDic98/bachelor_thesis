@@ -11,6 +11,10 @@ magnetizations = []
 magnetizations_errors = []
 magnetizations_squared = []
 magnetizations_squared_errors = []
+energies = []
+energies_errors = []
+energies_squared = []
+energies_squared_errors = []
 for file in os.listdir():
     if file.startswith("out"):
         print(file)
@@ -31,6 +35,15 @@ for file in os.listdir():
         magnetizations_squared.append(magnetization_squared_group.attrs["bootstrap_mean"])
         magnetizations_squared_errors.append(np.sqrt(magnetization_squared_group.attrs["bootstrap_variance"]))
 
+        energy_group = measurements_group.get("energy")
+        energies.append(energy_group.attrs["bootstrap_mean"])
+        energies_errors.append(np.sqrt(energy_group.attrs["bootstrap_variance"]))
+
+        energy_squared_group = measurements_group.get("energy_squared")
+        print(dict(energy_squared_group.attrs.items()))
+        energies_squared.append(energy_squared_group.attrs["bootstrap_mean"])
+        energies_squared_errors.append(np.sqrt(energy_squared_group.attrs["bootstrap_variance"]))
+
 
 def magnetization_exact(beta):
     if beta < 0.440686793509772:
@@ -42,6 +55,7 @@ def magnetization_exact(beta):
 fig, ax = plt.subplots()
 fig: plt.Figure
 ax: plt.Axes
+
 # magnetizations
 ax.errorbar(inverse_betas, magnetizations, magnetizations_errors, fmt='o')
 beta_lin = np.linspace(0.25, 3, 1000)
@@ -62,3 +76,21 @@ plt.plot(1. / beta_lin, m_squared_exact)
 ax.set_xlabel(r"1/$\beta$")
 ax.set_ylabel(r"m²")
 plt.savefig("magnetization_squared.png")
+ax.clear()
+
+# energies
+ax.errorbar(inverse_betas, energies, energies_errors, fmt='o')
+
+ax.set_xlabel(r"1/$\beta$")
+ax.set_ylabel(r"e")
+plt.savefig("energy.png")
+ax.clear()
+
+# energies_squared
+ax.errorbar(inverse_betas, energies_squared, energies_squared_errors, fmt='o')
+
+fig.tight_layout()
+ax.set_xlabel(r"1/$\beta$")
+ax.set_ylabel(r"e²")
+plt.savefig("energy_squared.png")
+ax.clear()
