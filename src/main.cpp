@@ -289,9 +289,11 @@ void MultiLevelTime() {
     oss << std::put_time(&tm, "%d_%m_%Y__%H_%M_%S_");
     std::string my_time{oss.str()};
 
+    test.get_coarser_model(InterpolationType::Checkerboard)->print_interpolation_matrix();
+
     MultiLevelHMCGenerator mygen(test, {1,5}, {0,5}, 2, InterpolationType::Checkerboard, {8,16},
                                  {1. / 8.,1./16.}, myengine);
-    std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 10000, 1000);
+    std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 1000, 100);
     for (auto acceptance_rate: acceptance_rates) {
         std::cout << "Acceptance rate:" << acceptance_rate << std::endl;
     }

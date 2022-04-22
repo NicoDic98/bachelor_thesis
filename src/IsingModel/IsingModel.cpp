@@ -48,7 +48,7 @@ IsingModel::IsingModel(const IsingModel &NewModel, InterpolationType Interpolati
     grid_side_length = fill_interpolation_matrix(InterpolationType_, h.rows(), grid_side_length);
     set_k_sym(InterpolationMatrix.transpose() * RootModel.k_sym * InterpolationMatrix);
     k_rec = RootModel.k_rec * InterpolationMatrix;
-    h.resize(int_pow(grid_side_length, dimension));
+    h.resize(InterpolationMatrix.cols());
 
     //print_dimensions();
     //print_interpolation_matrix();
@@ -323,8 +323,32 @@ IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_, long
             }
             break;
         case InterpolationType::Black_White:
-            coarse_grid_side_length = 42;//TODO think if this can even be generalized to e.g. 3 dimensions
-            InterpolationMatrix.resize(fine_size, coarse_grid_side_length);
+            /*
+             * Check for d=2
+             */
+            if (fine_grid_side_length * fine_grid_side_length != fine_size) {
+                std::cerr << "Black_White only suppoerted for d=2\n";
+                exit(-1);
+            }
+
+            /**
+             * Compute new sizes
+             */
+            if (fine_size % 2 != 0) {
+                std::cerr << "Black_White only suppoerted for even side lengths\n";
+                exit(-1);
+            }
+
+            coarse_grid_side_length=42;//TODO this isn't really defined in this case
+            coarse_lambda = fine_size;
+
+            InterpolationMatrix.resize(fine_size, coarse_lambda);
+            InterpolationMatrix.setZero();
+
+
+            for (long m = 0; m < InterpolationMatrix.rows(); ++m) {
+
+            }
             break;
     }
     return coarse_grid_side_length;
