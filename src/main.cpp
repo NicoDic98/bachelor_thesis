@@ -291,8 +291,8 @@ void MultiLevelTime() {
 
     //test.get_coarser_model(InterpolationType::Checkerboard)->print_interpolation_matrix();
 
-    MultiLevelHMCGenerator mygen(test, {1}, {0}, 1, InterpolationType::Checkerboard, {8},
-                                 {1. / 8.}, myengine);
+    MultiLevelHMCGenerator mygen(test, {1, 4}, {0, 4}, 1, InterpolationType::Checkerboard, {8, 32},
+                                 {1. / 8., 1. / 32.}, myengine);
     std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 100000, 10000);
     for (auto acceptance_rate: acceptance_rates) {
         std::cout << "Acceptance rate:" << acceptance_rate << std::endl;

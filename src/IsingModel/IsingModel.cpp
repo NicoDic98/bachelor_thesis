@@ -12,7 +12,6 @@
 #include "IsingModel.h"
 
 const char *IsingModel::dimension_name{"dimension"};
-const char *IsingModel::grid_side_length_name{"grid_side_length"};
 const char *IsingModel::neighbour_extent_name{"neighbour_extent"};
 const char *IsingModel::h_name{"h"};
 const char *IsingModel::eta_name{"eta"};
@@ -26,7 +25,7 @@ IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, i
                        int neighbour_extent_, int grid_size_)
         : BaseModel<VectorX>(beta_, IsingModel_name), sqrt_beta{sqrt(beta_)}, h{std::move(h_)},
           eta{std::move(eta_)}, connectivity_offset{offset_ + (2 * neighbour_extent_ * dimension)},
-          dimension{dimension_}, neighbour_extent{neighbour_extent_}, grid_side_length{grid_size_},
+          dimension{dimension_}, neighbour_extent{neighbour_extent_},
           k_sym(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)),
           k_rec(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)),
           InterpolationMatrix{}, RootModel{*this} {
@@ -41,11 +40,11 @@ IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, i
 IsingModel::IsingModel(const IsingModel &NewModel, InterpolationType InterpolationType_)
         : BaseModel<VectorX>(NewModel), sqrt_beta{sqrt(NewModel.get_beta())}, h{NewModel.h},
           eta{NewModel.eta}, connectivity_offset{NewModel.connectivity_offset}, dimension{NewModel.dimension},
-          neighbour_extent{NewModel.neighbour_extent}, grid_side_length{NewModel.grid_side_length},
+          neighbour_extent{NewModel.neighbour_extent},
           InterpolationMatrix{}, RootModel{NewModel} {
     std::cout << "Isingmodel Interpolation constructor called" << std::endl;
     assert(RootModel.check_internal_dimensions());
-    grid_side_length = fill_interpolation_matrix(InterpolationType_, h.rows(), grid_side_length);
+    fill_interpolation_matrix(InterpolationType_, h.rows());
     set_k_sym(InterpolationMatrix.transpose() * RootModel.k_sym * InterpolationMatrix);
     k_rec = RootModel.k_rec * InterpolationMatrix;
     h.resize(InterpolationMatrix.cols());
@@ -58,7 +57,7 @@ IsingModel::IsingModel(const IsingModel &NewModel, InterpolationType Interpolati
 IsingModel::IsingModel(const IsingModel &NewModel)
         : BaseModel<VectorX>(NewModel), sqrt_beta{sqrt(NewModel.get_beta())}, h{NewModel.h},
           eta{NewModel.eta}, connectivity_offset{NewModel.connectivity_offset}, dimension{NewModel.dimension},
-          neighbour_extent{NewModel.neighbour_extent}, grid_side_length{NewModel.grid_side_length},
+          neighbour_extent{NewModel.neighbour_extent},
           k_sym(NewModel.k_sym.rows(), NewModel.k_sym.cols()), k_rec{NewModel.k_rec},
           InterpolationMatrix{NewModel.InterpolationMatrix}, RootModel{NewModel} {
     std::cout << "Isingmodel copy constructor called" << std::endl;
@@ -69,12 +68,11 @@ IsingModel::IsingModel(const IsingModel &NewModel)
 
 [[maybe_unused]] IsingModel::IsingModel(HighFive::Group &root)
         : BaseModel<VectorX>(root, IsingModel_name),
-          sqrt_beta{sqrt(get_beta())}, dimension{}, neighbour_extent{}, grid_side_length{}, connectivity_offset{},
+          sqrt_beta{sqrt(get_beta())}, dimension{}, neighbour_extent{}, connectivity_offset{},
           RootModel{*this} {
     assert(name == IsingModel_name);
     root.getAttribute(dimension_name).read(dimension);
     root.getAttribute(neighbour_extent_name).read(neighbour_extent);
-    root.getAttribute(grid_side_length_name).read(grid_side_length);
     ReadVectorX(h, root, h_name);
     ReadVectorX(eta, root, eta_name);
     root.getAttribute(connectivity_offset_name).read(connectivity_offset);
@@ -250,9 +248,21 @@ IsingModel *IsingModel::get_model_at(HighFive::Group &root) {
     return new IsingModel(root);
 }
 
-int
-IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_, long fine_size, int fine_grid_side_length) {
+void IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_, long fine_size) {
     int coarse_grid_side_length{1};
+
+    int fine_grid_side_length = static_cast<int>(pow(static_cast<double>(fine_size), 1. / dimension));
+    if (int_pow(fine_grid_side_length, dimension) != fine_size) {
+        if (int_pow(fine_grid_side_length + 1, dimension) == fine_size) {
+            fine_grid_side_length += 1;
+        } else if (int_pow(fine_grid_side_length - 1, dimension) == fine_size) {
+            fine_grid_side_length -= 1;
+        } else {
+            std::cerr << "Can't determine fine grid side length from fine_size = "
+                      << fine_size << " and dimension = " << dimension << '\n';
+            exit(-42);
+        }
+    }
     int coarse_lambda;
     switch (InterpolationType_) {
         case InterpolationType::Checkerboard:
@@ -339,7 +349,7 @@ IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_, long
                 exit(-1);
             }
 
-            coarse_grid_side_length=42;//TODO this isn't really defined in this case
+            coarse_grid_side_length = 42;//TODO this isn't really defined in this case
             coarse_lambda = fine_size;
 
             InterpolationMatrix.resize(fine_size, coarse_lambda);
@@ -351,7 +361,6 @@ IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_, long
             }
             break;
     }
-    return coarse_grid_side_length;
 }
 
 [[maybe_unused]] void IsingModel::print_dimensions() {
@@ -387,7 +396,6 @@ void IsingModel::dumpToH5(HighFive::Group &root) {
 
     write_static_size(dimension, root, dimension_name);
     write_static_size(neighbour_extent, root, neighbour_extent_name);
-    write_static_size(grid_side_length, root, grid_side_length_name);
 
     WriteVectorX(h, root, h_name);
 

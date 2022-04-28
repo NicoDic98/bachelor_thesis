@@ -225,15 +225,6 @@ private:
     static const char *neighbour_extent_name;
 
     /**
-     * @brief Side length of the hypercube
-     */
-    int grid_side_length;
-    /**
-     * @brief String to be used as key for \a grid_side_length in H5 files
-     */
-    static const char *grid_side_length_name;
-
-    /**
      * @brief External field
      */
     VectorX h;
@@ -317,10 +308,8 @@ private:
      * @brief Fills the \a InterpolationMatrix
      * @param InterpolationType_ Type of interpolation to be used
      * @param fine_size Finer grid total size
-     * @param fine_grid_side_length Finer grid hyper cube side length
-     * @return Coarse grid side length
      */
-    int fill_interpolation_matrix(InterpolationType InterpolationType_, long fine_size, int fine_grid_side_length);
+    void fill_interpolation_matrix(InterpolationType InterpolationType_, long fine_size);
 
     /**
      * @brief Add identity*\p offset to the connectivity matrix \a k_sym
