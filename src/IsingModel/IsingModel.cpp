@@ -250,7 +250,7 @@ IsingModel *IsingModel::get_model_at(HighFive::Group &root) {
 
 void IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_, long fine_size) {
     int coarse_grid_side_length{1};
-    int coarse_lambda;
+    long coarse_lambda;
     int fine_grid_side_length = static_cast<int>(pow(static_cast<double>(fine_size), 1. / dimension));
     switch (InterpolationType_) {
         case InterpolationType::Checkerboard:
@@ -336,7 +336,7 @@ void IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_,
             /*
              * Check for d=2
              */
-            if (fine_grid_side_length * fine_grid_side_length != fine_size) {
+            if (dimension != 2) {
                 std::cerr << "Black_White only suppoerted for d=2\n";
                 exit(-1);
             }
@@ -349,8 +349,7 @@ void IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_,
                 exit(-1);
             }
 
-            coarse_grid_side_length = 42;//TODO this isn't really defined in this case
-            coarse_lambda = fine_size;
+            coarse_lambda = fine_size/2;
 
             InterpolationMatrix.resize(fine_size, coarse_lambda);
             InterpolationMatrix.setZero();
