@@ -289,11 +289,11 @@ void MultiLevelTime() {
     oss << std::put_time(&tm, "%d_%m_%Y__%H_%M_%S_");
     std::string my_time{oss.str()};
 
-    test.get_coarser_model(InterpolationType::Checkerboard)->print_interpolation_matrix();
+    //test.get_coarser_model(InterpolationType::Checkerboard)->print_interpolation_matrix();
 
-    MultiLevelHMCGenerator mygen(test, {1,5}, {0,5}, 2, InterpolationType::Checkerboard, {8,16},
-                                 {1. / 8.,1./16.}, myengine);
-    std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 1000, 100);
+    MultiLevelHMCGenerator mygen(test, {1}, {0}, 1, InterpolationType::Checkerboard, {8},
+                                 {1. / 8.}, myengine);
+    std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 100000, 10000);
     for (auto acceptance_rate: acceptance_rates) {
         std::cout << "Acceptance rate:" << acceptance_rate << std::endl;
     }
@@ -307,6 +307,12 @@ void MultiLevelTime() {
     //mygen.dumpToH5(out_file);
     mygen.dump_observable(&BaseModel<VectorX>::get_magnetization, "magnetization", out_file);
     mygen.analyze_dataset("magnetization", out_file, 16, 200, 30);
+    mygen.dump_observable(&BaseModel<VectorX>::get_magnetization_squared, "magnetization_squared", out_file);
+    mygen.analyze_dataset("magnetization_squared", out_file, 16, 200, 30);
+    mygen.dump_observable(&BaseModel<VectorX>::get_energy, "energy", out_file);
+    mygen.analyze_dataset("energy", out_file, 16, 200, 30);
+    mygen.dump_observable(&BaseModel<VectorX>::get_energy_squared, "energy_squared", out_file);
+    mygen.analyze_dataset("energy_squared", out_file, 16, 200, 30);
 }
 
 void test_hmc_measurements() {

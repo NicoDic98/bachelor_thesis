@@ -90,7 +90,7 @@ if len(magnetizations) > 0:
     ax.clear()
 
     ax.scatter(np.arange(magnetization_auto_correlation.size),magnetization_auto_correlation)
-    ax.set_yscale("log")
+    #ax.set_yscale("log")
     plt.savefig("magnetization_auto_correlation.png")
     ax.clear()
     ax.set_yscale("linear")

@@ -9,3 +9,4 @@
 /cmake-build-relwithdebinfo-hip/
 /.idea/
 /venv/
+*.h5

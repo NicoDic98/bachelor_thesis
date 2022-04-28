@@ -32,7 +32,10 @@ std::vector<double> Analyzer::auto_correlation(size_t max_t) {
             ret[t] += (data[i] - mean) * (data[i + t] - mean);
         }
         ret[t] /= static_cast<double>(data.size() - t);
-        ret[t] /= ret[0];
+    }
+    auto start_value=ret[0];
+    for (double & t : ret) {
+        t /= start_value;
     }
     VectorX vec_temp(ret.size());
     vec_temp = VectorX::Map(&ret[0], ret.size());
