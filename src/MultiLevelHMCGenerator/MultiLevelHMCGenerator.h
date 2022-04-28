@@ -420,9 +420,7 @@ void MultiLevelHMCGenerator<configuration_type>::analyze_dataset(const std::stri
             std::cerr << "No dataset named " << measurements_data_name << '\n';
             return;
         }
-        HighFive::DataSet observable_data = observable_group.getDataSet(measurements_data_name);
-
-        Analyzer a(observable_data, generator);
+        Analyzer a(observable_group, measurements_data_name, generator);
         if (i == 0) {
             a.auto_correlation(max_t);
             a.block_data(block_size);

@@ -14,13 +14,10 @@ const char *Analyzer::mean_name{"mean"};
 const char *Analyzer::bootstrap_mean_name{"bootstrap_mean"};
 const char *Analyzer::bootstrap_variance_name{"bootstrap_variance"};
 
-Analyzer::Analyzer(HighFive::DataSet &dataset_, std::default_random_engine &generator_)
-        : dataset{dataset_}, group{dataset_.getFile().getGroup(dataset_.getFile().getPath())},
+Analyzer::Analyzer(HighFive::Group &group_, const std::string &data_name, std::default_random_engine &generator_)
+        : dataset{group_.getDataSet(data_name)}, group{group_},
           mean{0.}, generator{generator_}, bootstrap_mean{0.}, bootstrap_variance{0.} {
     dataset.read(data);
-    auto path = dataset.getPath();
-    path.resize(path.rfind('/'));
-    group = dataset.getFile().getGroup(path);
     assert(!data.empty());
     set_mean();
 }
@@ -39,7 +36,7 @@ std::vector<double> Analyzer::auto_correlation(size_t max_t) {
     }
     VectorX vec_temp(ret.size());
     vec_temp = VectorX::Map(&ret[0], ret.size());
-    WriteVectorX(vec_temp,group,auto_correlation_name);
+    WriteVectorX(vec_temp, group, auto_correlation_name);
 
     return ret;
 }
