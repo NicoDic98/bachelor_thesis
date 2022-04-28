@@ -250,22 +250,22 @@ IsingModel *IsingModel::get_model_at(HighFive::Group &root) {
 
 void IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_, long fine_size) {
     int coarse_grid_side_length{1};
-
-    int fine_grid_side_length = static_cast<int>(pow(static_cast<double>(fine_size), 1. / dimension));
-    if (int_pow(fine_grid_side_length, dimension) != fine_size) {
-        if (int_pow(fine_grid_side_length + 1, dimension) == fine_size) {
-            fine_grid_side_length += 1;
-        } else if (int_pow(fine_grid_side_length - 1, dimension) == fine_size) {
-            fine_grid_side_length -= 1;
-        } else {
-            std::cerr << "Can't determine fine grid side length from fine_size = "
-                      << fine_size << " and dimension = " << dimension << '\n';
-            exit(-42);
-        }
-    }
     int coarse_lambda;
+    int fine_grid_side_length = static_cast<int>(pow(static_cast<double>(fine_size), 1. / dimension));
     switch (InterpolationType_) {
         case InterpolationType::Checkerboard:
+            if (int_pow(fine_grid_side_length, dimension) != fine_size) {
+                if (int_pow(fine_grid_side_length + 1, dimension) == fine_size) {
+                    fine_grid_side_length += 1;
+                } else if (int_pow(fine_grid_side_length - 1, dimension) == fine_size) {
+                    fine_grid_side_length -= 1;
+                } else {
+                    std::cerr << "Can't determine fine grid side length from fine_size = "
+                              << fine_size << " and dimension = " << dimension << '\n';
+                    exit(-42);
+                }
+            }
+
 
             /*
              * Compute new sizes
