@@ -349,13 +349,43 @@ void IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_,
                 exit(-1);
             }
 
-            coarse_lambda = fine_size/2;
+            coarse_lambda = fine_size / 2;
 
             InterpolationMatrix.resize(fine_size, coarse_lambda);
             InterpolationMatrix.setZero();
 
+            bool is_square_lattice = false;
 
-            for (long m = 0; m < InterpolationMatrix.rows(); ++m) {
+            if (int_pow(fine_grid_side_length, dimension) != fine_size) {
+                if (int_pow(fine_grid_side_length + 1, dimension) == fine_size) {
+                    fine_grid_side_length += 1;
+                    is_square_lattice = true;
+                } else if (int_pow(fine_grid_side_length - 1, dimension) == fine_size) {
+                    fine_grid_side_length -= 1;
+                    is_square_lattice = true;
+                }
+            } else {
+                is_square_lattice = true;
+            }
+
+            if (is_square_lattice) {
+                //in this case fine_grid_side_length is well-defined
+                for (int m = 0; m < InterpolationMatrix.rows(); ++m) {
+                    if ((m / fine_grid_side_length) % 2 == 0) {
+                        if (m % 2 == 0) {
+                            0.25;
+                        } else {
+                            InterpolationMatrix(m, (m - 1) / 2) = 1.;
+                        }
+                    } else {
+                        if (m % 2 == 0) {
+                            InterpolationMatrix(m, m / 2) = 1.;
+                        } else {
+                            0.25;
+                        }
+                    }
+                }
+            } else {
 
             }
             break;
