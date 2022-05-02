@@ -204,7 +204,7 @@ void test_HMC(const std::string &filename) {
     }
     for (double inverse_beta = 0.3; inverse_beta < 4.05; inverse_beta += 0.1) {
         test.set_beta(1. / inverse_beta);
-        std::cout << "Acceptance rate:" << HMCTest.generate_ensembles(phi0, 20000, 1000, false, 100) << std::endl;
+        std::cout << "Acceptance configs:" << HMCTest.generate_ensembles(phi0, 20000, 1000, false, 100) << std::endl;
         auto mag = HMCTest.compute_observable(&BaseModel<VectorX>::get_magnetization);
         double m{0.};
         for (auto elem: mag) {
@@ -321,9 +321,9 @@ void MultiLevelCriticalSimulation() {
     std::string my_time{oss.str()};
 
 
-    MultiLevelHMCGenerator mygen(test, {0, 16, 16}, {1, 16, 16}, {-1, -1, -1}, 2, InterpolationType::Black_White,
-                                 {8, 32, 64},
-                                 {1. / 8., 1. / 32., 1. / 64.}, myengine);
+    MultiLevelHMCGenerator mygen(test, {0, 16}, {1, 16}, {-1, -1},1, InterpolationType::Black_White,
+                                 {4, 6},
+                                 {1. / 4., 1. / 6.}, myengine);
     std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 100000, 10000);
     for (auto acceptance_rate: acceptance_rates) {
         std::cout << "Acceptance rate:" << acceptance_rate << std::endl;
@@ -348,9 +348,9 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     //test_multi_level_hmc();
     //test_hmc_measurements();
-    DoMultiLevelMeasurementsFromFile(
-     std::string("std_hmc/02_05_2022__14_26_52_0.440687.h5"));
-    //MultiLevelCriticalSimulation();
+    //DoMultiLevelMeasurementsFromFile(
+     //std::string("std_hmc/02_05_2022__14_26_52_0.440687.h5"));
+    MultiLevelCriticalSimulation();
     //return test_hip();
 }
 

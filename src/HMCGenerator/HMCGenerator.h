@@ -61,9 +61,9 @@ public:
      * @param amount_of_thermalization_steps Amount of thermalization steps
      * @param expand Rather to expand the internal \a ensembles vector or not
      * @param erg_jump_distance Distance between ergodicity jumps, negative for no ergodicity jumps
-     * @return Acceptance rate
+     * @return Amount of accepted configurations
      */
-    double generate_ensembles(const configuration_type &phiStart, size_t amount_of_samples,
+    size_t generate_ensembles(const configuration_type &phiStart, size_t amount_of_samples,
                               size_t amount_of_thermalization_steps, bool expand, int erg_jump_distance = -1);
 
     /**
@@ -208,7 +208,7 @@ configuration_type HMCGenerator<configuration_type>::do_HMC_step([[maybe_unused]
 }
 
 template<class configuration_type>
-double
+size_t
 HMCGenerator<configuration_type>::generate_ensembles(const configuration_type &phiStart, size_t amount_of_samples,
                                                      size_t amount_of_thermalization_steps,
                                                      bool expand, int erg_jump_distance) {
@@ -232,9 +232,9 @@ HMCGenerator<configuration_type>::generate_ensembles(const configuration_type &p
 
     double ret{1.};
     if (amount_of_samples) {
-        return ret * accepted_configurations / static_cast<double>(amount_of_samples);
+        return accepted_configurations;
     } else {
-        return 0.;
+        return 0;
     }
 
 
