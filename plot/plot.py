@@ -80,11 +80,11 @@ energies_squared = []
 energies_squared_errors = []
 
 # sub_folder_name = "checker_board_multi_level_hmc_2_levels/"
-sub_folder_name = "black_white_multi_level_hmc_2_levels/"
+sub_folder_name = "a/"
 # sub_folder_name = "std_hmc/"
 
 for file in os.listdir(sub_folder_name):
-    if file.startswith("out_02_05_2022__21_10_05"):
+    if file.startswith("out_"):
         file = sub_folder_name + file
         print(file)
         f = h5py.File(file, 'r')
