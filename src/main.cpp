@@ -267,7 +267,7 @@ void test_multi_level_hmc() {
 }
 
 void MultiLevelTime() {
-    const int grid_size = 16;
+    const int grid_size = 4;
     const int dim = 2;
     const int lambda = int_pow(grid_size, dim);
     const double C{0.1};
@@ -289,7 +289,7 @@ void MultiLevelTime() {
     oss << std::put_time(&tm, "%d_%m_%Y__%H_%M_%S_");
     std::string my_time{oss.str()};
 
-    //test.get_coarser_model(InterpolationType::Checkerboard)->print_interpolation_matrix();
+    test.get_coarser_model(InterpolationType::Black_White)->print_interpolation_matrix();
 
     MultiLevelHMCGenerator mygen(test, {1, 4}, {0, 4}, 1, InterpolationType::Checkerboard, {8, 32},
                                  {1. / 8., 1. / 32.}, myengine);

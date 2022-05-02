@@ -372,8 +372,15 @@ void IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_,
                 //in this case fine_grid_side_length is well-defined
                 for (int m = 0; m < InterpolationMatrix.rows(); ++m) {
                     if ((m / fine_grid_side_length) % 2 == 0) {
-                        if (m % 2 == 0) {
-                            0.25;
+                        if ((m % fine_grid_side_length) % 2 == 0) {
+                            InterpolationMatrix(m,
+                                                (((m + 1) % fine_grid_side_length +
+                                                  (m / fine_grid_side_length) * fine_grid_side_length) - 1) / 2) = 0.25;
+                            InterpolationMatrix(m,
+                                                (((m - 1 + fine_grid_side_length) % fine_grid_side_length +
+                                                  (m / fine_grid_side_length) * fine_grid_side_length) - 1) / 2) = 0.25;
+                            InterpolationMatrix(m, ((m + fine_grid_side_length) % fine_size) / 2) = 0.25;
+                            InterpolationMatrix(m, ((m - fine_grid_side_length + fine_size) % fine_size) / 2) = 0.25;
                         } else {
                             InterpolationMatrix(m, (m - 1) / 2) = 1.;
                         }
@@ -381,7 +388,15 @@ void IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_,
                         if (m % 2 == 0) {
                             InterpolationMatrix(m, m / 2) = 1.;
                         } else {
-                            0.25;
+                            InterpolationMatrix(m,
+                                                ((m + 1) % fine_grid_side_length +
+                                                 (m / fine_grid_side_length) * fine_grid_side_length) / 2) = 0.25;
+                            InterpolationMatrix(m,
+                                                ((m - 1 + fine_grid_side_length) % fine_grid_side_length +
+                                                 (m / fine_grid_side_length) * fine_grid_side_length) / 2) = 0.25;
+                            InterpolationMatrix(m, (((m + fine_grid_side_length) % fine_size) - 1) / 2) = 0.25;
+                            InterpolationMatrix(m,
+                                                (((m - fine_grid_side_length + fine_size) % fine_size) - 1) / 2) = 0.25;
                         }
                     }
                 }

@@ -35,7 +35,7 @@ energies_squared = []
 energies_squared_errors = []
 
 for file in os.listdir():
-    if file.startswith("out"):
+    if file.startswith("out_02"):
         print(file)
         f = h5py.File(file, 'r')
 
