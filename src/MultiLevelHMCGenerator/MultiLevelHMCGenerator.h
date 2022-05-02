@@ -259,10 +259,10 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
     current_level.getAttribute(nu_post_name).read(buffer);
     nu_post.push_back(buffer);
     int iBuffer;
-    if (current_level.hasAttribute(erg_jump_dists_name)){
+    if (current_level.hasAttribute(erg_jump_dists_name)) {
         current_level.getAttribute(erg_jump_dists_name).read(iBuffer);
-    }else{
-        iBuffer=-1;
+    } else {
+        iBuffer = -1;
     }
     erg_jump_dists.push_back(iBuffer);
     current_level.getAttribute(gamma_name).read(gamma);
@@ -291,10 +291,10 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
         nu_pre.push_back(buffer);
         current_level.getAttribute(nu_post_name).read(buffer);
         nu_post.push_back(buffer);
-        if (current_level.hasAttribute(erg_jump_dists_name)){
+        if (current_level.hasAttribute(erg_jump_dists_name)) {
             current_level.getAttribute(erg_jump_dists_name).read(iBuffer);
-        }else{
-            iBuffer=-1;
+        } else {
+            iBuffer = -1;
         }
         erg_jump_dists.push_back(iBuffer);
         current_level.getAttribute(gamma_name).read(gamma);
@@ -321,9 +321,11 @@ std::vector<double> MultiLevelHMCGenerator<configuration_type>::generate_ensembl
     for (int i = 0; i < amount_of_samples; ++i) {
         if (i % (amount_of_samples / 10) == 0) {
             std::cout << "|";
+            std::cout.flush();
         }
         if (i % (amount_of_samples / 100) == 0) {
             std::cout << "=";
+            std::cout.flush();
         }
         phi = LevelRecursion(0, phi);
     }
