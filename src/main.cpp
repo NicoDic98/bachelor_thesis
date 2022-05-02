@@ -348,9 +348,9 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     //test_multi_level_hmc();
     //test_hmc_measurements();
-    //DoMultiLevelMeasurementsFromFile(
-    // std::string("checker_board_multi_level_hmc_2_levels/02_05_2022__14_00_34_0.440687.h5"));
-    MultiLevelCriticalSimulation();
+    DoMultiLevelMeasurementsFromFile(
+     std::string("std_hmc/02_05_2022__14_26_52_0.440687.h5"));
+    //MultiLevelCriticalSimulation();
     //return test_hip();
 }
 

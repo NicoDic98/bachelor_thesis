@@ -259,7 +259,11 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
     current_level.getAttribute(nu_post_name).read(buffer);
     nu_post.push_back(buffer);
     int iBuffer;
-    current_level.getAttribute(erg_jump_dists_name).read(iBuffer);
+    if (current_level.hasAttribute(erg_jump_dists_name)){
+        current_level.getAttribute(erg_jump_dists_name).read(iBuffer);
+    }else{
+        iBuffer=-1;
+    }
     erg_jump_dists.push_back(iBuffer);
     current_level.getAttribute(gamma_name).read(gamma);
     double dBuffer;
@@ -287,7 +291,11 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
         nu_pre.push_back(buffer);
         current_level.getAttribute(nu_post_name).read(buffer);
         nu_post.push_back(buffer);
-        current_level.getAttribute(erg_jump_dists_name).read(iBuffer);
+        if (current_level.hasAttribute(erg_jump_dists_name)){
+            current_level.getAttribute(erg_jump_dists_name).read(iBuffer);
+        }else{
+            iBuffer=-1;
+        }
         erg_jump_dists.push_back(iBuffer);
         current_level.getAttribute(gamma_name).read(gamma);
         current_level.getAttribute(inter_type_name).read(iBuffer);
