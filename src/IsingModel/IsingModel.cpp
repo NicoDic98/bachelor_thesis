@@ -423,14 +423,14 @@ void IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_,
                     } else {
                         int neighbourIndex = (m / coarse_grid_side_length - 1) * coarse_grid_side_length +
                                              m % coarse_grid_side_length;
-                        neighbourIndex=static_cast<int>((neighbourIndex+fine_size)%fine_size);
+                        neighbourIndex = static_cast<int>((neighbourIndex + fine_size) % fine_size);
                         InterpolationMatrix(m, neighbourIndex -
                                                (neighbourIndex / coarse_grid_side_length) * coarse_grid_side_length +
                                                (((neighbourIndex / coarse_grid_side_length) - 1) / 2) *
                                                coarse_grid_side_length) = 0.25;
                         neighbourIndex = (m / coarse_grid_side_length - 1) * coarse_grid_side_length +
                                          (m + 1) % coarse_grid_side_length;
-                        neighbourIndex=static_cast<int>((neighbourIndex+fine_size)%fine_size);
+                        neighbourIndex = static_cast<int>((neighbourIndex + fine_size) % fine_size);
                         InterpolationMatrix(m, neighbourIndex -
                                                (neighbourIndex / coarse_grid_side_length) * coarse_grid_side_length +
                                                (((neighbourIndex / coarse_grid_side_length) - 1) / 2) *
@@ -542,4 +542,8 @@ HighFive::DataSet IsingModel::dump_ensemble(std::vector<VectorX> &target, HighFi
     }
 
     return target_dataset;
+}
+
+void IsingModel::ergodicity_jump(VectorX &phi) {
+    phi = -phi;
 }

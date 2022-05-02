@@ -105,6 +105,8 @@ public:
      */
     [[nodiscard]] bool check_dimensions(const VectorX &phi) const override;
 
+    void ergodicity_jump(VectorX &phi) override;
+
     /**
      * @brief Returns the coarsent model with respect to the given \p InterpolationType_
      * @param InterpolationType_ Interpolation type to use for the coarsening

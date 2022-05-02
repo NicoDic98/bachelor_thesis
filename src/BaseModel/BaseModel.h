@@ -126,6 +126,8 @@ public:
      */
     virtual void update_phi(configuration_type &phi, configuration_type &pi, double step_size);
 
+    virtual void ergodicity_jump(configuration_type &phi);
+
     /**
      * @brief Returns a configuration using the standard constructor of the configuration type
      * @return Sample object, which represents a configuration
@@ -282,6 +284,11 @@ void BaseModel<configuration_type>::dumpToH5(HighFive::Group &root) {
         //TODO maybe there is a nicer fix for this
     }
     root.createAttribute(model_name_key, name);
+}
+
+template<class configuration_type>
+void BaseModel<configuration_type>::ergodicity_jump(configuration_type &phi) {
+    //general ergodicity jump is to do nothing
 }
 
 

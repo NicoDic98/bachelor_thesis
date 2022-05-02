@@ -38,7 +38,7 @@ public:
      * @param generator_ Random number generator to be used for the HMC process
      */
     MultiLevelHMCGenerator(BaseModel<configuration_type> &model_, std::vector<size_t> nu_pre_,
-                           std::vector<size_t> nu_post_, size_t gamma_,
+                           std::vector<size_t> nu_post_, std::vector<int> erg_jump_dists_, size_t gamma_,
                            InterpolationType InterpolationType_,
                            const std::vector<size_t> &amount_of_steps_, const std::vector<double> &step_sizes_,
                            std::default_random_engine &generator_);
@@ -135,6 +135,15 @@ private:
     [[maybe_unused]] static const char *nu_post_name;
 
     /**
+     * @brief Distance between ergodicity jumps at each level
+     */
+    std::vector<int> erg_jump_dists;
+    /**
+     * @brief String to be used as key for the \a erg_jump_dists in H5 files
+     */
+    [[maybe_unused]] static const char *erg_jump_dists_name;
+
+    /**
      * @brief Amount of repetitions at each level (determines if a 'V' or 'W' or ... cycle is performed)
      */
     size_t gamma;
@@ -184,6 +193,8 @@ template<class configuration_type> const char *MultiLevelHMCGenerator<configurat
         measurements_data_name{"data"};
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::nu_pre_name{"nu_pre"};
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::nu_post_name{"nu_post"};
+template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::
+        erg_jump_dists_name{"erg_jump_dists"};
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::gamma_name{"gamma"};
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::
         inter_type_name{"inter_type"};
@@ -195,16 +206,18 @@ template<class configuration_type>
 MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<configuration_type> &model_,
                                                                    std::vector<size_t> nu_pre_,
                                                                    std::vector<size_t> nu_post_,
+                                                                   std::vector<int> erg_jump_dists_,
                                                                    size_t gamma_,
                                                                    InterpolationType InterpolationType_,
                                                                    const std::vector<size_t> &amount_of_steps_,
                                                                    const std::vector<double> &step_sizes_,
                                                                    std::default_random_engine &generator_)
-        : nu_pre{std::move(nu_pre_)}, nu_post{std::move(nu_post_)}, gamma{gamma_}, inter_type{InterpolationType_},
-          generator{generator_}, AcceptanceRates{} {
+        : nu_pre{std::move(nu_pre_)}, nu_post{std::move(nu_post_)}, erg_jump_dists{std::move(erg_jump_dists_)},
+          gamma{gamma_}, inter_type{InterpolationType_}, generator{generator_}, AcceptanceRates{} {
     //TODO: add auto sizing
     assert(gamma > 0);
     assert(nu_pre.size() == nu_post.size());
+    assert(nu_pre.size() == erg_jump_dists.size());
     assert(nu_pre.size() == amount_of_steps_.size());
     assert(nu_pre.size() == step_sizes_.size());
 
@@ -245,11 +258,14 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
     nu_pre.push_back(buffer);
     current_level.getAttribute(nu_post_name).read(buffer);
     nu_post.push_back(buffer);
+    int iBuffer;
+    current_level.getAttribute(erg_jump_dists_name).read(iBuffer);
+    erg_jump_dists.push_back(iBuffer);
     current_level.getAttribute(gamma_name).read(gamma);
     double dBuffer;
     current_level.getAttribute(AcceptanceRate_name).read(dBuffer);
     AcceptanceRates.push_back(dBuffer);
-    assert(nu_pre[0] + nu_post[0] > 0);
+    assert(nu_post[0] > 0);
 
     for (int i = 1; i < 1000; ++i) {
         current_level_name = level_name;
@@ -271,13 +287,14 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
         nu_pre.push_back(buffer);
         current_level.getAttribute(nu_post_name).read(buffer);
         nu_post.push_back(buffer);
+        current_level.getAttribute(erg_jump_dists_name).read(iBuffer);
+        erg_jump_dists.push_back(iBuffer);
         current_level.getAttribute(gamma_name).read(gamma);
-        int iBuffer;
         current_level.getAttribute(inter_type_name).read(iBuffer);
         inter_type = static_cast<InterpolationType>(iBuffer);
         current_level.getAttribute(AcceptanceRate_name).read(dBuffer);
         AcceptanceRates.push_back(dBuffer);
-        assert(nu_pre[i] + nu_post[i] > 0);
+        assert(nu_post[i] > 0);
     }
 }
 
@@ -314,7 +331,8 @@ template<class configuration_type>
 configuration_type
 MultiLevelHMCGenerator<configuration_type>::LevelRecursion(int level, const configuration_type &phi) {
     configuration_type currentField{phi};
-    AcceptanceRates[level] += HMCStack[level].generate_ensembles(currentField, nu_pre[level], 0, level == 0);
+    AcceptanceRates[level] += HMCStack[level].generate_ensembles(currentField, nu_pre[level], 0,
+                                                                 level == 0, erg_jump_dists[level]);
     currentField = HMCStack[level].get_last_configuration(currentField);
     //std::cout << "Level:\t" << level << std::endl;
 
@@ -326,7 +344,8 @@ MultiLevelHMCGenerator<configuration_type>::LevelRecursion(int level, const conf
         }
         ModelStack[level + 1]->interpolate(CoarseCorrections, currentField);
     }
-    AcceptanceRates[level] += HMCStack[level].generate_ensembles(currentField, nu_post[level], 0, level == 0);
+    AcceptanceRates[level] += HMCStack[level].generate_ensembles(currentField, nu_post[level], 0,
+                                                                 level == 0, erg_jump_dists[level]);
     return HMCStack[level].get_last_configuration(currentField);
 }
 
@@ -355,6 +374,7 @@ void MultiLevelHMCGenerator<configuration_type>::dumpToH5(HighFive::File &file) 
         HMCStack[i].dumpToH5(current_level);
         write_static_size(nu_pre[i], current_level, nu_pre_name);
         write_static_size(nu_post[i], current_level, nu_post_name);
+        write_static_size(erg_jump_dists[i], current_level, erg_jump_dists_name);
         write_static_size(gamma, current_level, gamma_name);
         write_static_size(static_cast<int>(inter_type), current_level, inter_type_name);
         write_static_size(AcceptanceRates[i], current_level, AcceptanceRate_name);
@@ -391,6 +411,7 @@ void MultiLevelHMCGenerator<configuration_type>::dump_observable(
         HMCStack[i].dumpToH5(current_level, true);
         write_static_size(nu_pre[i], current_level, nu_pre_name);
         write_static_size(nu_post[i], current_level, nu_post_name);
+        write_static_size(erg_jump_dists[i], current_level, erg_jump_dists_name);
         write_static_size(gamma, current_level, gamma_name);
         write_static_size(static_cast<int>(inter_type), current_level, inter_type_name);
         write_static_size(AcceptanceRates[i], current_level, AcceptanceRate_name);

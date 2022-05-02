@@ -60,10 +60,11 @@ public:
      * @param amount_of_samples Amount of samples to take
      * @param amount_of_thermalization_steps Amount of thermalization steps
      * @param expand Rather to expand the internal \a ensembles vector or not
+     * @param erg_jump_distance Distance between ergodicity jumps, negative for no ergodicity jumps
      * @return Acceptance rate
      */
     double generate_ensembles(const configuration_type &phiStart, size_t amount_of_samples,
-                              size_t amount_of_thermalization_steps, bool expand);
+                              size_t amount_of_thermalization_steps, bool expand, int erg_jump_distance = -1);
 
     /**
      * @brief Compute the \p observable_function_pointer of the currently loaded \a ensembles vector
@@ -94,7 +95,7 @@ public:
      *             and the dataset to which the \a ensembles vector gets dumped to
      * @param only_parameters Rather or not to only dump the parameters
      */
-    void dumpToH5(HighFive::Group &root, bool only_parameters=false);
+    void dumpToH5(HighFive::Group &root, bool only_parameters = false);
 
     /**
      * @brief Calculates and dumps the observable \a observable_function_pointer to \p root into the \p name dataset
@@ -121,7 +122,7 @@ private:
      * @param phi0 Starting field
      * @return New field (after accept/reject)
      */
-    configuration_type do_HMC_step([[maybe_unused]] [[maybe_unused]] const configuration_type &phi0);
+    configuration_type do_HMC_step([[maybe_unused]] [[maybe_unused]] const configuration_type &phi0, bool do_ergo_jump);
 
     /**
      * @brief Model used in the HMC evolution
@@ -178,7 +179,8 @@ template<class configuration_type> const char *HMCGenerator<configuration_type>:
 
 
 template<class configuration_type>
-configuration_type HMCGenerator<configuration_type>::do_HMC_step([[maybe_unused]] const configuration_type &phi0) {
+configuration_type HMCGenerator<configuration_type>::do_HMC_step([[maybe_unused]] const configuration_type &phi0,
+                                                                 bool do_ergo_jump) {
     configuration_type pi(phi0.rows());
     configuration_type phi(phi0);
     std::normal_distribution<double> gauss(0, 1);
@@ -186,7 +188,11 @@ configuration_type HMCGenerator<configuration_type>::do_HMC_step([[maybe_unused]
         elem = gauss(generator);
     }
     [[maybe_unused]] double H_start = pi.dot(pi) * 0.5 + model.get_action(phi);
-    integrator.integrate(amount_of_steps, step_size, phi, pi); //updates in place
+    if (do_ergo_jump) {
+        model.ergodicity_jump(phi);
+    } else {
+        integrator.integrate(amount_of_steps, step_size, phi, pi); //updates in place
+    }
     [[maybe_unused]] double H_end = pi.dot(pi) * 0.5 + model.get_action(phi);
 
     std::uniform_real_distribution<double> uniformRealDistribution(0., 1.);
@@ -204,7 +210,8 @@ configuration_type HMCGenerator<configuration_type>::do_HMC_step([[maybe_unused]
 template<class configuration_type>
 double
 HMCGenerator<configuration_type>::generate_ensembles(const configuration_type &phiStart, size_t amount_of_samples,
-                                                     size_t amount_of_thermalization_steps, bool expand) {
+                                                     size_t amount_of_thermalization_steps,
+                                                     bool expand, int erg_jump_distance) {
     assert(model.check_dimensions(phiStart));
     configuration_type phi(phiStart);
 
@@ -215,11 +222,11 @@ HMCGenerator<configuration_type>::generate_ensembles(const configuration_type &p
 
     ensembles.resize(startindex + amount_of_samples);
     for (int i = 0; i < amount_of_thermalization_steps; ++i) {
-        phi = do_HMC_step(phi);
+        phi = do_HMC_step(phi, false);
     }
     accepted_configurations = 0;
     for (int i = 0; i < amount_of_samples; ++i) {
-        phi = do_HMC_step(phi);
+        phi = do_HMC_step(phi, (erg_jump_distance > 0) && (i > 0) && (i % erg_jump_distance == 0));
         ensembles[startindex + i] = phi;
     }
 
@@ -279,12 +286,12 @@ void HMCGenerator<configuration_type>::clear_ensembles() {
 template<class configuration_type>
 void HMCGenerator<configuration_type>::dumpToH5(HighFive::Group &root, bool only_parameters) {
     model.dumpToH5(root);
-    write_static_size(amount_of_steps,root,amount_of_steps_name);
-    write_static_size(step_size,root,step_size_name);
+    write_static_size(amount_of_steps, root, amount_of_steps_name);
+    write_static_size(step_size, root, step_size_name);
 
-    if (only_parameters){
+    if (only_parameters) {
 
-    }else{
+    } else {
         auto ensemble_dataset = model.dump_ensemble(ensembles, root, ensembles_name);
     }
 }
