@@ -44,7 +44,10 @@ def make_auto_correlation_plot(name, measurements_group_):
     fig_: plt.Figure
     ax_: plt.Axes
     make_auto_correlation_plot_to_ax(name, measurements_group_, ax_)
+    ax_.set_xlabel(r"t")
+    ax_.set_ylabel(r"$\Gamma$("+name+")")
     ax_.set_yscale("log")
+    fig_.set_tight_layout(True)
     return fig_, ax_
 
 
@@ -55,7 +58,8 @@ def make_observable_plot(name, observable_list, observable_error_list):
     ax_.errorbar(inverse_betas, observable_list, observable_error_list, fmt='o')
 
     ax_.set_xlabel(r"1/$\beta$")
-    ax_.set_ylabel(r"m")
+    ax_.set_ylabel(name)
+    fig_.set_tight_layout(True)
     return fig_, ax_
 
 
@@ -75,13 +79,13 @@ energies_errors = []
 energies_squared = []
 energies_squared_errors = []
 
-sub_folder_name = "checker_board_multi_level_hmc_2_levels/"
-# sub_folder_name = "black_white_multi_level_hmc_2_levels/"
+# sub_folder_name = "checker_board_multi_level_hmc_2_levels/"
+sub_folder_name = "black_white_multi_level_hmc_2_levels/"
 # sub_folder_name = "std_hmc/"
 
 for file in os.listdir(sub_folder_name):
     if file.startswith("out_"):
-        file = sub_folder_name + "/" + file
+        file = sub_folder_name + file
         print(file)
         f = h5py.File(file, 'r')
 
