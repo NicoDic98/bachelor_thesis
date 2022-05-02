@@ -401,7 +401,55 @@ void IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_,
                     }
                 }
             } else {
+                //in this case fine_grid_side_length is NOT well-defined
+                coarse_grid_side_length = static_cast<int>(pow(static_cast<double>(fine_size) / 2, 1. / dimension));
+                if (int_pow(coarse_grid_side_length, dimension) != fine_size / 2) {
+                    if (int_pow(coarse_grid_side_length + 1, dimension) == fine_size / 2) {
+                        coarse_grid_side_length += 1;
+                    } else if (int_pow(coarse_grid_side_length - 1, dimension) == fine_size / 2) {
+                        coarse_grid_side_length -= 1;
+                    } else {
+                        std::cerr << "Can't determine coarse grid side length from fine_size = "
+                                  << fine_size << " and dimension = " << dimension << '\n';
+                        exit(-42);
+                    }
+                }
 
+                for (int m = 0; m < InterpolationMatrix.rows(); ++m) {
+                    if ((m / coarse_grid_side_length) % 2 == 1) {
+                        InterpolationMatrix(m, m - (m / coarse_grid_side_length) * coarse_grid_side_length +
+                                               (((m / coarse_grid_side_length) - 1) / 2) *
+                                               coarse_grid_side_length) = 1.;
+                    } else {
+                        int neighbourIndex = (m / coarse_grid_side_length - 1) * coarse_grid_side_length +
+                                             m % coarse_grid_side_length;
+                        neighbourIndex=static_cast<int>((neighbourIndex+fine_size)%fine_size);
+                        InterpolationMatrix(m, neighbourIndex -
+                                               (neighbourIndex / coarse_grid_side_length) * coarse_grid_side_length +
+                                               (((neighbourIndex / coarse_grid_side_length) - 1) / 2) *
+                                               coarse_grid_side_length) = 0.25;
+                        neighbourIndex = (m / coarse_grid_side_length - 1) * coarse_grid_side_length +
+                                         (m + 1) % coarse_grid_side_length;
+                        neighbourIndex=static_cast<int>((neighbourIndex+fine_size)%fine_size);
+                        InterpolationMatrix(m, neighbourIndex -
+                                               (neighbourIndex / coarse_grid_side_length) * coarse_grid_side_length +
+                                               (((neighbourIndex / coarse_grid_side_length) - 1) / 2) *
+                                               coarse_grid_side_length) = 0.25;
+                        neighbourIndex = (m / coarse_grid_side_length + 1) * coarse_grid_side_length +
+                                         m % coarse_grid_side_length;
+                        InterpolationMatrix(m, neighbourIndex -
+                                               (neighbourIndex / coarse_grid_side_length) * coarse_grid_side_length +
+                                               (((neighbourIndex / coarse_grid_side_length) - 1) / 2) *
+                                               coarse_grid_side_length) = 0.25;
+                        neighbourIndex = (m / coarse_grid_side_length + 1) * coarse_grid_side_length +
+                                         (m + 1) % coarse_grid_side_length;
+                        InterpolationMatrix(m, neighbourIndex -
+                                               (neighbourIndex / coarse_grid_side_length) * coarse_grid_side_length +
+                                               (((neighbourIndex / coarse_grid_side_length) - 1) / 2) *
+                                               coarse_grid_side_length) = 0.25;
+
+                    }
+                }
             }
             break;
     }

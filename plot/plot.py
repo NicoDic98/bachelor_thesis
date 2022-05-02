@@ -34,8 +34,13 @@ energies_errors = []
 energies_squared = []
 energies_squared_errors = []
 
-for file in os.listdir():
-    if file.startswith("out_02"):
+# sub_folder_name = "checker_board_multi_level_hmc_2_levels"
+# sub_folder_name = "black_white_multi_level_hmc_2_levels"
+sub_folder_name = "std_hmc"
+
+for file in os.listdir(sub_folder_name):
+    if file.startswith("out_"):
+        file = sub_folder_name + "/" + file
         print(file)
         f = h5py.File(file, 'r')
 
@@ -86,12 +91,12 @@ if len(magnetizations) > 0:
 
     ax.set_xlabel(r"1/$\beta$")
     ax.set_ylabel(r"m")
-    plt.savefig("magnetisation.png")
+    plt.savefig(sub_folder_name + "/magnetisation.png")
     ax.clear()
 
-    ax.scatter(np.arange(magnetization_auto_correlation.size),magnetization_auto_correlation)
-    #ax.set_yscale("log")
-    plt.savefig("magnetization_auto_correlation.png")
+    ax.scatter(np.arange(magnetization_auto_correlation.size), magnetization_auto_correlation)
+    # ax.set_yscale("log")
+    plt.savefig(sub_folder_name + "/magnetization_auto_correlation.png")
     ax.clear()
     ax.set_yscale("linear")
 
@@ -103,7 +108,7 @@ if len(magnetizations_squared) > 0:
 
     ax.set_xlabel(r"1/$\beta$")
     ax.set_ylabel(r"m²")
-    plt.savefig("magnetization_squared.png")
+    plt.savefig(sub_folder_name + "/magnetization_squared.png")
     ax.clear()
 
 # energies
@@ -114,7 +119,7 @@ if len(energies) > 0:
 
     ax.set_xlabel(r"1/$\beta$")
     ax.set_ylabel(r"e")
-    plt.savefig("energy.png")
+    plt.savefig(sub_folder_name + "/energy.png")
     ax.clear()
 
 # energies_squared
@@ -123,5 +128,5 @@ if len(energies_squared) > 0:
 
     ax.set_xlabel(r"1/$\beta$")
     ax.set_ylabel(r"e²")
-    plt.savefig("energy_squared.png")
+    plt.savefig(sub_folder_name + "/energy_squared.png")
     ax.clear()

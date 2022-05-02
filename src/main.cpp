@@ -267,7 +267,7 @@ void test_multi_level_hmc() {
 }
 
 void MultiLevelTime() {
-    const int grid_size = 4;
+    const int grid_size = 16;
     const int dim = 2;
     const int lambda = int_pow(grid_size, dim);
     const double C{0.1};
@@ -289,10 +289,9 @@ void MultiLevelTime() {
     oss << std::put_time(&tm, "%d_%m_%Y__%H_%M_%S_");
     std::string my_time{oss.str()};
 
-    test.get_coarser_model(InterpolationType::Black_White)->print_interpolation_matrix();
 
-    MultiLevelHMCGenerator mygen(test, {1, 4}, {0, 4}, 1, InterpolationType::Checkerboard, {8, 32},
-                                 {1. / 8., 1. / 32.}, myengine);
+    MultiLevelHMCGenerator mygen(test, {0}, {1}, 1, InterpolationType::Black_White, {8},
+                                 {1. / 8.}, myengine);
     std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 100000, 10000);
     for (auto acceptance_rate: acceptance_rates) {
         std::cout << "Acceptance rate:" << acceptance_rate << std::endl;

@@ -213,8 +213,9 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
     ModelStack.push_back(std::unique_ptr<BaseModel<configuration_type>>(model_.get_copy_of_model()));
     HMCStack.push_back(HMCGenerator(*ModelStack[0], amount_of_steps_[0], step_sizes_[0], generator));
 
+    assert(nu_post[0] > 0);
     for (int i = 1; i < nu_pre.size(); ++i) {
-        assert(nu_pre[i] + nu_post[i] > 0);
+        assert(nu_post[i] > 0);
         ModelStack.push_back(
                 std::unique_ptr<BaseModel<configuration_type>>(
                         (ModelStack[i - 1])->get_coarser_model(inter_type)));
