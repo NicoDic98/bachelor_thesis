@@ -321,9 +321,9 @@ void MultiLevelCriticalSimulation() {
     std::string my_time{oss.str()};
 
 
-    MultiLevelHMCGenerator mygen(test, {0, 16}, {1, 16}, {-1, -1},1, InterpolationType::Black_White,
-                                 {4, 6},
-                                 {1. / 4., 1. / 6.}, myengine);
+    MultiLevelHMCGenerator mygen(test, {0}, {1}, {-1, -1},1, InterpolationType::Black_White,
+                                 {4},
+                                 {1. / 4.}, myengine);
     std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 100000, 10000);
     for (auto acceptance_rate: acceptance_rates) {
         std::cout << "Acceptance rate:" << acceptance_rate << std::endl;
