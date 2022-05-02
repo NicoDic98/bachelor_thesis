@@ -266,7 +266,37 @@ void test_multi_level_hmc() {
 
 }
 
-void MultiLevelTime() {
+template<class configuration_type>
+void DoMultiLevelMeasurements(MultiLevelHMCGenerator<configuration_type> &Gen, const std::string &out_filename) {
+    HighFive::File out_file(out_filename,
+                            HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
+    Gen.dump_observable(&BaseModel<VectorX>::get_magnetization, "magnetization", out_file);
+    Gen.analyze_dataset("magnetization", out_file, 100, 200, 200);
+    Gen.dump_observable(&BaseModel<VectorX>::get_magnetization_squared, "magnetization_squared", out_file);
+    Gen.analyze_dataset("magnetization_squared", out_file, 100, 200, 200);
+    Gen.dump_observable(&BaseModel<VectorX>::get_energy, "energy", out_file);
+    Gen.analyze_dataset("energy", out_file, 100, 200, 200);
+    Gen.dump_observable(&BaseModel<VectorX>::get_energy_squared, "energy_squared", out_file);
+    Gen.analyze_dataset("energy_squared", out_file, 100, 200, 200);
+}
+
+void DoMultiLevelMeasurementsFromFile(std::string filename) {
+
+    HighFive::File file(std::string(DATA_DIR).append(filename), HighFive::File::ReadOnly);
+    auto helper = file.getGroup("level0");//todo see if this step can be removed to be needed
+    IsingModel test(helper);
+
+    std::default_random_engine myengine{42L};
+    MultiLevelHMCGenerator mygen(test, file, myengine);
+
+    filename.insert(filename.rfind('/') + 1, "out_");
+    std::string out_filename{std::string(DATA_DIR).append(filename)};
+    DoMultiLevelMeasurements(mygen, out_filename);
+
+
+}
+
+void MultiLevelCriticalSimulation() {
     const int grid_size = 16;
     const int dim = 2;
     const int lambda = int_pow(grid_size, dim);
@@ -290,8 +320,8 @@ void MultiLevelTime() {
     std::string my_time{oss.str()};
 
 
-    MultiLevelHMCGenerator mygen(test, {0}, {1}, 1, InterpolationType::Black_White, {8},
-                                 {1. / 8.}, myengine);
+    MultiLevelHMCGenerator mygen(test, {0, 16, 16}, {1, 16, 16}, 2, InterpolationType::Black_White, {8, 32, 64},
+                                 {1. / 8., 1. / 32., 1. / 64.}, myengine);
     std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 100000, 10000);
     for (auto acceptance_rate: acceptance_rates) {
         std::cout << "Acceptance rate:" << acceptance_rate << std::endl;
@@ -299,46 +329,10 @@ void MultiLevelTime() {
     std::string filename{std::string(DATA_DIR).append(my_time).append(std::to_string(beta)).append(".h5")};
     HighFive::File file(filename, HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
     mygen.dumpToH5(file);
+
     std::string out_filename{std::string(DATA_DIR).append("out_").append(my_time).
             append(std::to_string(beta)).append(".h5")};
-    HighFive::File out_file(out_filename,
-                            HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
-    //mygen.dumpToH5(out_file);
-    mygen.dump_observable(&BaseModel<VectorX>::get_magnetization, "magnetization", out_file);
-    mygen.analyze_dataset("magnetization", out_file, 16, 200, 30);
-    mygen.dump_observable(&BaseModel<VectorX>::get_magnetization_squared, "magnetization_squared", out_file);
-    mygen.analyze_dataset("magnetization_squared", out_file, 16, 200, 30);
-    mygen.dump_observable(&BaseModel<VectorX>::get_energy, "energy", out_file);
-    mygen.analyze_dataset("energy", out_file, 16, 200, 30);
-    mygen.dump_observable(&BaseModel<VectorX>::get_energy_squared, "energy_squared", out_file);
-    mygen.analyze_dataset("energy_squared", out_file, 16, 200, 30);
-}
-
-void test_hmc_measurements() {
-    std::string my_time{"14_04_2022__14_58_06_"};
-    for (double inverse_beta = 0.3; inverse_beta < 4.05; inverse_beta += 0.1) {
-        std::string filename{std::string(DATA_DIR).append(my_time).append(std::to_string(inverse_beta)).append(".h5")};
-        HighFive::File file(filename, HighFive::File::ReadOnly);
-        auto helper = file.getGroup("level0");//todo see if this step can be removed to be needed
-        IsingModel test(helper);
-
-        std::default_random_engine myengine{42L};
-        MultiLevelHMCGenerator mygen(test, file, myengine);
-        std::string out_filename{
-                std::string(DATA_DIR).append("out_").append(my_time).
-                        append(std::to_string(inverse_beta)).append(".h5")};
-        HighFive::File out_file(out_filename,
-                                HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
-        //mygen.dumpToH5(out_file);
-        mygen.dump_observable(&BaseModel<VectorX>::get_magnetization, "magnetization", out_file);
-        mygen.analyze_dataset("magnetization", out_file, 16, 200, 30);
-        mygen.dump_observable(&BaseModel<VectorX>::get_magnetization_squared, "magnetization_squared", out_file);
-        mygen.analyze_dataset("magnetization_squared", out_file, 16, 200, 30);
-        mygen.dump_observable(&BaseModel<VectorX>::get_energy, "energy", out_file);
-        mygen.analyze_dataset("energy", out_file, 16, 200, 30);
-        mygen.dump_observable(&BaseModel<VectorX>::get_energy_squared, "energy_squared", out_file);
-        mygen.analyze_dataset("energy_squared", out_file, 16, 200, 30);
-    }
+    DoMultiLevelMeasurements(mygen, out_filename);
 }
 
 /**
@@ -352,7 +346,9 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     //test_multi_level_hmc();
     //test_hmc_measurements();
-    MultiLevelTime();
+    //DoMultiLevelMeasurementsFromFile(
+    // std::string("checker_board_multi_level_hmc_2_levels/02_05_2022__14_00_34_0.440687.h5"));
+    MultiLevelCriticalSimulation();
     //return test_hip();
 }
 

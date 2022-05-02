@@ -294,8 +294,15 @@ std::vector<double> MultiLevelHMCGenerator<configuration_type>::generate_ensembl
         elem = 0.;
     }
     for (int i = 0; i < amount_of_samples; ++i) {
+        if (i % (amount_of_samples / 10) == 0) {
+            std::cout << "|";
+        }
+        if (i % (amount_of_samples / 100) == 0) {
+            std::cout << "=";
+        }
         phi = LevelRecursion(0, phi);
     }
+    std::cout << std::endl;
 
     for (int i = 0; i < AcceptanceRates.size(); ++i) {
         AcceptanceRates[i] = AcceptanceRates[i] / (amount_of_samples * (nu_pre[i] + nu_post[i]) * int_pow(gamma, i));

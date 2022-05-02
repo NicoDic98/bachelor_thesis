@@ -22,11 +22,52 @@ def ene_exact(J):  # exact internal energy in thermodynamic limit (for h=0)\n",
     return -J * np.cosh(J2) * answer / np.sinh(J2)
 
 
+def append_observable(name, measurements_group_, observable_list, observable_error_list):
+    observable_group = measurements_group_.get(name)
+    observable_list.append(observable_group.attrs["bootstrap_mean"])
+    observable_error_list.append(np.sqrt(observable_group.attrs["bootstrap_variance"]))
+
+
+def make_auto_correlation_plot_to_ax(name, measurements_group_, ax_):
+    observable_group = measurements_group_.get(name)
+    observable_auto_correlation_dataset = observable_group.get("auto_correlation")
+    observable_auto_correlation = np.zeros(observable_auto_correlation_dataset.size)
+    observable_auto_correlation_dataset.read_direct(observable_auto_correlation,
+                                                    np.s_[0:observable_auto_correlation_dataset.size],
+                                                    np.s_[0:observable_auto_correlation_dataset.size])
+
+    ax_.scatter(np.arange(observable_auto_correlation.size), observable_auto_correlation)
+
+
+def make_auto_correlation_plot(name, measurements_group_):
+    fig_, ax_ = plt.subplots()
+    fig_: plt.Figure
+    ax_: plt.Axes
+    make_auto_correlation_plot_to_ax(name, measurements_group_, ax_)
+    ax_.set_yscale("log")
+    return fig_, ax_
+
+
+def make_observable_plot(name, observable_list, observable_error_list):
+    fig_, ax_ = plt.subplots()
+    fig_: plt.Figure
+    ax_: plt.Axes
+    ax_.errorbar(inverse_betas, observable_list, observable_error_list, fmt='o')
+
+    ax_.set_xlabel(r"1/$\beta$")
+    ax_.set_ylabel(r"m")
+    return fig_, ax_
+
+
+magnetization_name = "magnetization"
+magnetization_squared_name = "magnetization_squared"
+energy_name = "energy"
+energy_squared_name = "energy_squared"
+
 betas = []
 inverse_betas = []
 magnetizations = []
 magnetizations_errors = []
-magnetization_auto_correlation = np.zeros(10)
 magnetizations_squared = []
 magnetizations_squared_errors = []
 energies = []
@@ -34,9 +75,9 @@ energies_errors = []
 energies_squared = []
 energies_squared_errors = []
 
-# sub_folder_name = "checker_board_multi_level_hmc_2_levels"
-# sub_folder_name = "black_white_multi_level_hmc_2_levels"
-sub_folder_name = "std_hmc"
+sub_folder_name = "checker_board_multi_level_hmc_2_levels/"
+# sub_folder_name = "black_white_multi_level_hmc_2_levels/"
+# sub_folder_name = "std_hmc/"
 
 for file in os.listdir(sub_folder_name):
     if file.startswith("out_"):
@@ -51,82 +92,53 @@ for file in os.listdir(sub_folder_name):
         betas.append(level0_group.attrs["beta"])
         inverse_betas.append(1. / betas[-1])
 
-        if "magnetization" in measurements_group:
-            magnetization_group = measurements_group.get("magnetization")
-            magnetizations.append(magnetization_group.attrs["bootstrap_mean"])
-            magnetizations_errors.append(np.sqrt(magnetization_group.attrs["bootstrap_variance"]))
-            magnetization_auto_correlation_dataset = magnetization_group.get("auto_correlation")
-            magnetization_auto_correlation = np.resize(magnetization_auto_correlation,
-                                                       magnetization_auto_correlation_dataset.size)
-            magnetization_auto_correlation_dataset.read_direct(magnetization_auto_correlation,
-                                                               np.s_[0:magnetization_auto_correlation_dataset.size],
-                                                               np.s_[0:magnetization_auto_correlation_dataset.size])
+        if magnetization_name in measurements_group:
+            append_observable(magnetization_name, measurements_group, magnetizations, magnetizations_errors)
+            fig, ax = make_auto_correlation_plot(magnetization_name, measurements_group)
+            fig.savefig(sub_folder_name + magnetization_name + "_auto_correlation.png")
 
-        if "magnetization_squared" in measurements_group:
-            magnetization_squared_group = measurements_group.get("magnetization_squared")
-            magnetizations_squared.append(magnetization_squared_group.attrs["bootstrap_mean"])
-            magnetizations_squared_errors.append(np.sqrt(magnetization_squared_group.attrs["bootstrap_variance"]))
+        if magnetization_squared_name in measurements_group:
+            append_observable(magnetization_squared_name, measurements_group, magnetizations_squared,
+                              magnetizations_squared_errors)
+            fig, ax = make_auto_correlation_plot(magnetization_squared_name, measurements_group)
+            fig.savefig(sub_folder_name + magnetization_squared_name + "_auto_correlation.png")
 
-        if "energy" in measurements_group:
-            energy_group = measurements_group.get("energy")
-            energies.append(energy_group.attrs["bootstrap_mean"])
-            energies_errors.append(np.sqrt(energy_group.attrs["bootstrap_variance"]))
+        if energy_name in measurements_group:
+            append_observable(energy_name, measurements_group, energies, energies_errors)
+            fig, ax = make_auto_correlation_plot(energy_name, measurements_group)
+            fig.savefig(sub_folder_name + energy_name + "_auto_correlation.png")
 
-        if "energy_squared" in measurements_group:
-            energy_squared_group = measurements_group.get("energy_squared")
-            energies_squared.append(energy_squared_group.attrs["bootstrap_mean"])
-            energies_squared_errors.append(np.sqrt(energy_squared_group.attrs["bootstrap_variance"]))
-
-fig, ax = plt.subplots()
-fig: plt.Figure
-ax: plt.Axes
+        if energy_squared_name in measurements_group:
+            append_observable(energy_squared_name, measurements_group, energies_squared, energies_squared_errors)
+            fig, ax = make_auto_correlation_plot(energy_squared_name, measurements_group)
+            fig.savefig(sub_folder_name + energy_squared_name + "_auto_correlation.png")
 
 # magnetizations
 if len(magnetizations) > 0:
-    ax.errorbar(inverse_betas, magnetizations, magnetizations_errors, fmt='o')
     beta_lin = np.linspace(0.25, 3, 1000)
     m_exact = np.array([magnetization_exact(temp) for temp in beta_lin])
+    fig, ax = make_observable_plot(magnetization_name, magnetizations, magnetizations_errors)
     ax.plot(1. / beta_lin, m_exact)
     ax.plot(1. / beta_lin, -m_exact)
-
-    ax.set_xlabel(r"1/$\beta$")
-    ax.set_ylabel(r"m")
-    plt.savefig(sub_folder_name + "/magnetisation.png")
-    ax.clear()
-
-    ax.scatter(np.arange(magnetization_auto_correlation.size), magnetization_auto_correlation)
-    # ax.set_yscale("log")
-    plt.savefig(sub_folder_name + "/magnetization_auto_correlation.png")
-    ax.clear()
-    ax.set_yscale("linear")
+    fig.savefig(sub_folder_name + magnetization_name + ".png")
 
 # magnetizations_squared
 if len(magnetizations_squared) > 0:
-    ax.errorbar(inverse_betas, magnetizations_squared, magnetizations_squared_errors, fmt='o')
     m_squared_exact = m_exact ** 2  # todo
-    ax.plot(1. / beta_lin, m_squared_exact)
+    fig, ax = make_observable_plot(magnetization_squared_name, magnetizations_squared, magnetizations_squared_errors)
 
-    ax.set_xlabel(r"1/$\beta$")
-    ax.set_ylabel(r"m²")
-    plt.savefig(sub_folder_name + "/magnetization_squared.png")
-    ax.clear()
+    ax.plot(1. / beta_lin, m_squared_exact)
+    fig.savefig(sub_folder_name + magnetization_squared_name + ".png")
 
 # energies
 if len(energies) > 0:
-    ax.errorbar(inverse_betas, energies, energies_errors, fmt='o')
     e_exact = np.array([ene_exact(temp) / temp for temp in beta_lin])
+    fig, ax = make_observable_plot(energy_name, energies, energies_errors)
     ax.plot(1. / beta_lin, e_exact)
-
-    ax.set_xlabel(r"1/$\beta$")
-    ax.set_ylabel(r"e")
-    plt.savefig(sub_folder_name + "/energy.png")
-    ax.clear()
+    fig.savefig(sub_folder_name + energy_name + ".png")
 
 # energies_squared
 if len(energies_squared) > 0:
-    ax.errorbar(inverse_betas, energies_squared, energies_squared_errors, fmt='o')
-
-    ax.set_xlabel(r"1/$\beta$")
-    ax.set_ylabel(r"e²")
-    plt.savefig(sub_folder_name + "/energy_squared.png")
-    ax.clear()
+    fig, ax = make_observable_plot(energy_squared_name, energies_squared, energies_squared_errors)
+    # todo exact solution
+    fig.savefig(sub_folder_name + energy_squared_name + ".png")
