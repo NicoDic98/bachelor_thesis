@@ -154,7 +154,7 @@ private:
     [[maybe_unused]] static const char *gamma_name;
 
     /**
-     * @brief Amount of ticks in micro seconds taken for the production
+     * @brief Amount of ticks in milliseconds taken for the production
      */
     size_t tick_time;
     /**
@@ -226,11 +226,16 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
         : nu_pre{std::move(nu_pre_)}, nu_post{std::move(nu_post_)}, erg_jump_dists{std::move(erg_jump_dists_)},
           gamma{gamma_}, tick_time{}, inter_type{InterpolationType_}, generator{generator_}, AcceptanceRates{} {
     //TODO: add auto sizing
-    assert(gamma > 0);
-    assert(nu_pre.size() == nu_post.size());
-    assert(nu_pre.size() == erg_jump_dists.size());
-    assert(nu_pre.size() == amount_of_steps_.size());
-    assert(nu_pre.size() == step_sizes_.size());
+    bool size_ok = (gamma > 0)
+                   && (nu_pre.size() == nu_post.size())
+                   && (nu_pre.size() == erg_jump_dists.size())
+                   && (nu_pre.size() == amount_of_steps_.size())
+                   && (nu_pre.size() == step_sizes_.size());
+    assert(size_ok);
+    if (!size_ok) {
+        std::cerr << "Problem with sizes!\n";
+        exit(-42);
+    }
 
 
     AcceptanceRates.resize(nu_pre.size());
@@ -353,11 +358,11 @@ std::vector<double> MultiLevelHMCGenerator<configuration_type>::generate_ensembl
         phi = LevelRecursion(0, phi);
     }
     auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
     tick_time = duration.count();
 
     std::cout << std::endl;
-    std::cout << "Production done. Execution time: " << tick_time/1e6 << " s" << std::endl;
+    std::cout << "Production done.\nExecution time: " << tick_time / 1e3 << " s" << std::endl;
 
     for (int i = 0; i < AcceptanceRates.size(); ++i) {
         AcceptanceRates[i] = AcceptanceRates[i] / (amount_of_samples * (nu_pre[i] + nu_post[i]) * int_pow(gamma, i));

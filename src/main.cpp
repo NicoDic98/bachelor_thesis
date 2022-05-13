@@ -297,8 +297,14 @@ void DoMultiLevelMeasurementsFromFile(std::string filename) {
 
 }
 
-void MultiLevelCriticalSimulation() {
-    const int grid_size = 16;
+void MultiLevelCriticalSimulation(const int grid_size = 16,
+                                  std::vector<size_t> nu_pre = {0},
+                                  std::vector<size_t> nu_post = {1},
+                                  std::vector<int> erg_jump_dists = {-1},
+                                  size_t gamma = 1,
+                                  const std::vector<size_t> &amount_of_steps = {6},
+                                  const std::vector<double> &step_sizes = {1. / 6.},
+                                  size_t id = 0) {
     const int dim = 2;
     const int lambda = int_pow(grid_size, dim);
     const double C{0.1};
@@ -317,23 +323,32 @@ void MultiLevelCriticalSimulation() {
     IsingModel test(beta, h0, eta0, C, dim, 1, grid_size);
 
 
-    MultiLevelHMCGenerator mygen(test, {0}, {1}, {-1}, 1, int_type,
-                                 {4},
-                                 {1. / 4.}, myengine);
-    std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 10000, 1000);
+    MultiLevelHMCGenerator mygen(test, nu_pre, nu_post, erg_jump_dists, gamma, int_type,
+                                 amount_of_steps, step_sizes, myengine);
+    std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 100000, 10000);
     for (auto acceptance_rate: acceptance_rates) {
         std::cout << "Acceptance rate:" << acceptance_rate << std::endl;
     }
 
     if (int_type == InterpolationType::Black_White) {
         filename.append("gs").append(std::to_string(grid_size)).append("_")
-                .append("Black_White").append(".h5");
+                .append("Black_White").append("_")
+                .append("id").append(std::to_string(id)).append(".h5");
     } else if (int_type == InterpolationType::Checkerboard) {
         filename.append("gs").append(std::to_string(grid_size)).append("_")
-                .append("Checkerboard").append(".h5");
+                .append("Checkerboard").append("_")
+                .append("id").append(std::to_string(id)).append(".h5");
     }
     HighFive::File file(filename, HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
     mygen.dumpToH5(file);
+}
+
+void HMCCriticalSimulation(int grid_size = 16, const size_t &amount_of_steps = 6,
+                           const double step_sizes = 1. / 6.) {
+    MultiLevelCriticalSimulation(16, {0}, {1},
+                                 {-1}, 1,
+                                 {amount_of_steps},
+                                 {step_sizes}, 0);
 }
 
 /**
@@ -349,7 +364,16 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_hmc_measurements();
     //DoMultiLevelMeasurementsFromFile(
     //std::string("std_hmc/02_05_2022__14_26_52_0.440687.h5"));
-    MultiLevelCriticalSimulation();
+    //HMCCriticalSimulation(16, 6, 1. / 6.);
+    size_t i{1};
+    for (size_t l = 1; l < 64; l *= 2) {
+        for (size_t m = 1; m < 64; m *= 2) {
+            MultiLevelCriticalSimulation(16, {0, l}, {1, m},
+                                         {-1,-1}, 1,
+                                         {6, 6},
+                                         {1. / 6., 1. / 6.}, i++);
+        }
+    }
     //return test_hip();
 }
 
