@@ -15,6 +15,7 @@
 #include <Analyzer.h>
 #include <random>
 #include <iostream>
+#include <chrono>
 
 #include <utility>
 #include <memory>
@@ -153,6 +154,15 @@ private:
     [[maybe_unused]] static const char *gamma_name;
 
     /**
+     * @brief Amount of ticks in micro seconds taken for the production
+     */
+    size_t tick_time;
+    /**
+     * @brief String to be used as key for the \a tick_time in H5 files
+     */
+    [[maybe_unused]] static const char *tick_time_name;
+
+    /**
      * @brief Interpolation type used to generate the coarser levels
      */
     InterpolationType inter_type;
@@ -196,6 +206,7 @@ template<class configuration_type> const char *MultiLevelHMCGenerator<configurat
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::
         erg_jump_dists_name{"erg_jump_dists"};
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::gamma_name{"gamma"};
+template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::tick_time_name{"tick_time"};
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::
         inter_type_name{"inter_type"};
 template<class configuration_type> const char *MultiLevelHMCGenerator<configuration_type>::
@@ -213,7 +224,7 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
                                                                    const std::vector<double> &step_sizes_,
                                                                    std::default_random_engine &generator_)
         : nu_pre{std::move(nu_pre_)}, nu_post{std::move(nu_post_)}, erg_jump_dists{std::move(erg_jump_dists_)},
-          gamma{gamma_}, inter_type{InterpolationType_}, generator{generator_}, AcceptanceRates{} {
+          gamma{gamma_}, tick_time{}, inter_type{InterpolationType_}, generator{generator_}, AcceptanceRates{} {
     //TODO: add auto sizing
     assert(gamma > 0);
     assert(nu_pre.size() == nu_post.size());
@@ -241,7 +252,7 @@ template<class configuration_type>
 MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<configuration_type> &model_,
                                                                    HighFive::File &file,
                                                                    std::default_random_engine &generator_)
-        : gamma{}, generator{generator_}, AcceptanceRates{} {
+        : gamma{}, tick_time{}, generator{generator_}, AcceptanceRates{} {
 
     std::string current_level_name{level_name};
     current_level_name.append(std::to_string(0));
@@ -266,6 +277,9 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
     }
     erg_jump_dists.push_back(iBuffer);
     current_level.getAttribute(gamma_name).read(gamma);
+    if (current_level.hasAttribute(tick_time_name)) {
+        current_level.getAttribute(tick_time_name).read(tick_time);
+    }
     double dBuffer;
     current_level.getAttribute(AcceptanceRate_name).read(dBuffer);
     AcceptanceRates.push_back(dBuffer);
@@ -298,6 +312,9 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
         }
         erg_jump_dists.push_back(iBuffer);
         current_level.getAttribute(gamma_name).read(gamma);
+        if (current_level.hasAttribute(tick_time_name)) {
+            current_level.getAttribute(tick_time_name).read(tick_time);
+        }
         current_level.getAttribute(inter_type_name).read(iBuffer);
         inter_type = static_cast<InterpolationType>(iBuffer);
         current_level.getAttribute(AcceptanceRate_name).read(dBuffer);
@@ -315,9 +332,15 @@ std::vector<double> MultiLevelHMCGenerator<configuration_type>::generate_ensembl
         phi = LevelRecursion(0, phi);
     }
     HMCStack[0].clear_ensembles();
-    for (auto &elem: AcceptanceRates) {
-        elem = 0.;
+    std::cout << "Thermalization done." << std::endl;
+    for (int i = 0; i < AcceptanceRates.size(); ++i) {
+        std::cout << "Acceptance rate:" <<
+                  AcceptanceRates[i] / (amount_of_thermalization_steps * (nu_pre[i] + nu_post[i]) * int_pow(gamma, i))
+                  << std::endl;
+        AcceptanceRates[i] = 0.;
     }
+
+    auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < amount_of_samples; ++i) {
         if (i % (amount_of_samples / 10) == 0) {
             std::cout << "|";
@@ -329,7 +352,12 @@ std::vector<double> MultiLevelHMCGenerator<configuration_type>::generate_ensembl
         }
         phi = LevelRecursion(0, phi);
     }
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    tick_time = duration.count();
+
     std::cout << std::endl;
+    std::cout << "Production done. Execution time: " << tick_time/1e6 << " s" << std::endl;
 
     for (int i = 0; i < AcceptanceRates.size(); ++i) {
         AcceptanceRates[i] = AcceptanceRates[i] / (amount_of_samples * (nu_pre[i] + nu_post[i]) * int_pow(gamma, i));
@@ -386,6 +414,7 @@ void MultiLevelHMCGenerator<configuration_type>::dumpToH5(HighFive::File &file) 
         write_static_size(nu_post[i], current_level, nu_post_name);
         write_static_size(erg_jump_dists[i], current_level, erg_jump_dists_name);
         write_static_size(gamma, current_level, gamma_name);
+        write_static_size(tick_time, current_level, tick_time_name);
         write_static_size(static_cast<int>(inter_type), current_level, inter_type_name);
         write_static_size(AcceptanceRates[i], current_level, AcceptanceRate_name);
     }
@@ -423,6 +452,7 @@ void MultiLevelHMCGenerator<configuration_type>::dump_observable(
         write_static_size(nu_post[i], current_level, nu_post_name);
         write_static_size(erg_jump_dists[i], current_level, erg_jump_dists_name);
         write_static_size(gamma, current_level, gamma_name);
+        write_static_size(tick_time, current_level, tick_time_name);
         write_static_size(static_cast<int>(inter_type), current_level, inter_type_name);
         write_static_size(AcceptanceRates[i], current_level, AcceptanceRate_name);
         HighFive::DataSet dataset = HMCStack[i].dump_observable(observable_function_pointer, measurements_data_name,

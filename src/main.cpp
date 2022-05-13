@@ -303,6 +303,8 @@ void MultiLevelCriticalSimulation() {
     const int lambda = int_pow(grid_size, dim);
     const double C{0.1};
     const double beta{0.440686793509772};
+    auto int_type{InterpolationType::Black_White};
+    std::string filename{std::string(DATA_DIR)};
 
     VectorX phi0(lambda);
     phi0.setZero();
@@ -314,27 +316,24 @@ void MultiLevelCriticalSimulation() {
 
     IsingModel test(beta, h0, eta0, C, dim, 1, grid_size);
 
-    auto t = std::time(nullptr);
-    auto tm = *std::localtime(&t);
-    std::ostringstream oss;
-    oss << std::put_time(&tm, "%d_%m_%Y__%H_%M_%S_");
-    std::string my_time{oss.str()};
 
-
-    MultiLevelHMCGenerator mygen(test, {0}, {1}, {-1, -1},1, InterpolationType::Black_White,
+    MultiLevelHMCGenerator mygen(test, {0}, {1}, {-1}, 1, int_type,
                                  {4},
                                  {1. / 4.}, myengine);
-    std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 100000, 10000);
+    std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 10000, 1000);
     for (auto acceptance_rate: acceptance_rates) {
         std::cout << "Acceptance rate:" << acceptance_rate << std::endl;
     }
-    std::string filename{std::string(DATA_DIR).append(my_time).append(std::to_string(beta)).append(".h5")};
+
+    if (int_type == InterpolationType::Black_White) {
+        filename.append("gs").append(std::to_string(grid_size)).append("_")
+                .append("Black_White").append(".h5");
+    } else if (int_type == InterpolationType::Checkerboard) {
+        filename.append("gs").append(std::to_string(grid_size)).append("_")
+                .append("Checkerboard").append(".h5");
+    }
     HighFive::File file(filename, HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
     mygen.dumpToH5(file);
-
-    std::string out_filename{std::string(DATA_DIR).append("out_").append(my_time).
-            append(std::to_string(beta)).append(".h5")};
-    DoMultiLevelMeasurements(mygen, out_filename);
 }
 
 /**
@@ -349,7 +348,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_multi_level_hmc();
     //test_hmc_measurements();
     //DoMultiLevelMeasurementsFromFile(
-     //std::string("std_hmc/02_05_2022__14_26_52_0.440687.h5"));
+    //std::string("std_hmc/02_05_2022__14_26_52_0.440687.h5"));
     MultiLevelCriticalSimulation();
     //return test_hip();
 }
