@@ -333,10 +333,12 @@ void MultiLevelCriticalSimulation(const int grid_size = 16,
     if (int_type == InterpolationType::Black_White) {
         filename.append("gs").append(std::to_string(grid_size)).append("_")
                 .append("Black_White").append("_")
+                .append("ga").append(std::to_string(gamma)).append("_")
                 .append("id").append(std::to_string(id)).append(".h5");
     } else if (int_type == InterpolationType::Checkerboard) {
         filename.append("gs").append(std::to_string(grid_size)).append("_")
                 .append("Checkerboard").append("_")
+                .append("ga").append(std::to_string(gamma)).append("_")
                 .append("id").append(std::to_string(id)).append(".h5");
     }
     HighFive::File file(filename, HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
@@ -364,7 +366,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_hmc_measurements();
     //DoMultiLevelMeasurementsFromFile(
     //std::string("std_hmc/02_05_2022__14_26_52_0.440687.h5"));
-    //HMCCriticalSimulation(16, 6, 1. / 6.);
+    HMCCriticalSimulation(16, 6, 1. / 6.);
     size_t i{1};
     for (size_t l = 1; l < 64; l *= 2) {
         for (size_t m = 1; m < 64; m *= 2) {
