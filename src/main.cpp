@@ -309,7 +309,7 @@ void MultiLevelCriticalSimulation(const int grid_size = 16,
     const int lambda = int_pow(grid_size, dim);
     const double C{0.1};
     const double beta{0.440686793509772};
-    auto int_type{InterpolationType::Black_White};
+    auto int_type{InterpolationType::Checkerboard};
     std::string filename{std::string(DATA_DIR)};
 
     VectorX phi0(lambda);

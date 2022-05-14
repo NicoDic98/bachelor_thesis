@@ -10,6 +10,9 @@
 
 
 const char *Analyzer::auto_correlation_name{"auto_correlation"};
+const char *Analyzer::int_auto_correlation_time_name{"int_auto_correlation_time"};
+const char *Analyzer::int_auto_correlation_time_bias_name{"int_auto_correlation_time_bias"};
+const char *Analyzer::int_auto_correlation_time_stat_error_name{"int_auto_correlation_time_stat_error"};
 const char *Analyzer::mean_name{"mean"};
 const char *Analyzer::bootstrap_mean_name{"bootstrap_mean"};
 const char *Analyzer::bootstrap_variance_name{"bootstrap_variance"};
@@ -33,13 +36,23 @@ std::vector<double> Analyzer::auto_correlation(size_t max_t) {
         }
         ret[t] /= static_cast<double>(data.size() - t);
     }
-    auto start_value=ret[0];
-    for (double & t : ret) {
+    auto start_value = ret[0];
+    double int_auto_correlation_time{-0.5};//because we add gamma[0]=1
+    for (double &t: ret) {
         t /= start_value;
+        int_auto_correlation_time += t;
     }
     VectorX vec_temp(ret.size());
     vec_temp = VectorX::Map(&ret[0], ret.size());
     WriteVectorX(vec_temp, group, auto_correlation_name);
+
+    double int_auto_correlation_time_bias{
+            -int_auto_correlation_time * exp(-static_cast<double>(max_t) / int_auto_correlation_time)};
+    double int_auto_correlation_time_stat_error{4. * (static_cast<double>(max_t) + 0.5 - int_auto_correlation_time) *
+                                                int_auto_correlation_time / static_cast<double>(data.size())};
+    write_static_size(int_auto_correlation_time, group, int_auto_correlation_time_name);
+    write_static_size(int_auto_correlation_time_bias, group, int_auto_correlation_time_bias_name);
+    write_static_size(int_auto_correlation_time_stat_error, group, int_auto_correlation_time_stat_error_name);
 
     return ret;
 }

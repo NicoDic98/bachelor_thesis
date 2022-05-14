@@ -84,6 +84,13 @@ private:
     static const char *auto_correlation_name;
 
     /**
+     * @brief String to be used as key for the int_auto_correlation_time in H5 files
+     */
+    static const char *int_auto_correlation_time_name;
+    static const char *int_auto_correlation_time_bias_name;
+    static const char *int_auto_correlation_time_stat_error_name;
+
+    /**
      * @brief Calculates, sets and saves the mean of the dataset
      */
     void set_mean();
