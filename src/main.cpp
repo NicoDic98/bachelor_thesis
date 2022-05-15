@@ -321,7 +321,7 @@ void MultiLevelCriticalSimulation(const int grid_size = 16,
     const int lambda = int_pow(grid_size, dim);
     const double C{0.1};
     const double beta{0.440686793509772};
-    auto int_type{InterpolationType::Black_White};
+    auto int_type{InterpolationType::Checkerboard};
     std::string filename{std::string(DATA_DIR)};
 
     VectorX phi0(lambda);
@@ -376,18 +376,18 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     //test_multi_level_hmc();
     //test_hmc_measurements();
-    DoMultiLevelMeasurementsFromDir(
-            std::string("gs_16_BW_ga_1_levels_2"));
-    //HMCCriticalSimulation(16, 6, 1. / 6.);
-    //size_t i{1};
-    /*for (size_t l = 1; l < 64; l *= 2) {
+    //DoMultiLevelMeasurementsFromDir(
+    //        std::string("gs_16_CB_ga_2_levels_2"));
+    HMCCriticalSimulation(16, 6, 1. / 6.);
+    size_t i{1};
+    for (size_t l = 1; l < 64; l *= 2) {
         for (size_t m = 1; m < 64; m *= 2) {
             MultiLevelCriticalSimulation(16, {0, l}, {1, m},
                                          {-1,-1}, 2,
                                          {6, 6},
                                          {1. / 6., 1. / 6.}, i++);
         }
-    }*/
+    }
     //return test_hip();
 }
 

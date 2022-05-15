@@ -1,10 +1,16 @@
 import h5py
 import os
 
-import matplotlib
+import matplotlib.colors as mcolors
+from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.special
+
+magnetization_name = "magnetization"
+magnetization_squared_name = "magnetization_squared"
+energy_name = "energy"
+energy_squared_name = "energy_squared"
 
 
 def magnetization_exact(beta):
@@ -45,13 +51,13 @@ def make_auto_correlation_plot(name, measurements_group_):
     ax_: plt.Axes
     make_auto_correlation_plot_to_ax(name, measurements_group_, ax_)
     ax_.set_xlabel(r"t")
-    ax_.set_ylabel(r"$\Gamma$("+name+")")
+    ax_.set_ylabel(r"$\Gamma$(" + name + ")")
     ax_.set_yscale("log")
     fig_.set_tight_layout(True)
     return fig_, ax_
 
 
-def make_observable_plot(name, observable_list, observable_error_list):
+def make_observable_plot(name, inverse_betas, observable_list, observable_error_list):
     fig_, ax_ = plt.subplots()
     fig_: plt.Figure
     ax_: plt.Axes
@@ -63,86 +69,224 @@ def make_observable_plot(name, observable_list, observable_error_list):
     return fig_, ax_
 
 
-magnetization_name = "magnetization"
-magnetization_squared_name = "magnetization_squared"
-energy_name = "energy"
-energy_squared_name = "energy_squared"
+def base_plot(sub_folder_name="std_hmc/"):
+    betas = []
+    inverse_betas = []
+    magnetizations = []
+    magnetizations_errors = []
+    magnetizations_squared = []
+    magnetizations_squared_errors = []
+    energies = []
+    energies_errors = []
+    energies_squared = []
+    energies_squared_errors = []
 
-betas = []
-inverse_betas = []
-magnetizations = []
-magnetizations_errors = []
-magnetizations_squared = []
-magnetizations_squared_errors = []
-energies = []
-energies_errors = []
-energies_squared = []
-energies_squared_errors = []
+    for file in os.listdir(sub_folder_name):
+        if file.startswith("out_"):
+            file = sub_folder_name + file
+            print(file)
+            f = h5py.File(file, 'r')
 
-# sub_folder_name = "checker_board_multi_level_hmc_2_levels/"
-# sub_folder_name = "black_white_multi_level_hmc_2_levels/"
-sub_folder_name = "std_hmc/"
+            level0_group = f.get("level0")
 
-for file in os.listdir(sub_folder_name):
-    if file.startswith("out_"):
-        file = sub_folder_name + file
-        print(file)
-        f = h5py.File(file, 'r')
+            measurements_group = level0_group.get("measurements")
 
-        level0_group = f.get("level0")
+            betas.append(level0_group.attrs["beta"])
+            inverse_betas.append(1. / betas[-1])
 
-        measurements_group = level0_group.get("measurements")
+            if magnetization_name in measurements_group:
+                append_observable(magnetization_name, measurements_group, magnetizations, magnetizations_errors)
+                fig, ax = make_auto_correlation_plot(magnetization_name, measurements_group)
+                fig.savefig(sub_folder_name + magnetization_name + "_auto_correlation.png")
 
-        betas.append(level0_group.attrs["beta"])
-        inverse_betas.append(1. / betas[-1])
+            if magnetization_squared_name in measurements_group:
+                append_observable(magnetization_squared_name, measurements_group, magnetizations_squared,
+                                  magnetizations_squared_errors)
+                fig, ax = make_auto_correlation_plot(magnetization_squared_name, measurements_group)
+                fig.savefig(sub_folder_name + magnetization_squared_name + "_auto_correlation.png")
 
-        if magnetization_name in measurements_group:
-            append_observable(magnetization_name, measurements_group, magnetizations, magnetizations_errors)
-            fig, ax = make_auto_correlation_plot(magnetization_name, measurements_group)
-            fig.savefig(sub_folder_name + magnetization_name + "_auto_correlation.png")
+            if energy_name in measurements_group:
+                append_observable(energy_name, measurements_group, energies, energies_errors)
+                fig, ax = make_auto_correlation_plot(energy_name, measurements_group)
+                fig.savefig(sub_folder_name + energy_name + "_auto_correlation.png")
 
-        if magnetization_squared_name in measurements_group:
-            append_observable(magnetization_squared_name, measurements_group, magnetizations_squared,
-                              magnetizations_squared_errors)
-            fig, ax = make_auto_correlation_plot(magnetization_squared_name, measurements_group)
-            fig.savefig(sub_folder_name + magnetization_squared_name + "_auto_correlation.png")
+            if energy_squared_name in measurements_group:
+                append_observable(energy_squared_name, measurements_group, energies_squared, energies_squared_errors)
+                fig, ax = make_auto_correlation_plot(energy_squared_name, measurements_group)
+                fig.savefig(sub_folder_name + energy_squared_name + "_auto_correlation.png")
 
-        if energy_name in measurements_group:
-            append_observable(energy_name, measurements_group, energies, energies_errors)
-            fig, ax = make_auto_correlation_plot(energy_name, measurements_group)
-            fig.savefig(sub_folder_name + energy_name + "_auto_correlation.png")
+    # magnetizations
+    if len(magnetizations) > 0:
+        beta_lin = np.linspace(0.25, 3, 1000)
+        m_exact = np.array([magnetization_exact(temp) for temp in beta_lin])
+        fig, ax = make_observable_plot(magnetization_name, inverse_betas, magnetizations, magnetizations_errors)
+        ax.plot(1. / beta_lin, m_exact)
+        ax.plot(1. / beta_lin, -m_exact)
+        fig.savefig(sub_folder_name + magnetization_name + ".png")
 
-        if energy_squared_name in measurements_group:
-            append_observable(energy_squared_name, measurements_group, energies_squared, energies_squared_errors)
-            fig, ax = make_auto_correlation_plot(energy_squared_name, measurements_group)
-            fig.savefig(sub_folder_name + energy_squared_name + "_auto_correlation.png")
+    # magnetizations_squared
+    if len(magnetizations_squared) > 0:
+        m_squared_exact = m_exact ** 2  # todo
+        fig, ax = make_observable_plot(magnetization_squared_name, inverse_betas, magnetizations_squared,
+                                       magnetizations_squared_errors)
 
-# magnetizations
-if len(magnetizations) > 0:
-    beta_lin = np.linspace(0.25, 3, 1000)
-    m_exact = np.array([magnetization_exact(temp) for temp in beta_lin])
-    fig, ax = make_observable_plot(magnetization_name, magnetizations, magnetizations_errors)
-    ax.plot(1. / beta_lin, m_exact)
-    ax.plot(1. / beta_lin, -m_exact)
-    fig.savefig(sub_folder_name + magnetization_name + ".png")
+        ax.plot(1. / beta_lin, m_squared_exact)
+        fig.savefig(sub_folder_name + magnetization_squared_name + ".png")
 
-# magnetizations_squared
-if len(magnetizations_squared) > 0:
-    m_squared_exact = m_exact ** 2  # todo
-    fig, ax = make_observable_plot(magnetization_squared_name, magnetizations_squared, magnetizations_squared_errors)
+    # energies
+    if len(energies) > 0:
+        e_exact = np.array([ene_exact(temp) / temp for temp in beta_lin])
+        fig, ax = make_observable_plot(energy_name, inverse_betas, energies, energies_errors)
+        ax.plot(1. / beta_lin, e_exact)
+        fig.savefig(sub_folder_name + energy_name + ".png")
 
-    ax.plot(1. / beta_lin, m_squared_exact)
-    fig.savefig(sub_folder_name + magnetization_squared_name + ".png")
+    # energies_squared
+    if len(energies_squared) > 0:
+        fig, ax = make_observable_plot(energy_squared_name, inverse_betas, energies_squared, energies_squared_errors)
+        # todo exact solution
+        fig.savefig(sub_folder_name + energy_squared_name + ".png")
 
-# energies
-if len(energies) > 0:
-    e_exact = np.array([ene_exact(temp) / temp for temp in beta_lin])
-    fig, ax = make_observable_plot(energy_name, energies, energies_errors)
-    ax.plot(1. / beta_lin, e_exact)
-    fig.savefig(sub_folder_name + energy_name + ".png")
 
-# energies_squared
-if len(energies_squared) > 0:
-    fig, ax = make_observable_plot(energy_squared_name, energies_squared, energies_squared_errors)
-    # todo exact solution
-    fig.savefig(sub_folder_name + energy_squared_name + ".png")
+def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetization_name):
+    int_auto_correlation_time = []
+    gamma = []
+    tick_time = []
+    interpolation_type = []
+    nu_pre_level0 = []
+    nu_post_level0 = []
+    nu_pre_level1 = []
+    nu_post_level1 = []
+    for file in os.listdir(sub_folder_name):
+        if file.startswith("out_"):
+            file = sub_folder_name + file
+            print(file)
+            f = h5py.File(file, 'r')
+
+            level0_group = f.get("level0")
+
+            measurements_group = level0_group.get("measurements")
+            if magnetization_name in measurements_group:
+                observable_group = measurements_group.get(observable_name)
+                int_auto_correlation_time.append(observable_group.attrs["int_auto_correlation_time"])
+                gamma.append(level0_group.attrs["gamma"])
+                tick_time.append(level0_group.attrs["tick_time"])
+                interpolation_type.append(level0_group.attrs["inter_type"])
+                nu_pre_level0.append(level0_group.attrs["nu_pre"])
+                nu_post_level0.append(level0_group.attrs["nu_post"])
+                if "level1" in f:
+                    level1_group = f.get("level1")
+                    nu_pre_level1.append(level1_group.attrs["nu_pre"])
+                    nu_post_level1.append(level1_group.attrs["nu_post"])
+                else:
+                    nu_pre_level1.append(-1)
+                    nu_post_level1.append(-1)
+
+    int_auto_correlation_time = np.array(int_auto_correlation_time)
+    gamma = np.array(gamma)
+    tick_time = np.array(tick_time)
+    interpolation_type = np.array(interpolation_type)
+    nu_pre_level0 = np.array(nu_pre_level0)
+    nu_post_level0 = np.array(nu_post_level0)
+    nu_pre_level1 = np.array(nu_pre_level1)
+    nu_post_level1 = np.array(nu_post_level1)
+    fig_, (ax1_, ax2_, ax3_) = plt.subplots(3, 1, sharex="all", sharey="row")
+    fig_: plt.Figure
+    ax1_: plt.Axes
+    ax2_: plt.Axes
+    ax3_: plt.Axes
+    j = 0
+    fig_.subplots_adjust(hspace=0, wspace=0)
+    base_int_auto_correlation_time = int_auto_correlation_time[nu_pre_level1 == -1]
+    base_tick_time = tick_time[nu_pre_level1 == -1]
+
+    ax1_.hlines(base_int_auto_correlation_time, 0, 32, colors=list(mcolors.TABLEAU_COLORS.values())[-1],
+                label="HMC")
+    ax2_.hlines(base_tick_time, 0, 32, colors=list(mcolors.TABLEAU_COLORS.values())[-1])
+    ax3_.hlines(base_int_auto_correlation_time * base_tick_time, 0, 32,
+                colors=list(mcolors.TABLEAU_COLORS.values())[-1])
+    for i in range(33):
+        indices = nu_pre_level1 == i
+        x_plot = nu_post_level1[indices]
+        y1_plot = int_auto_correlation_time[indices]
+        y2_plot = tick_time[indices]
+        if len(x_plot):
+            ax1_.plot(x_plot, y1_plot, marker='.', ls='', c=list(mcolors.TABLEAU_COLORS.values())[j],
+                      label=f"nu pre={i}")
+
+            ax2_.plot(x_plot, y2_plot, marker='.', ls='', c=list(mcolors.TABLEAU_COLORS.values())[j])
+
+            ax3_.plot(x_plot, y1_plot * y2_plot, marker='.', ls='', c=list(mcolors.TABLEAU_COLORS.values())[j])
+
+            j += 1
+
+    ax1_.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    ax3_.set_xlabel(r"$\nu_{post}$")
+    ax1_.set_ylabel(r"$\tau$")
+    ax1_.set_yscale('log')
+    ax2_.set_ylabel(r"t")
+    ax2_.set_yscale('log')
+    ax3_.set_ylabel(r"$t*\tau$")
+    ax3_.set_yscale('log')
+
+    fig_.set_tight_layout(True)
+    fig_.savefig(sub_folder_name + observable_name + sub_folder_name[:-1] + ".png", dpi=1000)
+    fig_.clear()
+
+    fig_, (ax1_, ax2_, ax3_) = plt.subplots(1, 3, sharey="row")
+    fig_.subplots_adjust(hspace=0, wspace=0)
+    j = []
+    k = []
+    for i in range(33):
+        if np.any(nu_pre_level1 == i):
+            j.append(i)
+        if np.any(nu_post_level1 == i):
+            k.append(i)
+    j = np.array(j)
+    k = np.array(k)
+    data1 = np.zeros((len(j), len(k)))
+    data2 = np.zeros((len(j), len(k)))
+    data3 = np.zeros((len(j), len(k)))
+    for i1, index1 in enumerate(np.sort(j)):
+        for i2, index2 in enumerate(np.sort(k)):
+            data1[i1, i2] = int_auto_correlation_time[np.logical_and(nu_pre_level1 == index1, nu_post_level1 == index2)]
+            data2[i1, i2] = tick_time[np.logical_and(nu_pre_level1 == index1, nu_post_level1 == index2)]
+            data3[i1, i2] = tick_time[np.logical_and(nu_pre_level1 == index1, nu_post_level1 == index2)] * \
+                            int_auto_correlation_time[np.logical_and(nu_pre_level1 == index1, nu_post_level1 == index2)]
+
+    im1 = ax1_.imshow(data1)
+    ax1_divider = make_axes_locatable(ax1_)
+    # Add an axes to the right of the main axes.
+    cax1 = ax1_divider.append_axes("right", size="7%", pad="2%")
+    fig_.colorbar(im1, cax=cax1)
+
+    im2 = ax2_.imshow(data2)
+    ax2_divider = make_axes_locatable(ax2_)
+    # Add an axes to the right of the main axes.
+    cax2 = ax2_divider.append_axes("right", size="7%", pad="2%")
+    fig_.colorbar(im2, cax=cax2)
+
+    im3 = ax3_.imshow(data3)
+    ax3_divider = make_axes_locatable(ax3_)
+    # Add an axes to the right of the main axes.
+    cax3 = ax3_divider.append_axes("right", size="7%", pad="2%")
+    fig_.colorbar(im3, cax=cax3)
+
+    ax1_.set_xlabel(r"$\nu_{pre}$")
+    ax1_.set_ylabel(r"$\nu_{post}$")
+    ax1_.set_title(r"$\tau$")
+    ax2_.set_xlabel(r"$\nu_{pre}$")
+    # ax2_.set_ylabel(r"$\nu_{post}$")
+    ax2_.set_title(r"t")
+    ax3_.set_xlabel(r"$\nu_{pre}$")
+    # ax3_.set_ylabel(r"$\nu_{post}$")
+    ax3_.set_title(r"$\tau$*t")
+
+    fig_.set_tight_layout(True)
+    fig_.savefig(sub_folder_name + observable_name + sub_folder_name[:-1] + "_heatmap.png", dpi=1000)
+    fig_.clear()
+
+
+crit_int_auto_correlation_plot("gs_16_CB_ga_1_levels_2/")
+crit_int_auto_correlation_plot("gs_16_BW_ga_1_levels_2/")
+crit_int_auto_correlation_plot("gs_16_CB_ga_2_levels_2/")
+crit_int_auto_correlation_plot("gs_16_BW_ga_2_levels_2/")
