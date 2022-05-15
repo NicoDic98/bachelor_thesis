@@ -40,6 +40,14 @@ if(hip_FOUND)
     set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} "${hip_INCLUDE_DIRS}")
 endif()
 
+#find openmp
+find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+    message(STATUS "Found my OpenMP ${OpenMP_CXX_VERSION}: ${OpenMP_CXX_INCLUDE_DIRS}  ${OpenMP_CXX_LIBRARIES}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+endif()
+
 
 
 
@@ -62,4 +70,4 @@ add_executable("${PROJECT_NAME}" ${SOURCE_FILES})
 # add the binary tree to the search path for include files
 # so that we will find TutorialConfig.h
 target_include_directories("${PROJECT_NAME}" PUBLIC ${INCLUDE_DIRECTORIES})
-target_link_libraries("${PROJECT_NAME}" PUBLIC ${HDF5_LIBRARIES} Eigen3::Eigen hip::device)
+target_link_libraries("${PROJECT_NAME}" PUBLIC ${HDF5_LIBRARIES} Eigen3::Eigen hip::device OpenMP::OpenMP_CXX)

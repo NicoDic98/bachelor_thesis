@@ -305,6 +305,7 @@ template<class configuration_type>
 std::vector<double> HMCGenerator<configuration_type>::compute_observable(
         double (BaseModel<configuration_type>::*observable_function_pointer)(const configuration_type &)) {
     std::vector<double> ret(ensembles.size());
+#pragma omp parallel for default(none) shared(ret, ensembles, model, observable_function_pointer)
     for (int i = 0; i < ensembles.size(); ++i) {
         ret[i] = (model.*observable_function_pointer)(ensembles[i]);
     }

@@ -267,7 +267,6 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
 
     ModelStack.push_back(std::unique_ptr<BaseModel<configuration_type>>(model_.get_copy_of_model()));
     HMCStack.push_back(HMCGenerator(*ModelStack[0], current_level, generator));
-    HighFive::DataSet current_level_dataset = HMCStack[0].get_dataset(current_level);
 
     size_t buffer;
     current_level.getAttribute(nu_pre_name).read(buffer);
@@ -285,6 +284,8 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
     if (current_level.hasAttribute(tick_time_name)) {
         current_level.getAttribute(tick_time_name).read(tick_time);
     }
+    current_level.getAttribute(inter_type_name).read(iBuffer);
+    inter_type = static_cast<InterpolationType>(iBuffer);
     double dBuffer;
     current_level.getAttribute(AcceptanceRate_name).read(dBuffer);
     AcceptanceRates.push_back(dBuffer);
@@ -304,7 +305,6 @@ MultiLevelHMCGenerator<configuration_type>::MultiLevelHMCGenerator(BaseModel<con
                 std::unique_ptr<BaseModel<configuration_type>>(
                         (ModelStack[i - 1])->get_model_at(current_level)));
         HMCStack.push_back(HMCGenerator(*ModelStack[i], current_level, generator));
-        current_level_dataset = HMCStack[i].get_dataset(current_level);
 
         current_level.getAttribute(nu_pre_name).read(buffer);
         nu_pre.push_back(buffer);
