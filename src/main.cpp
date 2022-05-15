@@ -16,6 +16,7 @@
 #include <fstream>
 #include <iomanip>
 #include <hip/hip_runtime.h>
+#include <filesystem>
 
 #include <omp.h>
 
@@ -285,7 +286,10 @@ void DoMultiLevelMeasurements(MultiLevelHMCGenerator<configuration_type> &Gen, c
 
 void DoMultiLevelMeasurementsFromFile(std::string filename) {
 
-    HighFive::File file(std::string(DATA_DIR).append(filename), HighFive::File::ReadOnly);
+    if (!filename.starts_with('/')) {
+        filename = std::string(DATA_DIR).append(filename);
+    }
+    HighFive::File file(filename, HighFive::File::ReadOnly);
     auto helper = file.getGroup("level0");//todo see if this step can be removed to be needed
     IsingModel test(helper);
 
@@ -293,10 +297,16 @@ void DoMultiLevelMeasurementsFromFile(std::string filename) {
     MultiLevelHMCGenerator mygen(test, file, myengine);
 
     filename.insert(filename.rfind('/') + 1, "out_");
-    std::string out_filename{std::string(DATA_DIR).append(filename)};
+    std::string out_filename{filename};
     DoMultiLevelMeasurements(mygen, out_filename);
 
 
+}
+
+void DoMultiLevelMeasurementsFromDir(const std::string &dirname) {
+    for (const auto &file: std::filesystem::directory_iterator(std::string(DATA_DIR).append(dirname))) {
+        DoMultiLevelMeasurementsFromFile(file.path());
+    }
 }
 
 void MultiLevelCriticalSimulation(const int grid_size = 16,
@@ -366,9 +376,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     //test_multi_level_hmc();
     //test_hmc_measurements();
-    DoMultiLevelMeasurementsFromFile(
-    std::string("gs16_Black_White_ga1_id0.h5"));
-    std::cout << omp_get_max_threads() << std::endl;
+    DoMultiLevelMeasurementsFromDir(
+            std::string("gs_16_BW_ga_1_levels_2"));
     //HMCCriticalSimulation(16, 6, 1. / 6.);
     //size_t i{1};
     /*for (size_t l = 1; l < 64; l *= 2) {
