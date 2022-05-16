@@ -102,9 +102,8 @@ VectorX IsingModel::get_force(const VectorX &phi) {
     VectorX var_phi1{k_rec * phi};
     VectorX var_phi2{k_sym * phi};
     VectorX temp{eta + sqrt_beta * var_phi1};
-    for (auto &elem: temp) {
-        elem = tanh(elem);
-    }
+    auto mydata_temp = temp.array();
+    mydata_temp=tanh(mydata_temp);
     return -var_phi2 + sqrt_beta * h + sqrt_beta * k_rec.transpose() * temp;
 }
 

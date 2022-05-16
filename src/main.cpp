@@ -323,6 +323,7 @@ void MultiLevelCriticalSimulation(const int grid_size = 16,
                                   std::vector<size_t> nu_post = {1},
                                   std::vector<int> erg_jump_dists = {-1},
                                   size_t gamma = 1,
+                                  InterpolationType int_type = InterpolationType::Checkerboard,
                                   const std::vector<size_t> &amount_of_steps = {6},
                                   const std::vector<double> &step_sizes = {1. / 6.},
                                   size_t id = 0) {
@@ -330,7 +331,6 @@ void MultiLevelCriticalSimulation(const int grid_size = 16,
     const int lambda = int_pow(grid_size, dim);
     const double C{0.1};
     const double beta{0.440686793509772};
-    auto int_type{InterpolationType::Checkerboard};
     std::string filename{std::string(DATA_DIR)};
 
     VectorX phi0(lambda);
@@ -369,7 +369,7 @@ void MultiLevelCriticalSimulation(const int grid_size = 16,
 void HMCCriticalSimulation(int grid_size = 16, const size_t &amount_of_steps = 6,
                            const double step_sizes = 1. / 6.) {
     MultiLevelCriticalSimulation(16, {0}, {1},
-                                 {-1}, 1,
+                                 {-1}, 1, InterpolationType::Checkerboard,
                                  {amount_of_steps},
                                  {step_sizes}, 0);
 }
@@ -385,18 +385,16 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     //test_multi_level_hmc();
     //test_hmc_measurements();
-    DoMultiLevelMeasurementsFromDir(
-            std::string("gs_16_CB_ga_2_levels_2"), false);
+    //DoMultiLevelMeasurementsFromDir(
+    //        std::string("gs_16_CB_ga_2_levels_2"), false);
     //HMCCriticalSimulation(16, 6, 1. / 6.);
-    /*size_t i{1};
-    for (size_t l = 1; l < 64; l *= 2) {
-        for (size_t m = 1; m < 64; m *= 2) {
-            MultiLevelCriticalSimulation(16, {0, l}, {1, m},
-                                         {-1,-1}, 2,
-                                         {6, 6},
-                                         {1. / 6., 1. / 6.}, i++);
-        }
-    }*/
+    size_t i{39};
+    for (size_t l = 64; l < 257; l *= 2) {
+        MultiLevelCriticalSimulation(16, {0, l}, {1, l},
+                                     {-1, -1}, 1, InterpolationType::Checkerboard,
+                                     {6, 6},
+                                     {1. / 6., 1. / 6.}, i++);
+    }
     //return test_hip();
 }
 
