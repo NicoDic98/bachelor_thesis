@@ -271,20 +271,24 @@ void test_multi_level_hmc() {
 }
 
 template<class configuration_type>
-void DoMultiLevelMeasurements(MultiLevelHMCGenerator<configuration_type> &Gen, const std::string &out_filename) {
-    HighFive::File out_file(out_filename,
-                            HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
-    Gen.dump_observable(&BaseModel<VectorX>::get_magnetization, "magnetization", out_file);
-    Gen.analyze_dataset("magnetization", out_file, 100, 200, 200);
-    Gen.dump_observable(&BaseModel<VectorX>::get_magnetization_squared, "magnetization_squared", out_file);
-    Gen.analyze_dataset("magnetization_squared", out_file, 100, 200, 200);
-    Gen.dump_observable(&BaseModel<VectorX>::get_energy, "energy", out_file);
-    Gen.analyze_dataset("energy", out_file, 100, 200, 200);
-    Gen.dump_observable(&BaseModel<VectorX>::get_energy_squared, "energy_squared", out_file);
-    Gen.analyze_dataset("energy_squared", out_file, 100, 200, 200);
+void DoMultiLevelMeasurements(MultiLevelHMCGenerator<configuration_type> &Gen, const std::string &out_filename,
+                              bool remeasure) {
+    if (remeasure) {
+        HighFive::File out_file(out_filename,
+                                HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
+        Gen.dump_observable(&BaseModel<VectorX>::get_magnetization, "magnetization", out_file);
+        Gen.dump_observable(&BaseModel<VectorX>::get_magnetization_squared, "magnetization_squared", out_file);
+        Gen.dump_observable(&BaseModel<VectorX>::get_energy, "energy", out_file);
+        Gen.dump_observable(&BaseModel<VectorX>::get_energy_squared, "energy_squared", out_file);
+    }
+    HighFive::File out_file(out_filename, HighFive::File::ReadWrite);
+    Gen.analyze_dataset("magnetization", out_file, 100, 200, 400);
+    Gen.analyze_dataset("magnetization_squared", out_file, 100, 200, 400);
+    Gen.analyze_dataset("energy", out_file, 100, 200, 400);
+    Gen.analyze_dataset("energy_squared", out_file, 100, 200, 400);
 }
 
-void DoMultiLevelMeasurementsFromFile(std::string filename) {
+void DoMultiLevelMeasurementsFromFile(std::string filename, bool remeasure) {
 
     if (!filename.starts_with('/')) {
         filename = std::string(DATA_DIR).append(filename);
@@ -298,14 +302,19 @@ void DoMultiLevelMeasurementsFromFile(std::string filename) {
 
     filename.insert(filename.rfind('/') + 1, "out_");
     std::string out_filename{filename};
-    DoMultiLevelMeasurements(mygen, out_filename);
+    DoMultiLevelMeasurements(mygen, out_filename, remeasure);
 
 
 }
 
-void DoMultiLevelMeasurementsFromDir(const std::string &dirname) {
+void DoMultiLevelMeasurementsFromDir(const std::string &dirname, bool remeasure) {
     for (const auto &file: std::filesystem::directory_iterator(std::string(DATA_DIR).append(dirname))) {
-        DoMultiLevelMeasurementsFromFile(file.path());
+        if (std::string(file.path().filename()).starts_with("out")) {
+            continue;
+        }
+        if (std::string(file.path().filename()).ends_with(".h5")) {
+            DoMultiLevelMeasurementsFromFile(file.path(), remeasure);
+        }
     }
 }
 
@@ -376,10 +385,10 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     //test_multi_level_hmc();
     //test_hmc_measurements();
-    //DoMultiLevelMeasurementsFromDir(
-    //        std::string("gs_16_CB_ga_2_levels_2"));
-    HMCCriticalSimulation(16, 6, 1. / 6.);
-    size_t i{1};
+    DoMultiLevelMeasurementsFromDir(
+            std::string("gs_16_CB_ga_2_levels_2"), false);
+    //HMCCriticalSimulation(16, 6, 1. / 6.);
+    /*size_t i{1};
     for (size_t l = 1; l < 64; l *= 2) {
         for (size_t m = 1; m < 64; m *= 2) {
             MultiLevelCriticalSimulation(16, {0, l}, {1, m},
@@ -387,7 +396,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
                                          {6, 6},
                                          {1. / 6., 1. / 6.}, i++);
         }
-    }
+    }*/
     //return test_hip();
 }
 

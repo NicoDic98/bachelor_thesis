@@ -149,6 +149,8 @@ def base_plot(sub_folder_name="std_hmc/"):
 
 def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetization_name):
     int_auto_correlation_time = []
+    int_auto_correlation_time_bias = []
+    int_auto_correlation_time_stat_error = []
     gamma = []
     tick_time = []
     interpolation_type = []
@@ -168,6 +170,9 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
             if magnetization_name in measurements_group:
                 observable_group = measurements_group.get(observable_name)
                 int_auto_correlation_time.append(observable_group.attrs["int_auto_correlation_time"])
+                int_auto_correlation_time_bias.append(observable_group.attrs["int_auto_correlation_time_bias"])
+                int_auto_correlation_time_stat_error.append(
+                    observable_group.attrs["int_auto_correlation_time_stat_error"])
                 gamma.append(level0_group.attrs["gamma"])
                 tick_time.append(level0_group.attrs["tick_time"])
                 interpolation_type.append(level0_group.attrs["inter_type"])
@@ -182,6 +187,8 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
                     nu_post_level1.append(-1)
 
     int_auto_correlation_time = np.array(int_auto_correlation_time)
+    int_auto_correlation_time_bias = np.array(int_auto_correlation_time_bias)
+    int_auto_correlation_time_stat_error = np.array(int_auto_correlation_time_stat_error)
     gamma = np.array(gamma)
     tick_time = np.array(tick_time)
     interpolation_type = np.array(interpolation_type)
@@ -208,14 +215,16 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
         indices = nu_pre_level1 == i
         x_plot = nu_post_level1[indices]
         y1_plot = int_auto_correlation_time[indices]
+        y1_error = np.sqrt(int_auto_correlation_time_stat_error[indices]) + int_auto_correlation_time_bias[indices]
         y2_plot = tick_time[indices]
         if len(x_plot):
-            ax1_.plot(x_plot, y1_plot, marker='.', ls='', c=list(mcolors.TABLEAU_COLORS.values())[j],
-                      label=f"nu pre={i}")
+            ax1_.errorbar(x_plot, y1_plot, y1_error, marker='.', ls='', c=list(mcolors.TABLEAU_COLORS.values())[j],
+                          label=f"nu pre={i}")
 
             ax2_.plot(x_plot, y2_plot, marker='.', ls='', c=list(mcolors.TABLEAU_COLORS.values())[j])
 
-            ax3_.plot(x_plot, y1_plot * y2_plot, marker='.', ls='', c=list(mcolors.TABLEAU_COLORS.values())[j])
+            ax3_.errorbar(x_plot, y1_plot * y2_plot, y1_error * y2_plot, marker='.', ls='',
+                          c=list(mcolors.TABLEAU_COLORS.values())[j])
 
             j += 1
 
