@@ -385,16 +385,16 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     //test_multi_level_hmc();
     //test_hmc_measurements();
-    //DoMultiLevelMeasurementsFromDir(
-    //        std::string("gs_16_CB_ga_2_levels_2"), false);
+    DoMultiLevelMeasurementsFromDir(
+            std::string("new"), true);
     //HMCCriticalSimulation(16, 6, 1. / 6.);
-    size_t i{39};
-    for (size_t l = 64; l < 257; l *= 2) {
-        MultiLevelCriticalSimulation(16, {0, l}, {1, l},
+    //size_t i{41};
+    /*for (size_t l = 64; l < 257; l *= 2) {
+        MultiLevelCriticalSimulation(16, {0, 1}, {1, l},
                                      {-1, -1}, 1, InterpolationType::Checkerboard,
                                      {6, 6},
                                      {1. / 6., 1. / 6.}, i++);
-    }
+    }*/
     //return test_hip();
 }
 

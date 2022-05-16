@@ -196,7 +196,7 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
     nu_post_level0 = np.array(nu_post_level0)
     nu_pre_level1 = np.array(nu_pre_level1)
     nu_post_level1 = np.array(nu_post_level1)
-    fig_, (ax1_, ax2_, ax3_) = plt.subplots(3, 1, sharex="all", sharey="row")
+    fig_, (ax1_, ax2_, ax3_) = plt.subplots(3, 1, sharex="all", sharey="row",figsize=(12,5))
     fig_: plt.Figure
     ax1_: plt.Axes
     ax2_: plt.Axes
@@ -205,21 +205,25 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
     fig_.subplots_adjust(hspace=0, wspace=0)
     base_int_auto_correlation_time = int_auto_correlation_time[nu_pre_level1 == -1]
     base_tick_time = tick_time[nu_pre_level1 == -1]
+    ls = []
+    labels = []
 
-    ax1_.hlines(base_int_auto_correlation_time, 0, 32, colors=list(mcolors.TABLEAU_COLORS.values())[-1],
-                label="HMC")
-    ax2_.hlines(base_tick_time, 0, 32, colors=list(mcolors.TABLEAU_COLORS.values())[-1])
-    ax3_.hlines(base_int_auto_correlation_time * base_tick_time, 0, 32,
+    ls.append(ax1_.hlines(base_int_auto_correlation_time, 0, 512, colors=list(mcolors.TABLEAU_COLORS.values())[-1]))
+    labels.append("HMC")
+    ax2_.hlines(base_tick_time, 0, 512, colors=list(mcolors.TABLEAU_COLORS.values())[-1])
+    ax3_.hlines(base_int_auto_correlation_time * base_tick_time, 0, 512,
                 colors=list(mcolors.TABLEAU_COLORS.values())[-1])
-    for i in range(33):
+
+    for i in range(513):
         indices = nu_pre_level1 == i
         x_plot = nu_post_level1[indices]
         y1_plot = int_auto_correlation_time[indices]
         y1_error = np.sqrt(int_auto_correlation_time_stat_error[indices]) + int_auto_correlation_time_bias[indices]
         y2_plot = tick_time[indices]
         if len(x_plot):
-            ax1_.errorbar(x_plot, y1_plot, y1_error, marker='.', ls='', c=list(mcolors.TABLEAU_COLORS.values())[j],
-                          label=f"nu pre={i}")
+            ls.append(ax1_.errorbar(x_plot, y1_plot, y1_error, marker='.', ls='',
+                                    c=list(mcolors.TABLEAU_COLORS.values())[j]))
+            labels.append(f"nu pre={i}")
 
             ax2_.plot(x_plot, y2_plot, marker='.', ls='', c=list(mcolors.TABLEAU_COLORS.values())[j])
 
@@ -228,16 +232,18 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
 
             j += 1
 
-    ax1_.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    fig_.legend(ls, labels, loc="upper right")
+    fig_.subplots_adjust(right=0.85)
     ax3_.set_xlabel(r"$\nu_{post}$")
     ax1_.set_ylabel(r"$\tau$")
+    ax1_.set_xscale('log')
     ax1_.set_yscale('log')
     ax2_.set_ylabel(r"t")
+    ax2_.set_xscale('log')
     ax2_.set_yscale('log')
     ax3_.set_ylabel(r"$t*\tau$")
+    ax3_.set_xscale('log')
     ax3_.set_yscale('log')
-
-    fig_.set_tight_layout(True)
     fig_.savefig(sub_folder_name + observable_name + sub_folder_name[:-1] + ".png", dpi=1000)
     fig_.clear()
 
