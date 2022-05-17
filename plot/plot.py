@@ -263,10 +263,11 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
     data3 = np.zeros((len(j), len(k)))
     for i1, index1 in enumerate(np.sort(j)):
         for i2, index2 in enumerate(np.sort(k)):
-            data1[i1, i2] = int_auto_correlation_time[np.logical_and(nu_pre_level1 == index1, nu_post_level1 == index2)]
-            data2[i1, i2] = tick_time[np.logical_and(nu_pre_level1 == index1, nu_post_level1 == index2)]
-            data3[i1, i2] = tick_time[np.logical_and(nu_pre_level1 == index1, nu_post_level1 == index2)] * \
-                            int_auto_correlation_time[np.logical_and(nu_pre_level1 == index1, nu_post_level1 == index2)]
+            if np.logical_and(nu_pre_level1 == index1, nu_post_level1 == index2).sum()==1:
+                data1[i1, i2] = int_auto_correlation_time[np.logical_and(nu_pre_level1 == index1, nu_post_level1 == index2)]
+                data2[i1, i2] = tick_time[np.logical_and(nu_pre_level1 == index1, nu_post_level1 == index2)]
+                data3[i1, i2] = tick_time[np.logical_and(nu_pre_level1 == index1, nu_post_level1 == index2)] * \
+                                int_auto_correlation_time[np.logical_and(nu_pre_level1 == index1, nu_post_level1 == index2)]
 
     im1 = ax1_.imshow(data1)
     ax1_divider = make_axes_locatable(ax1_)
@@ -300,8 +301,59 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
     fig_.savefig(sub_folder_name + observable_name + sub_folder_name[:-1] + "_heatmap.png", dpi=1000)
     fig_.clear()
 
+    fig_, (ax1_, ax2_, ax3_) = plt.subplots(3, 1, sharex="all", sharey="row",figsize=(12,5))
+    fig_: plt.Figure
+    ax1_: plt.Axes
+    ax2_: plt.Axes
+    ax3_: plt.Axes
+    j = 0
+    fig_.subplots_adjust(hspace=0, wspace=0)
+    base_int_auto_correlation_time = int_auto_correlation_time[nu_pre_level1 == -1]
+    base_tick_time = tick_time[nu_pre_level1 == -1]
+    ls = []
+    labels = []
 
-crit_int_auto_correlation_plot("gs_16_CB_ga_1_levels_2/")
-crit_int_auto_correlation_plot("gs_16_BW_ga_1_levels_2/")
-crit_int_auto_correlation_plot("gs_16_CB_ga_2_levels_2/")
-crit_int_auto_correlation_plot("gs_16_BW_ga_2_levels_2/")
+    ls.append(ax1_.hlines(base_int_auto_correlation_time, 0, 512, colors=list(mcolors.TABLEAU_COLORS.values())[-1]))
+    labels.append("HMC")
+    ax2_.hlines(base_tick_time, 0, 512, colors=list(mcolors.TABLEAU_COLORS.values())[-1])
+    ax3_.hlines(base_int_auto_correlation_time * base_tick_time, 0, 512,
+                colors=list(mcolors.TABLEAU_COLORS.values())[-1])
+
+    indices = nu_pre_level1 == 1
+    x_plot = gamma[indices]
+    y1_plot = int_auto_correlation_time[indices]
+    y1_error = np.sqrt(int_auto_correlation_time_stat_error[indices]) + int_auto_correlation_time_bias[indices]
+    y2_plot = tick_time[indices]
+    if len(x_plot):
+        ls.append(ax1_.errorbar(x_plot, y1_plot, y1_error, marker='.', ls='',
+                                c=list(mcolors.TABLEAU_COLORS.values())[j]))
+        labels.append(f"nu pre={1}")
+
+        ax2_.plot(x_plot, y2_plot, marker='.', ls='', c=list(mcolors.TABLEAU_COLORS.values())[j])
+
+        ax3_.errorbar(x_plot, y1_plot * y2_plot, y1_error * y2_plot, marker='.', ls='',
+                      c=list(mcolors.TABLEAU_COLORS.values())[j])
+
+        j += 1
+
+    fig_.legend(ls, labels, loc="upper right")
+    fig_.subplots_adjust(right=0.85)
+    ax3_.set_xlabel(r"$\nu_{post}$")
+    ax1_.set_ylabel(r"$\tau$")
+    ax1_.set_xscale('log')
+    ax1_.set_yscale('log')
+    ax2_.set_ylabel(r"t")
+    ax2_.set_xscale('log')
+    ax2_.set_yscale('log')
+    ax3_.set_ylabel(r"$t*\tau$")
+    ax3_.set_xscale('log')
+    ax3_.set_yscale('log')
+    fig_.savefig(sub_folder_name + observable_name + sub_folder_name[:-1] + "_gamma.png", dpi=1000)
+    fig_.clear()
+
+
+#crit_int_auto_correlation_plot("gs_16_CB_ga_1_levels_2/")
+#crit_int_auto_correlation_plot("gs_16_BW_ga_1_levels_2/")
+#crit_int_auto_correlation_plot("gs_16_CB_ga_2_levels_2/")
+#crit_int_auto_correlation_plot("gs_16_BW_ga_2_levels_2/")
+crit_int_auto_correlation_plot("gs_16_CB_pre_1_post_1_levels_2/")
