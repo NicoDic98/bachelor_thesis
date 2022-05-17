@@ -147,6 +147,130 @@ def base_plot(sub_folder_name="std_hmc/"):
         fig.savefig(sub_folder_name + energy_squared_name + ".png")
 
 
+def crit_int_auto_correlation_plot_multiple_levels(sub_folder_name, observable_name=magnetization_name):
+    int_auto_correlation_time = []
+    int_auto_correlation_time_bias = []
+    int_auto_correlation_time_stat_error = []
+    gamma = []
+    tick_time = []
+    interpolation_type = []
+    nu_pre_level0 = []
+    nu_post_level0 = []
+    nu_pre_level_x = []
+    nu_post_level_x = []
+    file_list = []
+    for file in os.listdir(sub_folder_name):
+        if file.startswith("out_"):
+            file_list.append(sub_folder_name + file)
+
+    for file in file_list:
+        print(file)
+        f = h5py.File(file, 'r')
+
+        level0_group = f.get("level0")
+
+        measurements_group = level0_group.get("measurements")
+        if observable_name in measurements_group:
+            observable_group = measurements_group.get(observable_name)
+            int_auto_correlation_time.append(observable_group.attrs["int_auto_correlation_time"])
+            int_auto_correlation_time_bias.append(observable_group.attrs["int_auto_correlation_time_bias"])
+            int_auto_correlation_time_stat_error.append(
+                observable_group.attrs["int_auto_correlation_time_stat_error"])
+            gamma.append(level0_group.attrs["gamma"])
+            tick_time.append(level0_group.attrs["tick_time"])
+            interpolation_type.append(level0_group.attrs["inter_type"])
+            nu_pre_level0.append(level0_group.attrs["nu_pre"])
+            nu_post_level0.append(level0_group.attrs["nu_post"])
+            temp_pre = []
+            temp_post = []
+            for i in range(1, 10):
+                if f"level{i}" in f:
+                    level_x_group = f.get(f"level{i}")
+                    temp_pre.append(level_x_group.attrs["nu_pre"])
+                    temp_post.append(level_x_group.attrs["nu_post"])
+                else:
+                    temp_pre.append(-1)
+                    temp_post.append(-1)
+            nu_pre_level_x.append(temp_pre)
+            nu_post_level_x.append(temp_post)
+
+    int_auto_correlation_time = np.array(int_auto_correlation_time)
+    int_auto_correlation_time_bias = np.array(int_auto_correlation_time_bias)
+    int_auto_correlation_time_stat_error = np.array(int_auto_correlation_time_stat_error)
+    gamma = np.array(gamma)
+    tick_time = np.array(tick_time)
+    interpolation_type = np.array(interpolation_type)
+    nu_pre_level0 = np.array(nu_pre_level0)
+    nu_post_level0 = np.array(nu_post_level0)
+    fig_, (ax1_, ax2_, ax3_) = plt.subplots(3, 1, sharex="all", sharey="row", figsize=(12, 5))
+    fig_: plt.Figure
+    ax1_: plt.Axes
+    ax2_: plt.Axes
+    ax3_: plt.Axes
+    j = 0
+    fig_.subplots_adjust(hspace=0, wspace=0)
+    base_index = -1
+    for i, nu_pre in enumerate(nu_pre_level_x):
+        if nu_pre[0] == -1:
+            base_index = i
+            break
+    base_int_auto_correlation_time = int_auto_correlation_time[base_index]
+    base_tick_time = tick_time[base_index]
+    ls = []
+    labels = []
+
+    ls.append(ax1_.hlines(base_int_auto_correlation_time, 0, 10, colors=list(mcolors.TABLEAU_COLORS.values())[-1]))
+    labels.append("HMC")
+    ax2_.hlines(base_tick_time, 0, 10, colors=list(mcolors.TABLEAU_COLORS.values())[-1])
+    ax3_.hlines(base_int_auto_correlation_time * base_tick_time, 0, 10,
+                colors=list(mcolors.TABLEAU_COLORS.values())[-1])
+
+    x_plot = []
+    y1_plot = []
+    y1_error = []
+    y2_plot = []
+    for i, nu_pre in enumerate(nu_pre_level_x):
+        length = -1
+        for j in range(10):
+            if nu_pre[j] == -1:
+                length = j + 1  # +1 because of level 0
+                break
+        if length > 1:
+            x_plot.append(length)
+            y1_plot.append(int_auto_correlation_time[i])
+            y1_error.append(np.sqrt(int_auto_correlation_time_stat_error[i]) + int_auto_correlation_time_bias[i])
+            y2_plot.append(tick_time[i])
+
+    x_plot = np.array(x_plot)
+    y1_plot = np.array(y1_plot)
+    y1_error = np.array(y1_error)
+    y2_plot = np.array(y2_plot)
+
+    ls.append(ax1_.errorbar(x_plot, y1_plot, y1_error, marker='.', ls='',
+                            c=list(mcolors.TABLEAU_COLORS.values())[j]))
+    labels.append(f"nu pre=1")
+
+    ax2_.plot(x_plot, y2_plot, marker='.', ls='', c=list(mcolors.TABLEAU_COLORS.values())[j])
+
+    ax3_.errorbar(x_plot, y1_plot * y2_plot, y1_error * y2_plot, marker='.', ls='',
+                  c=list(mcolors.TABLEAU_COLORS.values())[j])
+
+    fig_.legend(ls, labels, loc="upper right")
+    fig_.subplots_adjust(right=0.85)
+    ax3_.set_xlabel(r"# levels")
+    ax1_.set_ylabel(r"$\tau$")
+    #ax1_.set_xscale('log')
+    #ax1_.set_yscale('log')
+    ax2_.set_ylabel(r"t")
+    #ax2_.set_xscale('log')
+    #ax2_.set_yscale('log')
+    ax3_.set_ylabel(r"$t*\tau$")
+    #ax3_.set_xscale('log')
+    #ax3_.set_yscale('log')
+    fig_.savefig(sub_folder_name + observable_name + sub_folder_name[:-1] + ".png", dpi=1000)
+    fig_.clear()
+
+
 def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetization_name):
     int_auto_correlation_time = []
     int_auto_correlation_time_bias = []
@@ -167,7 +291,7 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
             level0_group = f.get("level0")
 
             measurements_group = level0_group.get("measurements")
-            if magnetization_name in measurements_group:
+            if observable_name in measurements_group:
                 observable_group = measurements_group.get(observable_name)
                 int_auto_correlation_time.append(observable_group.attrs["int_auto_correlation_time"])
                 int_auto_correlation_time_bias.append(observable_group.attrs["int_auto_correlation_time_bias"])
@@ -196,7 +320,7 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
     nu_post_level0 = np.array(nu_post_level0)
     nu_pre_level1 = np.array(nu_pre_level1)
     nu_post_level1 = np.array(nu_post_level1)
-    fig_, (ax1_, ax2_, ax3_) = plt.subplots(3, 1, sharex="all", sharey="row",figsize=(12,5))
+    fig_, (ax1_, ax2_, ax3_) = plt.subplots(3, 1, sharex="all", sharey="row", figsize=(12, 5))
     fig_: plt.Figure
     ax1_: plt.Axes
     ax2_: plt.Axes
@@ -263,11 +387,13 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
     data3 = np.zeros((len(j), len(k)))
     for i1, index1 in enumerate(np.sort(j)):
         for i2, index2 in enumerate(np.sort(k)):
-            if np.logical_and(nu_pre_level1 == index1, nu_post_level1 == index2).sum()==1:
-                data1[i1, i2] = int_auto_correlation_time[np.logical_and(nu_pre_level1 == index1, nu_post_level1 == index2)]
+            if np.logical_and(nu_pre_level1 == index1, nu_post_level1 == index2).sum() == 1:
+                data1[i1, i2] = int_auto_correlation_time[
+                    np.logical_and(nu_pre_level1 == index1, nu_post_level1 == index2)]
                 data2[i1, i2] = tick_time[np.logical_and(nu_pre_level1 == index1, nu_post_level1 == index2)]
                 data3[i1, i2] = tick_time[np.logical_and(nu_pre_level1 == index1, nu_post_level1 == index2)] * \
-                                int_auto_correlation_time[np.logical_and(nu_pre_level1 == index1, nu_post_level1 == index2)]
+                                int_auto_correlation_time[
+                                    np.logical_and(nu_pre_level1 == index1, nu_post_level1 == index2)]
 
     im1 = ax1_.imshow(data1)
     ax1_divider = make_axes_locatable(ax1_)
@@ -301,7 +427,7 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
     fig_.savefig(sub_folder_name + observable_name + sub_folder_name[:-1] + "_heatmap.png", dpi=1000)
     fig_.clear()
 
-    fig_, (ax1_, ax2_, ax3_) = plt.subplots(3, 1, sharex="all", sharey="row",figsize=(12,5))
+    fig_, (ax1_, ax2_, ax3_) = plt.subplots(3, 1, sharex="all", sharey="row", figsize=(12, 5))
     fig_: plt.Figure
     ax1_: plt.Axes
     ax2_: plt.Axes
@@ -352,8 +478,9 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
     fig_.clear()
 
 
-#crit_int_auto_correlation_plot("gs_16_CB_ga_1_levels_2/")
-#crit_int_auto_correlation_plot("gs_16_BW_ga_1_levels_2/")
-#crit_int_auto_correlation_plot("gs_16_CB_ga_2_levels_2/")
-#crit_int_auto_correlation_plot("gs_16_BW_ga_2_levels_2/")
-crit_int_auto_correlation_plot("gs_16_CB_pre_1_post_1_levels_2/")
+# crit_int_auto_correlation_plot("gs_16_CB_ga_1_levels_2/")
+# crit_int_auto_correlation_plot("gs_16_BW_ga_1_levels_2/")
+# crit_int_auto_correlation_plot("gs_16_CB_ga_2_levels_2/")
+# crit_int_auto_correlation_plot("gs_16_BW_ga_2_levels_2/")
+# crit_int_auto_correlation_plot("gs_16_CB_pre_1_post_1_levels_2/")
+crit_int_auto_correlation_plot_multiple_levels("gs_16CB_ga_1_levels_x/")
