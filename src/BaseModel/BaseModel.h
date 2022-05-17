@@ -81,6 +81,8 @@ public:
      */
     [[maybe_unused]] virtual double get_magnetization(const configuration_type &phi) { return 0; }
 
+    [[maybe_unused]] virtual double get_field_squared(const configuration_type &phi) { return 0; }
+
     /**
      * @brief Calculates the magnetization squared for the given field \p phi
      * @param phi Field

@@ -76,6 +76,8 @@ public:
      * @return m(phi) (magnetization)
      */
     double get_magnetization(const VectorX &phi) override;
+    double get_field_squared(const VectorX &phi) override;
+
 
     /**
      * @brief Calculates the magnetization squared for the given field \p phi

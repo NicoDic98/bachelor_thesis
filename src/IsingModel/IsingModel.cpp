@@ -103,13 +103,17 @@ VectorX IsingModel::get_force(const VectorX &phi) {
     VectorX var_phi2{k_sym * phi};
     VectorX temp{eta + sqrt_beta * var_phi1};
     auto mydata_temp = temp.array();
-    mydata_temp=tanh(mydata_temp);
+    mydata_temp = tanh(mydata_temp);
     return -var_phi2 + sqrt_beta * h + sqrt_beta * k_rec.transpose() * temp;
 }
 
 double IsingModel::get_magnetization(const VectorX &phi) {
 
     return (phi / sqrt_beta - (k_sym_inverse) * h).sum() / static_cast<double>(phi.rows());
+}
+
+double IsingModel::get_field_squared(const VectorX &phi) {
+    return (phi.dot(phi)) / static_cast<double>(phi.rows());
 }
 
 double IsingModel::get_magnetization_squared(const VectorX &phi) {

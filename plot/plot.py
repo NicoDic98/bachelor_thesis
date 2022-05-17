@@ -464,7 +464,7 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
 
     fig_.legend(ls, labels, loc="upper right")
     fig_.subplots_adjust(right=0.85)
-    ax3_.set_xlabel(r"$\nu_{post}$")
+    ax3_.set_xlabel(r"$\gamma$")
     ax1_.set_ylabel(r"$\tau$")
     ax1_.set_xscale('log')
     ax1_.set_yscale('log')
@@ -483,4 +483,6 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
 # crit_int_auto_correlation_plot("gs_16_CB_ga_2_levels_2/")
 # crit_int_auto_correlation_plot("gs_16_BW_ga_2_levels_2/")
 # crit_int_auto_correlation_plot("gs_16_CB_pre_1_post_1_levels_2/")
-crit_int_auto_correlation_plot_multiple_levels("gs_16CB_ga_1_levels_x/")
+# crit_int_auto_correlation_plot_multiple_levels("gs_16CB_ga_1_levels_x/")
+crit_int_auto_correlation_plot("gs_32_CB_ga_1_levels_2/")
+crit_int_auto_correlation_plot("gs_64_CB_ga_1_levels_2/")
