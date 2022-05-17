@@ -355,11 +355,13 @@ void MultiLevelCriticalSimulation(const int grid_size = 16,
         filename.append("gs").append(std::to_string(grid_size)).append("_")
                 .append("Black_White").append("_")
                 .append("ga").append(std::to_string(gamma)).append("_")
+                .append("l").append(std::to_string(nu_pre.size())).append("_")
                 .append("id").append(std::to_string(id)).append(".h5");
     } else if (int_type == InterpolationType::Checkerboard) {
         filename.append("gs").append(std::to_string(grid_size)).append("_")
                 .append("Checkerboard").append("_")
                 .append("ga").append(std::to_string(gamma)).append("_")
+                .append("l").append(std::to_string(nu_pre.size())).append("_")
                 .append("id").append(std::to_string(id)).append(".h5");
     }
     HighFive::File file(filename, HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
@@ -386,7 +388,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_multi_level_hmc();
     //test_hmc_measurements();
     DoMultiLevelMeasurementsFromDir(
-            std::string("gs_16_CB_pre_1_post_1_levels_2"), true);
+            std::string("new"), true);
     //HMCCriticalSimulation(16, 6, 1. / 6.);
     /*size_t i{1};
     std::vector<size_t> nu_pre = {0, 1};
@@ -395,13 +397,13 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     std::vector<size_t> amount_of_steps = {6, 6};
     std::vector<double> step_sizes = {1. / 6., 1. / 6.};
     for (size_t l = 3; l < 17; l++) {
-        //nu_pre.push_back(1);
-        //nu_post.push_back(1);
-        //erg_jump_dists.push_back(-1);
-        //amount_of_steps.push_back(l * 3);
-        //step_sizes.push_back(1. / (static_cast<double>(l) * 3.));
+        nu_pre.push_back(1);
+        nu_post.push_back(1);
+        erg_jump_dists.push_back(-1);
+        amount_of_steps.push_back(l * 3);
+        step_sizes.push_back(1. / (static_cast<double>(l) * 3.));
         MultiLevelCriticalSimulation(16, nu_pre, nu_post,
-                                     erg_jump_dists, l, InterpolationType::Checkerboard,
+                                     erg_jump_dists, 1, InterpolationType::Checkerboard,
                                      amount_of_steps,
                                      step_sizes, i++);
     }*/
