@@ -9,19 +9,29 @@
 #include "Analyzer.h"
 
 
-const char *Analyzer::auto_correlation_name{"auto_correlation"};
-const char *Analyzer::int_auto_correlation_time_name{"int_auto_correlation_time"};
-const char *Analyzer::int_auto_correlation_time_bias_name{"int_auto_correlation_time_bias"};
-const char *Analyzer::int_auto_correlation_time_stat_error_name{"int_auto_correlation_time_stat_error"};
-const char *Analyzer::mean_name{"mean"};
-const char *Analyzer::bootstrap_mean_name{"bootstrap_mean"};
-const char *Analyzer::bootstrap_variance_name{"bootstrap_variance"};
+const char *Analyzer::auto_correlation_base_name{"auto_correlation"};
+const char *Analyzer::int_auto_correlation_time_base_name{"int_auto_correlation_time"};
+const char *Analyzer::int_auto_correlation_time_bias_base_name{"int_auto_correlation_time_bias"};
+const char *Analyzer::int_auto_correlation_time_stat_error_base_name{"int_auto_correlation_time_stat_error"};
+const char *Analyzer::mean_base_name{"mean"};
+const char *Analyzer::bootstrap_mean_base_name{"bootstrap_mean"};
+const char *Analyzer::bootstrap_variance_base_name{"bootstrap_variance"};
 
-Analyzer::Analyzer(HighFive::Group &group_, const std::string &data_name, std::default_random_engine &generator_)
-        : dataset{group_.getDataSet(data_name)}, group{group_},
+Analyzer::Analyzer(HighFive::Group &group_, const std::string &data_name,
+                   std::default_random_engine &generator_)
+        : dataset{group_.getDataSet(data_name)}, group{group_}, int_auto_correlation_time{-1},
           mean{0.}, generator{generator_}, bootstrap_mean{0.}, bootstrap_variance{0.} {
     dataset.read(data);
     assert(!data.empty());
+
+    auto_correlation_name = auto_correlation_base_name;
+    int_auto_correlation_time_name = int_auto_correlation_time_base_name;
+    int_auto_correlation_time_bias_name = int_auto_correlation_time_bias_base_name;
+    int_auto_correlation_time_stat_error_name = int_auto_correlation_time_stat_error_base_name;
+    mean_name = mean_base_name;
+    bootstrap_mean_name = bootstrap_mean_base_name;
+    bootstrap_variance_name = bootstrap_variance_base_name;
+
     set_mean();
 }
 
@@ -37,7 +47,7 @@ std::vector<double> Analyzer::auto_correlation(size_t max_t) {
         ret[t] /= static_cast<double>(data.size() - t);
     }
     auto start_value = ret[0];
-    double int_auto_correlation_time{-0.5};//because we add gamma[0]=1
+    int_auto_correlation_time = -0.5;//because we add gamma[0]=1
     for (double &t: ret) {
         t /= start_value;
         int_auto_correlation_time += t;
@@ -66,9 +76,23 @@ void Analyzer::set_mean() {
     write_static_size(mean, group, mean_name);
 }
 
-void Analyzer::block_data(size_t block_size) {
+void Analyzer::block_data(int block_size, int size_to_use) {
+    if (block_size < 0) {
+        if (int_auto_correlation_time > 0) {
+            block_size = static_cast<size_t>(int_auto_correlation_time);
+        }
+    }
     blocked_data.clear();
-    blocked_data.resize(data.size() / block_size);
+    if (size_to_use > 0) {
+        blocked_data.resize(size_to_use / block_size);
+        bootstrap_mean_name = std::string(bootstrap_mean_base_name).append(std::to_string(size_to_use));
+        bootstrap_variance_name = std::string(bootstrap_variance_base_name).append(std::to_string(size_to_use));
+    } else {
+        blocked_data.resize(data.size() / block_size);
+        bootstrap_mean_name = bootstrap_mean_base_name;
+        bootstrap_variance_name = bootstrap_variance_base_name;
+    }
+
     std::fill(blocked_data.begin(), blocked_data.end(), 0.);
 
     for (int i = 0; i < blocked_data.size() * block_size; ++i) {
@@ -80,12 +104,20 @@ void Analyzer::block_data(size_t block_size) {
     }
 }
 
-void Analyzer::bootstrap_data(size_t amount_of_sample_sets) {
+void Analyzer::bootstrap_data(int amount_of_sample_sets) {
     if (blocked_data.empty()) {
-        block_data(42);
+        if (int_auto_correlation_time > 0) {
+            block_data(static_cast<size_t>(int_auto_correlation_time), -1);
+        } else {
+            block_data(42, -1);
+        }
     }
     if (blocked_data.empty()) {
         exit(-42);
+    }
+    if (amount_of_sample_sets < 0) {
+        amount_of_sample_sets = blocked_data.size();
+
     }
     bootstrapped_data.clear();
     bootstrapped_data.resize(amount_of_sample_sets);

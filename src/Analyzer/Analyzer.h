@@ -34,7 +34,7 @@ public:
     Analyzer() = delete;
 
     /**
-     * @brief Calculates the auto correlation up to \p max_t and writes it to \a group as dataset under the name \a auto_correlation_name
+     * @brief Calculates the auto correlation up to \p max_t and writes it to \a group as dataset under the name \a auto_correlation_base_name
      * @param max_t Maximum Marcov chain time, up to which the auto correlation gets calculated
      * @return Vector containing the values of the auto correlation
      */
@@ -44,13 +44,13 @@ public:
      * @brief Block the data into blocks of size \p block_size
      * @param block_size Block size
      */
-    void block_data(size_t block_size);
+    void block_data(int block_size,int size_to_use);
 
     /**
      * @brief Calculates the bootstrap mean and variance on the previously blocked data
      * @param amount_of_sample_sets Amount of boostrap samples
      */
-    void bootstrap_data(size_t amount_of_sample_sets);
+    void bootstrap_data(int amount_of_sample_sets);
 
 private:
     /**
@@ -81,14 +81,22 @@ private:
     /**
      * @brief String to be used as key for the auto_correlation in H5 files
      */
-    static const char *auto_correlation_name;
+    static const char *auto_correlation_base_name;
+    std::string auto_correlation_name;
 
+    /**
+     * @brief Mean of the dataset
+     */
+    double int_auto_correlation_time;
     /**
      * @brief String to be used as key for the int_auto_correlation_time in H5 files
      */
-    static const char *int_auto_correlation_time_name;
-    static const char *int_auto_correlation_time_bias_name;
-    static const char *int_auto_correlation_time_stat_error_name;
+    static const char *int_auto_correlation_time_base_name;
+    std::string int_auto_correlation_time_name;
+    static const char *int_auto_correlation_time_bias_base_name;
+    std::string int_auto_correlation_time_bias_name;
+    static const char *int_auto_correlation_time_stat_error_base_name;
+    std::string int_auto_correlation_time_stat_error_name;
 
     /**
      * @brief Calculates, sets and saves the mean of the dataset
@@ -102,7 +110,8 @@ private:
     /**
      * @brief String to be used as key for \a mean in H5 files
      */
-    static const char *mean_name;
+    static const char *mean_base_name;
+    std::string mean_name;
 
     /**
      * @brief Bootstrap mean of the dataset
@@ -111,7 +120,8 @@ private:
     /**
      * @brief String to be used as key for \a bootstrap_mean in H5 files
      */
-    static const char *bootstrap_mean_name;
+    static const char *bootstrap_mean_base_name;
+    std::string bootstrap_mean_name;
 
     /**
      * @brief Bootstrap variance of the dataset
@@ -120,7 +130,8 @@ private:
     /**
      * @brief String to be used as key for \a bootstrap_variance in H5 files
      */
-    static const char *bootstrap_variance_name;
+    static const char *bootstrap_variance_base_name;
+    std::string bootstrap_variance_name;
 
     /**
      * @brief Random number generator to be used for the bootstrap

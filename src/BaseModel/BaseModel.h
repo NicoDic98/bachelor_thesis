@@ -13,6 +13,7 @@
 #include <iostream>
 #include <highfive/H5File.hpp>
 #include <utility>
+#include <MyTypes.h>
 
 /**
  * @brief Template for the Abstract Class BaseModel

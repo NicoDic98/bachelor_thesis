@@ -64,6 +64,7 @@ add_subdirectory(MyTypes)
 add_subdirectory(MultiLevelHMCGenerator)
 add_subdirectory(BaseModel)
 add_subdirectory(Analyzer)
+add_subdirectory(XYModel)
 
 
 # add the executable

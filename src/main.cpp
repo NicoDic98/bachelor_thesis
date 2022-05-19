@@ -283,11 +283,14 @@ void DoMultiLevelMeasurements(MultiLevelHMCGenerator<configuration_type> &Gen, c
         Gen.dump_observable(&BaseModel<VectorX>::get_energy_squared, "energy_squared", out_file);
     }
     HighFive::File out_file(out_filename, HighFive::File::ReadWrite);
-    Gen.analyze_dataset("magnetization", out_file, 100, 200, 400);
-    Gen.analyze_dataset("field_squared", out_file, 100, 200, 400);
-    Gen.analyze_dataset("magnetization_squared", out_file, 100, 200, 400);
-    Gen.analyze_dataset("energy", out_file, 100, 200, 400);
-    Gen.analyze_dataset("energy_squared", out_file, 100, 200, 400);
+    for (int l = 10000; l <91000; l+=10000) {
+        Gen.analyze_dataset("magnetization", out_file, -1, l, -1, 400);
+    }
+    Gen.analyze_dataset("magnetization", out_file, 100, -1, 200, 400);
+    Gen.analyze_dataset("field_squared", out_file, 100, -1, 200, 400);
+    Gen.analyze_dataset("magnetization_squared", out_file, 100, -1, 200, 400);
+    Gen.analyze_dataset("energy", out_file, 100, -1, 200, 400);
+    Gen.analyze_dataset("energy_squared", out_file, 100, -1, 200, 400);
 }
 
 void DoMultiLevelMeasurementsFromFile(std::string filename, bool remeasure) {
@@ -390,15 +393,15 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     //test_multi_level_hmc();
     //test_hmc_measurements();
-    //DoMultiLevelMeasurementsFromDir(std::string("new"), true);
+    DoMultiLevelMeasurementsFromDir(std::string("new"), false);
     //HMCCriticalSimulation(64, 16, 1. / 16.);
-    size_t i{1};
+    /*size_t i{1};
     std::vector<size_t> nu_pre = {0, 1};
     std::vector<size_t> nu_post = {1, 1};
     std::vector<int> erg_jump_dists = {-1, -1};
     std::vector<size_t> amount_of_steps = {16, 16};
     std::vector<double> step_sizes = {1. / 16., 1. / 16.};
-    for (size_t l = 1; l < 17; l *= 4) {
+    for (size_t l = 16; l < 17; l *= 4) {
         //nu_pre.push_back(1);
         //nu_post.push_back(1);
         //erg_jump_dists.push_back(-1);
@@ -410,7 +413,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
                                      erg_jump_dists, 1, InterpolationType::Checkerboard,
                                      amount_of_steps,
                                      step_sizes, i++);
-    }
+    }*/
     //return test_hip();
 }
 
