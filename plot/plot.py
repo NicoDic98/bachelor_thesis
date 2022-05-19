@@ -276,10 +276,10 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
 
     ax1_.set_ylabel(r"$\frac{1}{\sigma}$")
     ax1_.set_xscale('log')
-    # ax1_.set_yscale('log')
+    ax1_.set_yscale('log')
     ax2_.set_ylabel(r"$\frac{1}{\sigma}$")
     ax2_.set_xscale('log')
-    # ax2_.set_yscale('log')
+    ax2_.set_yscale('log')
     ax3_.set_ylabel(r"$\frac{1}{\sigma *t}$")
     # ax3_.set_xscale('log')
     # ax3_.set_yscale('log')
