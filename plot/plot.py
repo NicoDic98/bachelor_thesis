@@ -270,8 +270,8 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
 
     fig_.legend(ls, labels, loc="upper right")
     fig_.subplots_adjust(right=0.85)
-    ax1_.set_xlabel(r"$\frac{t}{T}$")
-    ax2_.set_xlabel(r"$\frac{t}{\tau *T}$")
+    ax1_.set_xlabel(r"$t$")
+    ax2_.set_xlabel(r"$\frac{t}{\tau}$")
     ax3_.set_xlabel(r"$\frac{1}{\tau *t}$")
 
     ax1_.set_ylabel(r"$\frac{1}{\sigma}$")
