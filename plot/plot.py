@@ -196,6 +196,8 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
                 if f"bootstrap_variance{i * 10000}" in observable_group.attrs:
                     temp_bootstrap_variance.append(observable_group.attrs[f"bootstrap_variance{i * 10000}"])
                     temp_bootstrap_mean.append(observable_group.attrs[f"bootstrap_mean{i * 10000}"])
+            temp_bootstrap_variance.append(observable_group.attrs["bootstrap_variance"])
+            temp_bootstrap_mean.append(observable_group.attrs["bootstrap_mean"])
             bootstrap_variance.append(temp_bootstrap_variance)
             bootstrap_mean.append(temp_bootstrap_mean)
 
@@ -210,37 +212,71 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
     nu_pre_level1 = np.array(nu_pre_level1)
     nu_post_level1 = np.array(nu_post_level1)
 
-    fig_, (ax1_, ax2_, ax3_) = plt.subplots(3, 1, sharex="all", sharey="row", figsize=(12, 5))
+    fig_, (ax1_, ax2_, ax3_) = plt.subplots(3, 1, figsize=(12, 5))
     fig_: plt.Figure
     ax1_: plt.Axes
     ax2_: plt.Axes
     ax3_: plt.Axes
-    j = 0
-    fig_.subplots_adjust(hspace=0, wspace=0)
-    base_int_auto_correlation_time = int_auto_correlation_time[nu_pre_level1 == -1]
     base_tick_time = tick_time[nu_pre_level1 == -1]
     base_bootstrap_variance = []
     base_bootstrap_mean = []
+    base_tick_time = np.zeros(1)
+    base_int_auto_correlation_time = 42
+
     for i, nu_pre in enumerate(nu_pre_level1):
         if nu_pre == -1:
             base_bootstrap_variance = bootstrap_variance[i]
             base_bootstrap_mean = bootstrap_mean[i]
+            base_tick_time = np.arange(1, len(base_bootstrap_variance) + 1) * tick_time[i] / 10
+            base_int_auto_correlation_time = int_auto_correlation_time[i]
+    print(len(base_bootstrap_variance))
     ls = []
     labels = []
     ls.append(
-        ax1_.plot([(i + 1) * 10000 for i in range(len(base_bootstrap_variance))], 1 / np.sqrt(base_bootstrap_variance),
-                  marker='.', ls='', ))
+        ax1_.scatter([(i + 1) * 10000 for i in range(len(base_bootstrap_variance))],
+                     1 / np.sqrt(base_bootstrap_variance),
+                     marker='.', c='r'))
+    ax2_.scatter([(i + 1) * 10000 for i in range(len(base_bootstrap_variance))],
+                 1 / (np.sqrt(base_bootstrap_variance) * base_tick_time),
+                 marker='.', c='r')
+    ax3_.scatter(1 / (base_tick_time[-1] * base_int_auto_correlation_time),
+                 (1 / (np.sqrt(base_bootstrap_variance) * base_tick_time))[-1],
+                 marker='.', c='r')
+    labels.append("HMC")
+    j = 0
+    for i in range(513):
+        indices = np.logical_and(nu_pre_level1 == i, nu_post_level1 == i)
+        if indices.sum() == 1:
+            for k, truth in enumerate(indices):
+                if truth:
+                    base_bootstrap_variance = bootstrap_variance[k]
+                    base_bootstrap_mean = bootstrap_mean[k]
+                    base_tick_time = np.arange(1, len(base_bootstrap_variance) + 1) * tick_time[k] / 10
+                    base_int_auto_correlation_time = int_auto_correlation_time[k]
+            ls.append(ax1_.scatter([(l + 1) * 10000 for l in range(len(base_bootstrap_variance))],
+                                   1 / np.sqrt(base_bootstrap_variance),
+                                   marker='.', c=list(mcolors.TABLEAU_COLORS.values())[j]))
+            ax2_.scatter([(i + 1) * 10000 for i in range(len(base_bootstrap_variance))],
+                         1 / (np.sqrt(base_bootstrap_variance) * base_tick_time),
+                         marker='.', c=list(mcolors.TABLEAU_COLORS.values())[j])
+            ax3_.scatter(1 / (base_tick_time[-1] * base_int_auto_correlation_time),
+                         (1 / (np.sqrt(base_bootstrap_variance) * base_tick_time))[-1],
+                         marker='.', c=list(mcolors.TABLEAU_COLORS.values())[j])
+            labels.append(f"nu pp={i}")
+            j += 1
 
     fig_.legend(ls, labels, loc="upper right")
     fig_.subplots_adjust(right=0.85)
-    ax3_.set_xlabel(r"$\nu_{post}$")
-    ax1_.set_ylabel(r"$\tau$")
+    ax1_.set_xlabel(r"$\frac{1}{\tau *t}$")
+    ax2_.set_xlabel(r"#configurations")
+    ax3_.set_xlabel(r"#configurations")
+    ax1_.set_ylabel(r"$\frac{1}{\sigma}$")
     # ax1_.set_xscale('log')
     # ax1_.set_yscale('log')
-    ax2_.set_ylabel(r"t")
+    ax2_.set_ylabel(r"$\frac{1}{\sigma *t}$")
     # ax2_.set_xscale('log')
     # ax2_.set_yscale('log')
-    ax3_.set_ylabel(r"$t*\tau$")
+    ax3_.set_ylabel(r"$\frac{1}{\sigma *t}$")
     # ax3_.set_xscale('log')
     # ax3_.set_yscale('log')
     fig_.savefig(sub_folder_name + observable_name + sub_folder_name[:-1] + ".png", dpi=1000)

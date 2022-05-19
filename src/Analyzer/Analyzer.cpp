@@ -79,7 +79,7 @@ void Analyzer::set_mean() {
 void Analyzer::block_data(int block_size, int size_to_use) {
     if (block_size < 0) {
         if (int_auto_correlation_time > 0) {
-            block_size = static_cast<size_t>(int_auto_correlation_time);
+            block_size = 2*static_cast<int>(int_auto_correlation_time);
         }
     }
     blocked_data.clear();
@@ -107,7 +107,7 @@ void Analyzer::block_data(int block_size, int size_to_use) {
 void Analyzer::bootstrap_data(int amount_of_sample_sets) {
     if (blocked_data.empty()) {
         if (int_auto_correlation_time > 0) {
-            block_data(static_cast<size_t>(int_auto_correlation_time), -1);
+            block_data(static_cast<int>(int_auto_correlation_time)/2, -1);
         } else {
             block_data(42, -1);
         }
