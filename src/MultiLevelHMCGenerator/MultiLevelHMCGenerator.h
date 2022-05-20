@@ -340,6 +340,9 @@ std::vector<double> MultiLevelHMCGenerator<configuration_type>::generate_ensembl
         }
         if (i % (amount_of_thermalization_steps / 100) == 0) {
             std::cout << "=";
+            for (auto elem: phi) {
+                std::cout << elem << '\n' << std::endl;
+            }
             std::cout.flush();
         }
         phi = LevelRecursion(0, phi);

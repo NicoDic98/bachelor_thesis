@@ -233,7 +233,7 @@ MultiVectorX XYModel::get_pi(std::default_random_engine &generator) {
     auto ret = get_empty_field();
     std::normal_distribution<double> gauss(0, 1);
     for (auto &elem: ret) {
-        for (auto inner_elem: elem) {
+        for (auto &inner_elem: elem) {
             inner_elem = gauss(generator);
         }
     }

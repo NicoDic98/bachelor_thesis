@@ -400,11 +400,18 @@ void MultiLevelCriticalSimulationXY(const int grid_size = 16,
     VectorX temp(lambda);
     temp.setZero();
     MultiVectorX phi0;
+    //phi0.push_back(cos(temp.array()));
+    //phi0.push_back(sin(temp.array()));
     phi0.push_back(temp);
-    temp.setOnes();
+    temp.setZero();
     phi0.push_back(temp);
-
-    MultiVectorX h0(phi0);
+    for (auto elem: phi0) {
+        std::cout << elem[0] << '\n' << std::endl;
+    }
+    temp.setZero();
+    MultiVectorX h0;
+    h0.push_back(temp);
+    h0.push_back(temp);
     std::default_random_engine myengine{42L};
 
     XYModel test(beta, h0, dim, 1, grid_size);
@@ -412,7 +419,7 @@ void MultiLevelCriticalSimulationXY(const int grid_size = 16,
 
     MultiLevelHMCGenerator mygen(test, nu_pre, nu_post, erg_jump_dists, gamma, int_type,
                                  amount_of_steps, step_sizes, myengine);
-    std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 3000, 300);
+    std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 100000, 10000);
     for (auto acceptance_rate: acceptance_rates) {
         std::cout << "Acceptance rate:" << acceptance_rate << std::endl;
     }
@@ -434,6 +441,14 @@ void MultiLevelCriticalSimulationXY(const int grid_size = 16,
     mygen.dumpToH5(file);
 }
 
+void HMCCriticalSimulationXY(int grid_size = 16, const size_t &amount_of_steps = 6,
+                           const double step_sizes = 1. / 6.) {
+    MultiLevelCriticalSimulationXY(grid_size, {0}, {1},
+                                 {-1}, 1, InterpolationType::Checkerboard,
+                                 {amount_of_steps},
+                                 {step_sizes}, 0);
+}
+
 /**
  * @brief Main function
  * @param argc
@@ -447,12 +462,13 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_hmc_measurements();
     //DoMultiLevelMeasurementsFromDir(std::string("new"), false);
     //HMCCriticalSimulation(64, 16, 1. / 16.);
+    HMCCriticalSimulationXY(16, 16, 1. / 16.);
     size_t i{1};
     std::vector<size_t> nu_pre = {0, 1};
     std::vector<size_t> nu_post = {1, 1};
     std::vector<int> erg_jump_dists = {-1, -1};
-    std::vector<size_t> amount_of_steps = {6, 6};
-    std::vector<double> step_sizes = {1. / 6., 1. / 6.};
+    std::vector<size_t> amount_of_steps = {16, 16};
+    std::vector<double> step_sizes = {1. / 16., 1. / 16.};
     for (size_t l = 1; l < 17; l *= 4) {
         //nu_pre.push_back(1);
         //nu_post.push_back(1);
