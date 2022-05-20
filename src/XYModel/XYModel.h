@@ -46,6 +46,15 @@ public:
     double get_action(const MultiVectorX &phi) override;
 
     /**
+     * @brief Calculates the artificial energy for the given field phi
+     * @param phi Field
+     * @return H(phi) (artificial energy)
+     */
+    double get_artificial_energy(const MultiVectorX &phi, const MultiVectorX &pi) override;
+
+    MultiVectorX get_pi(std::default_random_engine &generator) override;
+
+    /**
      * @brief Checks the dimensions of internal vectors and matrices with regard to the given field phi
      * @param phi Field
      * @return True, if all dimension checks are passed. False, if any dimension check fails.

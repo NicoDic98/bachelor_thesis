@@ -330,3 +330,16 @@ void IsingModel::update_pi(VectorX &phi, VectorX &pi, double step_size) {
 void IsingModel::update_phi(VectorX &phi, VectorX &pi, double step_size) {
     phi += step_size * pi;
 }
+
+double IsingModel::get_artificial_energy(const VectorX &phi, const VectorX &pi) {
+    return pi.dot(pi) * 0.5 + get_action(phi);
+}
+
+VectorX IsingModel::get_pi(std::default_random_engine &generator) {
+    auto ret = get_empty_field();
+    std::normal_distribution<double> gauss(0, 1);
+    for ([[maybe_unused]] auto &elem: ret) {
+        elem = gauss(generator);
+    }
+    return ret;
+}

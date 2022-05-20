@@ -409,7 +409,7 @@ void MultiLevelCriticalSimulationXY(const int grid_size = 16,
     XYModel test(beta, h0, dim, 1, grid_size);
 
 
-    /*MultiLevelHMCGenerator mygen(test, nu_pre, nu_post, erg_jump_dists, gamma, int_type,
+    MultiLevelHMCGenerator mygen(test, nu_pre, nu_post, erg_jump_dists, gamma, int_type,
                                  amount_of_steps, step_sizes, myengine);
     std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 30000, 3000);
     for (auto acceptance_rate: acceptance_rates) {
@@ -430,7 +430,7 @@ void MultiLevelCriticalSimulationXY(const int grid_size = 16,
                 .append("id").append(std::to_string(id)).append(".h5");
     }
     HighFive::File file(filename, HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
-    mygen.dumpToH5(file);*/
+    mygen.dumpToH5(file);
 }
 
 /**
@@ -464,6 +464,10 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
                                        erg_jump_dists, 1, InterpolationType::Checkerboard,
                                        amount_of_steps,
                                        step_sizes, i++);
+        MultiLevelCriticalSimulation(16, nu_pre, nu_post,
+                                     erg_jump_dists, 1, InterpolationType::Checkerboard,
+                                     amount_of_steps,
+                                     step_sizes, i++);
     }
     //return test_hip();
 }

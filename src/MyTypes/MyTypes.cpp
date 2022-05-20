@@ -41,7 +41,7 @@ void WriteMultiVectorX(MultiVectorX &vector_to_write, HighFive::Group &root, std
             {static_cast<unsigned long>(vector_to_write.size(), vector_to_write[0].rows())},
             offset, true);
 
-    std::vector<size_t> count{static_cast<unsigned long>(1, vector_to_write[0].rows())};
+    std::vector<size_t> count{1,static_cast<unsigned long>(vector_to_write[0].rows())};
     for (int l = 0; l < vector_to_write.size(); ++l) {
         offset[0] = l;
         target_dataset.select(offset, count).write_raw(vector_to_write[l].data());

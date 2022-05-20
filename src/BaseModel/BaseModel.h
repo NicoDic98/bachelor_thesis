@@ -14,6 +14,7 @@
 #include <highfive/H5File.hpp>
 #include <utility>
 #include <MyTypes.h>
+#include <random>
 
 /**
  * @brief Template for the Abstract Class BaseModel
@@ -62,6 +63,15 @@ public:
      * @return S(phi) (action)
      */
     virtual double get_action(const configuration_type &phi) = 0;
+
+    /**
+     * @brief Calculates the artificial energy for the given field phi
+     * @param phi Field
+     * @return H(phi) (artificial energy)
+     */
+    virtual double get_artificial_energy(const configuration_type &phi, const configuration_type &pi) = 0;
+
+    virtual configuration_type get_pi(std::default_random_engine &generator)=0;
 
     /**
      * @brief Returns beta

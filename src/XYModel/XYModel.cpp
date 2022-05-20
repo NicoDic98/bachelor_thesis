@@ -164,6 +164,27 @@ XYModel::dump_ensemble(std::vector<MultiVectorX> &target, HighFive::Group &root,
     return HighFive::DataSet();
 }
 
+double XYModel::get_artificial_energy(const MultiVectorX &phi, const MultiVectorX &pi) {
+    double ret{0.};
+    for (const auto &elem: pi) {
+        ret += elem.dot(elem);
+    }
+    ret *= 0.5;
+    return ret + get_action(phi);
+}
+
+MultiVectorX XYModel::get_pi(std::default_random_engine &generator) {
+    auto ret = get_empty_field();
+    std::normal_distribution<double> gauss(0, 1);
+    for ([[maybe_unused]] auto &elem: ret) {
+        for (auto inner_elem: elem) {
+            inner_elem = gauss(generator);
+        }
+
+    }
+    return ret;
+}
+
 
 
 

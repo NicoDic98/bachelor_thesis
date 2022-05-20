@@ -62,6 +62,16 @@ public:
     double get_action(const VectorX &phi) override;
 
     /**
+     * @brief Calculates the artificial energy for the given field phi
+     * @param phi Field
+     * @return H(phi) (artificial energy)
+     */
+    double get_artificial_energy(const VectorX &phi, const VectorX &pi) override;
+
+    VectorX get_pi(std::default_random_engine &generator) override;
+
+
+    /**
      * @brief Sets the value of beta to new_beta
      * @param new_beta Inverse temperature
      */
@@ -76,6 +86,7 @@ public:
      * @return m(phi) (magnetization)
      */
     double get_magnetization(const VectorX &phi) override;
+
     double get_field_squared(const VectorX &phi) override;
 
 
@@ -121,7 +132,7 @@ public:
      * @param pi
      * @param step_size
      */
-    void update_phi(VectorX &phi, VectorX &pi, double step_size)override;
+    void update_phi(VectorX &phi, VectorX &pi, double step_size) override;
 
     void ergodicity_jump(VectorX &phi) override;
 
@@ -283,6 +294,7 @@ private:
      * @brief String to be used as key for \a k_sym in H5 files
      */
     static const char *k_sym_name;
+
     /**
      * @brief Setter for \a k_sym
      * @param k_sym_new New value for \a k_sym

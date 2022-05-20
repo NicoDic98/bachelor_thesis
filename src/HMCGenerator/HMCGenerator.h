@@ -181,19 +181,16 @@ template<class configuration_type> const char *HMCGenerator<configuration_type>:
 template<class configuration_type>
 configuration_type HMCGenerator<configuration_type>::do_HMC_step([[maybe_unused]] const configuration_type &phi0,
                                                                  bool do_ergo_jump) {
-    configuration_type pi(phi0.rows());
+    configuration_type pi = model.get_pi(generator);
     configuration_type phi(phi0);
-    std::normal_distribution<double> gauss(0, 1);
-    for ([[maybe_unused]] auto &elem: pi) {
-        elem = gauss(generator);
-    }
-    [[maybe_unused]] double H_start = pi.dot(pi) * 0.5 + model.get_action(phi);
+
+    [[maybe_unused]] double H_start = model.get_artificial_energy(phi, pi);
     if (do_ergo_jump) {
         model.ergodicity_jump(phi);
     } else {
         integrator.integrate(amount_of_steps, step_size, phi, pi); //updates in place
     }
-    [[maybe_unused]] double H_end = pi.dot(pi) * 0.5 + model.get_action(phi);
+    [[maybe_unused]] double H_end = model.get_artificial_energy(phi, pi);
 
     std::uniform_real_distribution<double> uniformRealDistribution(0., 1.);
 
