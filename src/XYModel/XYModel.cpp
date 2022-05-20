@@ -92,7 +92,31 @@ double XYModel::get_action(const MultiVectorX &phi) {
 }
 
 bool XYModel::check_dimensions(const MultiVectorX &phi) const {
-    return false;
+    unsigned long size_a = h.size();
+
+    long size_b = h[0].rows();
+    for (const auto &elem: h) {
+        if (elem.rows() != size_b) {
+            return false;
+        }
+    }
+
+    if (phi.size() != size_a) {
+        return false;
+    }
+    for (const auto &elem: phi) {
+        if (elem.rows() != size_b) {
+            return false;
+        }
+    }
+
+    if (k_sym.rows() != size_b) {
+        return false;
+    }
+    if (k_sym.cols() != size_b) {
+        return false;
+    }
+    return true;
 }
 
 XYModel *XYModel::get_coarser_model(InterpolationType InterpolationType_) {
