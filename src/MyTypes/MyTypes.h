@@ -23,12 +23,44 @@ typedef Eigen::VectorXd VectorX;
  */
 typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> MatrixX;
 
+typedef std::vector<VectorX> MultiVectorX;
+
 /**
  * @brief Interpolation types
  */
 enum class InterpolationType {
     Checkerboard, Black_White
 };
+
+
+/**
+ * @brief Simple Power function to calculate the powers of integers
+ * @param x Base
+ * @param y Exponent
+ * @return Base^Exponent
+ */
+inline int int_pow(int x, int y) {
+    assert(y >= 0);
+    int result = 1;
+    for (int i = 0; i < y; ++i) {
+        result *= x;
+    }
+    return result;
+}
+
+/**
+ * @brief Fills the connectivity matrix \a k_sym for the given hyper cube of dimension \a dimension and side length \p grid_size
+ * @param grid_size Side length
+ */
+void fill_connectivity_matrix(int grid_size, int dimension, int neighbour_extent, MatrixX &k_sym);
+
+/**
+ * @brief Fills the \a InterpolationMatrix
+ * @param InterpolationType_ Type of interpolation to be used
+ * @param fine_size Finer grid total size
+ */
+void fill_interpolation_matrix(InterpolationType InterpolationType_, long fine_size, int dimension,
+                               MatrixX &InterpolationMatrix);
 
 /**
  * @brief Writes \p vector_to_write to \p root as dataset with the name \p name

@@ -303,19 +303,6 @@ private:
     static const char *IsingModel_name;
 
     /**
-     * @brief Fills the connectivity matrix \a k_sym for the given hyper cube of dimension \a dimension and side length \p grid_size
-     * @param grid_size Side length
-     */
-    void fill_connectivity_matrix(int grid_size);
-
-    /**
-     * @brief Fills the \a InterpolationMatrix
-     * @param InterpolationType_ Type of interpolation to be used
-     * @param fine_size Finer grid total size
-     */
-    void fill_interpolation_matrix(InterpolationType InterpolationType_, long fine_size);
-
-    /**
      * @brief Add identity*\p offset to the connectivity matrix \a k_sym
      * @param offset Offset to be used
      */
@@ -326,20 +313,5 @@ private:
      */
     [[nodiscard]] bool check_internal_dimensions() const { return check_dimensions(h); }
 };
-
-/**
- * @brief Simple Power function to calculate the powers of integers
- * @param x Base
- * @param y Exponent
- * @return Base^Exponent
- */
-inline int int_pow(int x, int y) {
-    assert(y >= 0);
-    int result = 1;
-    for (int i = 0; i < y; ++i) {
-        result *= x;
-    }
-    return result;
-}
 
 #endif //BACHELOR_THESIS_ISINGMODEL_H

@@ -30,7 +30,8 @@ IsingModel::IsingModel(double beta_, VectorX h_, VectorX eta_, double offset_, i
           k_rec(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)),
           InterpolationMatrix{}, RootModel{*this} {
 
-    fill_connectivity_matrix(grid_size_);
+    fill_connectivity_matrix(grid_size_, dimension, neighbour_extent_, k_sym);
+    set_k_sym(k_sym);
     add_offset_to_connectivity_matrix(connectivity_offset);
     //todo: test that this really yields a positive definit connectivity matrix (search for min eigenvalue before adding the offset)
     k_rec = k_sym;
@@ -44,7 +45,7 @@ IsingModel::IsingModel(const IsingModel &NewModel, InterpolationType Interpolati
           InterpolationMatrix{}, RootModel{NewModel} {
     std::cout << "Isingmodel Interpolation constructor called" << std::endl;
     assert(RootModel.check_internal_dimensions());
-    fill_interpolation_matrix(InterpolationType_, h.rows());
+    fill_interpolation_matrix(InterpolationType_, h.rows(), dimension, InterpolationMatrix);
     set_k_sym(InterpolationMatrix.transpose() * RootModel.k_sym * InterpolationMatrix);
     k_rec = RootModel.k_rec * InterpolationMatrix;
     h.resize(InterpolationMatrix.cols());
@@ -179,28 +180,6 @@ double IsingModel::get_energy_squared(const VectorX &phi) {
     return e_squared;
 }
 
-void IsingModel::fill_connectivity_matrix(int grid_size) {
-    k_sym.setZero();
-
-    long lambda = k_sym.rows();
-
-    for (long m = 0; m < lambda; ++m) {
-        long base_offset{1};
-        for (int i = 0; i < dimension; ++i) {
-            for (long j = 1; j <= neighbour_extent; ++j) {
-                k_sym(m, (m + base_offset * neighbour_extent) % (base_offset * grid_size)
-                         + (base_offset * grid_size) * (m / (base_offset * grid_size))) += 1;
-                // this additional + is needed in cas of eg ((0,1),(2,3)) to get the correct connections for 2
-                k_sym(m, (m - base_offset * neighbour_extent + (base_offset * grid_size)) % (base_offset * grid_size)
-                         + (base_offset * grid_size) * (m / (base_offset * grid_size))) += 1;
-            }
-            base_offset *= grid_size;
-        }
-
-    }
-    set_k_sym(k_sym);
-}
-
 void IsingModel::add_offset_to_connectivity_matrix(double offset) {
     MatrixX OffsetMatrix(k_sym.rows(), k_sym.cols());
     OffsetMatrix.setIdentity();
@@ -249,213 +228,6 @@ IsingModel *IsingModel::get_copy_of_model() {
 
 IsingModel *IsingModel::get_model_at(HighFive::Group &root) {
     return new IsingModel(root);
-}
-
-void IsingModel::fill_interpolation_matrix(InterpolationType InterpolationType_, long fine_size) {
-    int coarse_grid_side_length{1};
-    long coarse_lambda;
-    int fine_grid_side_length = static_cast<int>(pow(static_cast<double>(fine_size), 1. / dimension));
-    switch (InterpolationType_) {
-        case InterpolationType::Checkerboard:
-            if (int_pow(fine_grid_side_length, dimension) != fine_size) {
-                if (int_pow(fine_grid_side_length + 1, dimension) == fine_size) {
-                    fine_grid_side_length += 1;
-                } else if (int_pow(fine_grid_side_length - 1, dimension) == fine_size) {
-                    fine_grid_side_length -= 1;
-                } else {
-                    std::cerr << "Can't determine fine grid side length from fine_size = "
-                              << fine_size << " and dimension = " << dimension << '\n';
-                    exit(-42);
-                }
-            }
-
-
-            /*
-             * Compute new sizes
-             */
-            if (fine_grid_side_length % 2 == 0) {
-                coarse_grid_side_length = fine_grid_side_length / 2;
-            } else {
-                coarse_grid_side_length = (fine_grid_side_length + 1) / 2;
-                //TODO: think more about this case
-            }
-
-            coarse_lambda = int_pow(coarse_grid_side_length, dimension);
-
-            InterpolationMatrix.resize(fine_size, coarse_lambda);
-            InterpolationMatrix.setZero();
-
-
-            for (long m = 0; m < InterpolationMatrix.rows(); ++m) {
-                long base_offset{1};
-                long coarse_offset;
-                double factor{1};
-                /*
-                 * Get ids of fine level sources of the current m
-                 */
-                std::vector<long> fine_interpolation_ids{m};
-                for (int i = 0; i < dimension; ++i) {
-                    if (((m / base_offset) % fine_grid_side_length) % 2 == 1) {
-                        factor *= 0.5;
-                        std::vector<long> temp{fine_interpolation_ids};
-                        fine_interpolation_ids.clear();
-                        for (long elem: temp) {
-                            fine_interpolation_ids.push_back(
-                                    (elem + base_offset) % (base_offset * fine_grid_side_length) +
-                                    (base_offset * fine_grid_side_length) *
-                                    (elem / (base_offset * fine_grid_side_length)));
-                            fine_interpolation_ids.push_back(
-                                    (elem - base_offset + (base_offset * fine_grid_side_length)) %
-                                    (base_offset * fine_grid_side_length) +
-                                    (base_offset * fine_grid_side_length) *
-                                    (elem / (base_offset * fine_grid_side_length)));
-                        }
-                    }
-
-                    base_offset *= fine_grid_side_length;
-                }
-                //assert(factor == fine_interpolation_ids.size());
-
-                /*
-                 * Fill interpolation matrix, by calculating the coarse level id of each source
-                 */
-                for (auto elem: fine_interpolation_ids) {
-                    base_offset = 1;
-                    coarse_offset = 1;
-                    long coarse_id{0};
-                    for (int i = 0; i < dimension; ++i) {
-                        coarse_id +=
-                                ((elem % (base_offset * fine_grid_side_length)) / (base_offset * 2)) * coarse_offset;
-
-                        base_offset *= fine_grid_side_length;
-                        coarse_offset *= coarse_grid_side_length;
-                    }
-                    InterpolationMatrix(m, coarse_id) = factor;
-                }
-
-            }
-            break;
-        case InterpolationType::Black_White:
-            /*
-             * Check for d=2
-             */
-            if (dimension != 2) {
-                std::cerr << "Black_White only suppoerted for d=2\n";
-                exit(-1);
-            }
-
-            /**
-             * Compute new sizes
-             */
-            if (fine_size % 2 != 0) {
-                std::cerr << "Black_White only suppoerted for even side lengths\n";
-                exit(-1);
-            }
-
-            coarse_lambda = fine_size / 2;
-
-            InterpolationMatrix.resize(fine_size, coarse_lambda);
-            InterpolationMatrix.setZero();
-
-            bool is_square_lattice = false;
-
-            if (int_pow(fine_grid_side_length, dimension) != fine_size) {
-                if (int_pow(fine_grid_side_length + 1, dimension) == fine_size) {
-                    fine_grid_side_length += 1;
-                    is_square_lattice = true;
-                } else if (int_pow(fine_grid_side_length - 1, dimension) == fine_size) {
-                    fine_grid_side_length -= 1;
-                    is_square_lattice = true;
-                }
-            } else {
-                is_square_lattice = true;
-            }
-
-            if (is_square_lattice) {
-                //in this case fine_grid_side_length is well-defined
-                for (int m = 0; m < InterpolationMatrix.rows(); ++m) {
-                    if ((m / fine_grid_side_length) % 2 == 0) {
-                        if ((m % fine_grid_side_length) % 2 == 0) {
-                            InterpolationMatrix(m,
-                                                (((m + 1) % fine_grid_side_length +
-                                                  (m / fine_grid_side_length) * fine_grid_side_length) - 1) / 2) = 0.25;
-                            InterpolationMatrix(m,
-                                                (((m - 1 + fine_grid_side_length) % fine_grid_side_length +
-                                                  (m / fine_grid_side_length) * fine_grid_side_length) - 1) / 2) = 0.25;
-                            InterpolationMatrix(m, ((m + fine_grid_side_length) % fine_size) / 2) = 0.25;
-                            InterpolationMatrix(m, ((m - fine_grid_side_length + fine_size) % fine_size) / 2) = 0.25;
-                        } else {
-                            InterpolationMatrix(m, (m - 1) / 2) = 1.;
-                        }
-                    } else {
-                        if (m % 2 == 0) {
-                            InterpolationMatrix(m, m / 2) = 1.;
-                        } else {
-                            InterpolationMatrix(m,
-                                                ((m + 1) % fine_grid_side_length +
-                                                 (m / fine_grid_side_length) * fine_grid_side_length) / 2) = 0.25;
-                            InterpolationMatrix(m,
-                                                ((m - 1 + fine_grid_side_length) % fine_grid_side_length +
-                                                 (m / fine_grid_side_length) * fine_grid_side_length) / 2) = 0.25;
-                            InterpolationMatrix(m, (((m + fine_grid_side_length) % fine_size) - 1) / 2) = 0.25;
-                            InterpolationMatrix(m,
-                                                (((m - fine_grid_side_length + fine_size) % fine_size) - 1) / 2) = 0.25;
-                        }
-                    }
-                }
-            } else {
-                //in this case fine_grid_side_length is NOT well-defined
-                coarse_grid_side_length = static_cast<int>(pow(static_cast<double>(fine_size) / 2, 1. / dimension));
-                if (int_pow(coarse_grid_side_length, dimension) != fine_size / 2) {
-                    if (int_pow(coarse_grid_side_length + 1, dimension) == fine_size / 2) {
-                        coarse_grid_side_length += 1;
-                    } else if (int_pow(coarse_grid_side_length - 1, dimension) == fine_size / 2) {
-                        coarse_grid_side_length -= 1;
-                    } else {
-                        std::cerr << "Can't determine coarse grid side length from fine_size = "
-                                  << fine_size << " and dimension = " << dimension << '\n';
-                        exit(-42);
-                    }
-                }
-
-                for (int m = 0; m < InterpolationMatrix.rows(); ++m) {
-                    if ((m / coarse_grid_side_length) % 2 == 1) {
-                        InterpolationMatrix(m, m - (m / coarse_grid_side_length) * coarse_grid_side_length +
-                                               (((m / coarse_grid_side_length) - 1) / 2) *
-                                               coarse_grid_side_length) = 1.;
-                    } else {
-                        int neighbourIndex = (m / coarse_grid_side_length - 1) * coarse_grid_side_length +
-                                             m % coarse_grid_side_length;
-                        neighbourIndex = static_cast<int>((neighbourIndex + fine_size) % fine_size);
-                        InterpolationMatrix(m, neighbourIndex -
-                                               (neighbourIndex / coarse_grid_side_length) * coarse_grid_side_length +
-                                               (((neighbourIndex / coarse_grid_side_length) - 1) / 2) *
-                                               coarse_grid_side_length) = 0.25;
-                        neighbourIndex = (m / coarse_grid_side_length - 1) * coarse_grid_side_length +
-                                         (m + 1) % coarse_grid_side_length;
-                        neighbourIndex = static_cast<int>((neighbourIndex + fine_size) % fine_size);
-                        InterpolationMatrix(m, neighbourIndex -
-                                               (neighbourIndex / coarse_grid_side_length) * coarse_grid_side_length +
-                                               (((neighbourIndex / coarse_grid_side_length) - 1) / 2) *
-                                               coarse_grid_side_length) = 0.25;
-                        neighbourIndex = (m / coarse_grid_side_length + 1) * coarse_grid_side_length +
-                                         m % coarse_grid_side_length;
-                        InterpolationMatrix(m, neighbourIndex -
-                                               (neighbourIndex / coarse_grid_side_length) * coarse_grid_side_length +
-                                               (((neighbourIndex / coarse_grid_side_length) - 1) / 2) *
-                                               coarse_grid_side_length) = 0.25;
-                        neighbourIndex = (m / coarse_grid_side_length + 1) * coarse_grid_side_length +
-                                         (m + 1) % coarse_grid_side_length;
-                        InterpolationMatrix(m, neighbourIndex -
-                                               (neighbourIndex / coarse_grid_side_length) * coarse_grid_side_length +
-                                               (((neighbourIndex / coarse_grid_side_length) - 1) / 2) *
-                                               coarse_grid_side_length) = 0.25;
-
-                    }
-                }
-            }
-            break;
-    }
 }
 
 [[maybe_unused]] void IsingModel::print_dimensions() {
