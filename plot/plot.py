@@ -238,7 +238,7 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
     ax2_.scatter(base_tick_time/base_int_auto_correlation_time,
                  1 / (np.sqrt(base_bootstrap_variance)),
                  marker='.', c='r')
-    ax3_.scatter(1 / (base_tick_time[-1] * base_int_auto_correlation_time),
+    ax3_.scatter(1 / base_int_auto_correlation_time,
                  (1 / (np.sqrt(base_bootstrap_variance) * base_tick_time))[-1],
                  marker='.', c='r')
     labels.append("HMC")
@@ -262,7 +262,7 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
             ax2_.scatter(multi_tick_time/multi_int_auto_correlation_time,
                          1 / (np.sqrt(multi_bootstrap_variance)),
                          marker='.', c=list(mcolors.TABLEAU_COLORS.values())[j])
-            ax3_.scatter(1 / (multi_tick_time[-1] * multi_int_auto_correlation_time),
+            ax3_.scatter(1 / multi_int_auto_correlation_time,
                          (1 / (np.sqrt(multi_bootstrap_variance) * multi_tick_time))[-1],
                          marker='.', c=list(mcolors.TABLEAU_COLORS.values())[j])
             labels.append(f"nu pp={i}")
@@ -272,7 +272,7 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
     fig_.subplots_adjust(right=0.85)
     ax1_.set_xlabel(r"$t$")
     ax2_.set_xlabel(r"$\frac{t}{\tau}$")
-    ax3_.set_xlabel(r"$\frac{1}{\tau *t}$")
+    ax3_.set_xlabel(r"$\frac{1}{\tau}$")
 
     ax1_.set_ylabel(r"$\frac{1}{\sigma}$")
     ax1_.set_xscale('log')
