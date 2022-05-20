@@ -33,6 +33,12 @@ public:
     XYModel(const XYModel &NewModel);
 
     /**
+     * @brief Load model from \p root
+     * @param root Group which holds the model attributes
+     */
+    [[maybe_unused]] explicit XYModel(HighFive::Group &root);
+
+    /**
      * @brief Calculates the action for the given field phi
      * @param phi Field
      * @return S(phi) (action)

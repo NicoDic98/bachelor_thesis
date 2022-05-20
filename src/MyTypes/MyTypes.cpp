@@ -28,6 +28,38 @@ void ReadVectorX(VectorX &vector_to_read_into, HighFive::Group &root, std::strin
     vector_to_read_into = VectorX::Map(&my_buffer[0], my_buffer.size());
 }
 
+void WriteMultiVectorX(MultiVectorX &vector_to_write, HighFive::Group &root, std::string name) {
+    std::vector<size_t> offset;
+    assert(vector_to_write.size() >= 0);
+    for (const auto &elem: vector_to_write) {
+        assert(elem.rows() >= 0);
+    }
+
+
+    HighFive::DataSet target_dataset = add_to_expandable_dataset(
+            root, name,
+            {static_cast<unsigned long>(vector_to_write.size(), vector_to_write[0].rows())},
+            offset, true);
+
+    std::vector<size_t> count{static_cast<unsigned long>(1, vector_to_write[0].rows())};
+    for (int l = 0; l < vector_to_write.size(); ++l) {
+        offset[0] = l;
+        target_dataset.select(offset, count).write_raw(vector_to_write[l].data());
+    }
+
+}
+
+void ReadMultiVectorX(MultiVectorX &vector_to_read_into, HighFive::Group &root, std::string name) {
+    auto temp = root.getDataSet(name);
+    std::vector<std::vector<double>> my_buffer;
+    temp.read(my_buffer);
+
+    vector_to_read_into.clear();
+    for (auto & item : my_buffer) {
+        vector_to_read_into.push_back(VectorX::Map(&item[0], item.size()));
+    }
+}
+
 void WriteMatrixX(MatrixX &matrix_to_write, HighFive::Group &root, std::string name) {
     std::vector<size_t> offset;
     assert(matrix_to_write.rows() >= 0);

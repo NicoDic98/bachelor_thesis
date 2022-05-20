@@ -32,6 +32,13 @@ XYModel::XYModel(const XYModel &NewModel, InterpolationType InterpolationType_)
           InterpolationMatrix{},
           RootModel{NewModel} {
     std::cout << "XYModel Interpolation constructor called" << std::endl;
+    assert(RootModel.check_internal_dimensions());
+    fill_interpolation_matrix(InterpolationType_, h[0].rows(), dimension, InterpolationMatrix);
+    k_sym = InterpolationMatrix.transpose() * RootModel.k_sym * InterpolationMatrix;
+    h.resize(InterpolationMatrix.cols());
+
+    //print_dimensions();
+    //print_interpolation_matrix();
     assert(check_internal_dimensions());
 }
 
@@ -42,6 +49,23 @@ XYModel::XYModel(const XYModel &NewModel)
           RootModel{NewModel} {
     std::cout << "XYModel copy constructor called" << std::endl;
     assert(check_internal_dimensions());
+}
+
+
+[[maybe_unused]] XYModel::XYModel(HighFive::Group &root)
+        : BaseModel<MultiVectorX>(root, XYModel_name),
+                dimension{}, neighbour_extent{},  RootModel{*this} {
+    assert(name == XYModel_name);
+    root.getAttribute(dimension_name).read(dimension);
+    root.getAttribute(neighbour_extent_name).read(neighbour_extent);
+    ReadMultiVectorX(h, root, h_name);
+    ReadMatrixX(k_sym, root, k_sym_name);
+
+    if (root.hasAttribute(InterpolationMatrix_name)) {
+        ReadMatrixX(InterpolationMatrix, root, InterpolationMatrix_name);
+    } else {
+
+    }
 }
 
 void XYModel::update_pi(MultiVectorX &phi, MultiVectorX &pi, double step_size) {

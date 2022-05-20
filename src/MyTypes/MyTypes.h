@@ -79,6 +79,22 @@ void WriteVectorX(VectorX &vector_to_write, HighFive::Group &root, std::string n
 void ReadVectorX(VectorX &vector_to_read_into, HighFive::Group &root, std::string name);
 
 /**
+ * @brief Writes \p vector_to_write to \p root as dataset with the name \p name
+ * @param vector_to_write Vector to be written
+ * @param root Group to write to
+ * @param name Name of the target dataset
+ */
+void WriteMultiVectorX(MultiVectorX &vector_to_write, HighFive::Group &root, std::string name);
+
+/**
+ * @brief Reads \p vector_to_read_into from \p root from the dataset with the name \p name
+ * @param vector_to_read_into Vector to read into
+ * @param root Group to read from
+ * @param name Name of the target dataset
+ */
+void ReadMultiVectorX(MultiVectorX &vector_to_read_into, HighFive::Group &root, std::string name);
+
+/**
  * @brief Writes \p matrix_to_write to \p root as dataset with the name \p name
  * @param matrix_to_write Matrix to be written
  * @param root Group to write to
