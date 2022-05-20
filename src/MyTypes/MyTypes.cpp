@@ -38,13 +38,13 @@ void WriteMultiVectorX(MultiVectorX &vector_to_write, HighFive::Group &root, std
 
     HighFive::DataSet target_dataset = add_to_expandable_dataset(
             root, name,
-            {static_cast<unsigned long>(vector_to_write.size(), vector_to_write[0].rows())},
+            {vector_to_write.size(),static_cast<unsigned long>(vector_to_write[0].rows())},
             offset, true);
 
-    std::vector<size_t> count{1,static_cast<unsigned long>(vector_to_write[0].rows())};
-    for (int l = 0; l < vector_to_write.size(); ++l) {
-        offset[0] = l;
-        target_dataset.select(offset, count).write_raw(vector_to_write[l].data());
+    std::vector<size_t> count{1, static_cast<unsigned long>(vector_to_write[0].rows())};
+    for (auto &elem: vector_to_write) {
+        target_dataset.select(offset, count).write_raw(elem.data());
+        offset[0]++;
     }
 
 }
@@ -55,7 +55,7 @@ void ReadMultiVectorX(MultiVectorX &vector_to_read_into, HighFive::Group &root, 
     temp.read(my_buffer);
 
     vector_to_read_into.clear();
-    for (auto & item : my_buffer) {
+    for (auto &item: my_buffer) {
         vector_to_read_into.push_back(VectorX::Map(&item[0], item.size()));
     }
 }

@@ -35,7 +35,7 @@ XYModel::XYModel(const XYModel &NewModel, InterpolationType InterpolationType_)
     assert(RootModel.check_internal_dimensions());
     fill_interpolation_matrix(InterpolationType_, h[0].rows(), dimension, InterpolationMatrix);
     k_sym = InterpolationMatrix.transpose() * RootModel.k_sym * InterpolationMatrix;
-    for (auto & item : h) {
+    for (auto &item: h) {
         item.resize(InterpolationMatrix.cols());
     }
 
@@ -172,15 +172,52 @@ MultiVectorX XYModel::get_empty_field() {
 
 void XYModel::dumpToH5(HighFive::Group &root) {
     BaseModel::dumpToH5(root);
+    write_static_size(dimension, root, dimension_name);
+    write_static_size(neighbour_extent, root, neighbour_extent_name);
+
+    WriteMultiVectorX(h, root, h_name);
+
+    WriteMatrixX(k_sym, root, k_sym_name);
+
+    if (InterpolationMatrix.size() != 0) {
+        WriteMatrixX(InterpolationMatrix, root, InterpolationMatrix_name);
+    }
 }
 
 void XYModel::load_ensemble(std::vector<MultiVectorX> &target, HighFive::DataSet &root) {
+    const std::vector<size_t> shape{root.getDimensions()};
+    target.resize(shape[0]);
+    std::vector<std::vector<std::vector<double>>> temp;
+    root.read(temp);
 
+    for (int i = 0; i < shape[0]; ++i) {
+        for (auto &item: temp[i]) {
+            target[i].push_back(VectorX::Map(&item[0], item.size()));
+        }
+    }
 }
 
 HighFive::DataSet
 XYModel::dump_ensemble(std::vector<MultiVectorX> &target, HighFive::Group &root, std::string sub_name) {
-    return HighFive::DataSet();
+    std::vector<size_t> offset;
+    HighFive::DataSet target_dataset = add_to_expandable_dataset(
+            root, sub_name,
+            {target.size(), target[0].size(), static_cast<unsigned long>(target[0][0].rows())},
+            offset);
+
+    std::vector<size_t> count{1, 1, static_cast<unsigned long>(target[0][0].rows())};
+
+    auto offset1 = offset[1];
+    for (auto &elem: target) {
+        offset[1] = offset1;
+        for (auto &inner_elem: elem) {
+            target_dataset.select(offset, count).write_raw(inner_elem.data());
+            offset[1]++;
+        }
+        offset[0]++;
+    }
+
+    return target_dataset;
 }
 
 double XYModel::get_artificial_energy(const MultiVectorX &phi, const MultiVectorX &pi) {
