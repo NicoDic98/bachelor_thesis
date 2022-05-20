@@ -54,7 +54,7 @@ XYModel::XYModel(const XYModel &NewModel)
 
 [[maybe_unused]] XYModel::XYModel(HighFive::Group &root)
         : BaseModel<MultiVectorX>(root, XYModel_name),
-                dimension{}, neighbour_extent{},  RootModel{*this} {
+          dimension{}, neighbour_extent{}, RootModel{*this} {
     assert(name == XYModel_name);
     root.getAttribute(dimension_name).read(dimension);
     root.getAttribute(neighbour_extent_name).read(neighbour_extent);
@@ -82,7 +82,13 @@ void XYModel::update_phi(MultiVectorX &phi, MultiVectorX &pi, double step_size) 
 }
 
 double XYModel::get_action(const MultiVectorX &phi) {
-    return 0;
+    double ret{0.};
+    for (int i = 0; i < phi.size(); i++) {
+        ret -= 0.5 * phi[i].transpose() * k_sym * phi[i];
+        ret -= h[i].dot(phi[i]);
+    }
+    ret *= get_beta();
+    return ret;
 }
 
 bool XYModel::check_dimensions(const MultiVectorX &phi) const {
