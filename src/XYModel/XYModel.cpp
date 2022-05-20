@@ -120,35 +120,51 @@ bool XYModel::check_dimensions(const MultiVectorX &phi) const {
 }
 
 XYModel *XYModel::get_coarser_model(InterpolationType InterpolationType_) {
-    return nullptr;
+    return new XYModel(*this, InterpolationType_);
 }
 
 XYModel *XYModel::get_copy_of_model() {
-    return nullptr;
+    return new XYModel(*this);
 }
 
 MultiVectorX XYModel::get_force(const MultiVectorX &phi) {
-    return MultiVectorX();
+    auto ret = get_empty_field();
+    for (int i = 0; i < phi.size(); i++) {
+        ret[i] = k_sym * phi[i] + h[i];
+        ret[i] *= get_beta();
+    }
+    return ret;
 }
 
 XYModel *XYModel::get_model_at(HighFive::Group &root) {
-    return nullptr;
+    return new XYModel(root);
 }
 
 void XYModel::update_fields(const MultiVectorX &phi) {
-
+    for (int i = 0; i < h.size(); i++) {
+        h[i] = (RootModel.h[i].transpose() + phi[i].transpose() * RootModel.k_sym) * InterpolationMatrix;
+    }
 }
 
 void XYModel::interpolate(const MultiVectorX &phi2a, MultiVectorX &phia) {
-
+    for (int i = 0; i < phia.size(); i++) {
+        phia[i] += InterpolationMatrix * phi2a[i];
+    }
 }
 
 void XYModel::pull_attributes_from_root() {
-
+    set_beta(RootModel.get_beta());
+    //TODO maybe add some more attributes to be pulled
 }
 
 MultiVectorX XYModel::get_empty_field() {
-    return MultiVectorX();
+    VectorX temp(h[0].rows());
+    temp.setZero();
+    MultiVectorX ret;
+    for (int l = 0; l < h.size(); ++l) {
+        ret.push_back(temp);
+    }
+    return ret;
 }
 
 void XYModel::dumpToH5(HighFive::Group &root) {
@@ -176,11 +192,10 @@ double XYModel::get_artificial_energy(const MultiVectorX &phi, const MultiVector
 MultiVectorX XYModel::get_pi(std::default_random_engine &generator) {
     auto ret = get_empty_field();
     std::normal_distribution<double> gauss(0, 1);
-    for ([[maybe_unused]] auto &elem: ret) {
+    for (auto &elem: ret) {
         for (auto inner_elem: elem) {
             inner_elem = gauss(generator);
         }
-
     }
     return ret;
 }
