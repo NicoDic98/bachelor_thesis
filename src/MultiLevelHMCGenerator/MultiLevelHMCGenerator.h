@@ -334,8 +334,17 @@ std::vector<double> MultiLevelHMCGenerator<configuration_type>::generate_ensembl
                                                                                    size_t amount_of_thermalization_steps) {
     configuration_type phi(phiStart);
     for (int i = 0; i < amount_of_thermalization_steps; ++i) {
+        if (i % (amount_of_thermalization_steps / 10) == 0) {
+            std::cout << "|";
+            std::cout.flush();
+        }
+        if (i % (amount_of_thermalization_steps / 100) == 0) {
+            std::cout << "=";
+            std::cout.flush();
+        }
         phi = LevelRecursion(0, phi);
     }
+    std::cout << std::endl;
     HMCStack[0].clear_ensembles();
     std::cout << "Thermalization done." << std::endl;
     for (int i = 0; i < AcceptanceRates.size(); ++i) {

@@ -35,7 +35,10 @@ XYModel::XYModel(const XYModel &NewModel, InterpolationType InterpolationType_)
     assert(RootModel.check_internal_dimensions());
     fill_interpolation_matrix(InterpolationType_, h[0].rows(), dimension, InterpolationMatrix);
     k_sym = InterpolationMatrix.transpose() * RootModel.k_sym * InterpolationMatrix;
-    h.resize(InterpolationMatrix.cols());
+    for (auto & item : h) {
+        item.resize(InterpolationMatrix.cols());
+    }
+
 
     //print_dimensions();
     //print_interpolation_matrix();
