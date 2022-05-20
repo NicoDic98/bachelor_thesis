@@ -114,20 +114,20 @@ public:
     virtual bool check_dimensions(const configuration_type &phi) const = 0;
 
     /**
-     * @brief Updates the momentum \p pi and returns the new momentum \c pi_new
+     * @brief Updates the momentum \p pi in place
      * @param phi
      * @param pi
      * @param step_size
      */
-    virtual void update_pi(configuration_type &phi, configuration_type &pi, double step_size);
+    virtual void update_pi(configuration_type &phi, configuration_type &pi, double step_size)=0;
 
     /**
-     * @brief Updates the field \p phi and returns the new field \c phi_new
+     * @brief Updates the field \p phi in place
      * @param phi
      * @param pi
      * @param step_size
      */
-    virtual void update_phi(configuration_type &phi, configuration_type &pi, double step_size);
+    virtual void update_phi(configuration_type &phi, configuration_type &pi, double step_size)=0;
 
     virtual void ergodicity_jump(configuration_type &phi);
 
@@ -257,16 +257,6 @@ inline double BaseModel<configuration_type>::get_beta() const {
 template<class configuration_type>
 inline void BaseModel<configuration_type>::set_beta(double new_beta) {
     beta = new_beta;
-}
-
-template<class configuration_type>
-void BaseModel<configuration_type>::update_pi(configuration_type &phi, configuration_type &pi, double step_size) {
-    pi += step_size * get_force(phi);
-}
-
-template<class configuration_type>
-void BaseModel<configuration_type>::update_phi(configuration_type &phi, configuration_type &pi, double step_size) {
-    phi += step_size * pi;
 }
 
 template<class configuration_type>

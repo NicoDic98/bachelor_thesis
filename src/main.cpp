@@ -9,6 +9,7 @@
 #include <random>
 #include <SrcConfig.h>
 #include <IsingModel.h>
+#include <XYModel.h>
 #include <LeapFrogIntegrator.h>
 #include <HMCGenerator.h>
 #include <MultiLevelHMCGenerator.h>
@@ -283,7 +284,7 @@ void DoMultiLevelMeasurements(MultiLevelHMCGenerator<configuration_type> &Gen, c
         Gen.dump_observable(&BaseModel<VectorX>::get_energy_squared, "energy_squared", out_file);
     }
     HighFive::File out_file(out_filename, HighFive::File::ReadWrite);
-    for (int l = 10000; l <91000; l+=10000) {
+    for (int l = 10000; l < 91000; l += 10000) {
         Gen.analyze_dataset("magnetization", out_file, -1, l, -1, 400);
     }
     Gen.analyze_dataset("magnetization", out_file, -1, -1, -1, 400);
@@ -382,6 +383,56 @@ void HMCCriticalSimulation(int grid_size = 16, const size_t &amount_of_steps = 6
                                  {step_sizes}, 0);
 }
 
+void MultiLevelCriticalSimulationXY(const int grid_size = 16,
+                                    std::vector<size_t> nu_pre = {0},
+                                    std::vector<size_t> nu_post = {1},
+                                    std::vector<int> erg_jump_dists = {-1},
+                                    size_t gamma = 1,
+                                    InterpolationType int_type = InterpolationType::Checkerboard,
+                                    const std::vector<size_t> &amount_of_steps = {6},
+                                    const std::vector<double> &step_sizes = {1. / 6.},
+                                    size_t id = 0) {
+    const int dim = 2;
+    const int lambda = int_pow(grid_size, dim);
+    const double beta{0.42};
+    std::string filename{std::string(DATA_DIR)};
+
+    VectorX temp(lambda);
+    temp.setZero();
+    MultiVectorX phi0;
+    phi0.push_back(temp);
+    phi0.push_back(temp);
+
+    MultiVectorX h0(phi0);
+    std::default_random_engine myengine{42L};
+
+    XYModel test(beta, h0, dim, 1, grid_size);
+
+
+    /*MultiLevelHMCGenerator mygen(test, nu_pre, nu_post, erg_jump_dists, gamma, int_type,
+                                 amount_of_steps, step_sizes, myengine);
+    std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 30000, 3000);
+    for (auto acceptance_rate: acceptance_rates) {
+        std::cout << "Acceptance rate:" << acceptance_rate << std::endl;
+    }
+
+    if (int_type == InterpolationType::Black_White) {
+        filename.append("gs").append(std::to_string(grid_size)).append("_")
+                .append("Black_White").append("_")
+                .append("ga").append(std::to_string(gamma)).append("_")
+                .append("l").append(std::to_string(nu_pre.size())).append("_")
+                .append("id").append(std::to_string(id)).append(".h5");
+    } else if (int_type == InterpolationType::Checkerboard) {
+        filename.append("gs").append(std::to_string(grid_size)).append("_")
+                .append("Checkerboard").append("_")
+                .append("ga").append(std::to_string(gamma)).append("_")
+                .append("l").append(std::to_string(nu_pre.size())).append("_")
+                .append("id").append(std::to_string(id)).append(".h5");
+    }
+    HighFive::File file(filename, HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
+    mygen.dumpToH5(file);*/
+}
+
 /**
  * @brief Main function
  * @param argc
@@ -393,15 +444,15 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     //test_multi_level_hmc();
     //test_hmc_measurements();
-    DoMultiLevelMeasurementsFromDir(std::string("new"), false);
+    //DoMultiLevelMeasurementsFromDir(std::string("new"), false);
     //HMCCriticalSimulation(64, 16, 1. / 16.);
-    /*size_t i{1};
+    size_t i{1};
     std::vector<size_t> nu_pre = {0, 1};
     std::vector<size_t> nu_post = {1, 1};
     std::vector<int> erg_jump_dists = {-1, -1};
     std::vector<size_t> amount_of_steps = {16, 16};
     std::vector<double> step_sizes = {1. / 16., 1. / 16.};
-    for (size_t l = 16; l < 17; l *= 4) {
+    for (size_t l = 1; l < 17; l *= 4) {
         //nu_pre.push_back(1);
         //nu_post.push_back(1);
         //erg_jump_dists.push_back(-1);
@@ -409,11 +460,11 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
         //step_sizes.push_back(1. / (static_cast<double>(l) * 3.));
         nu_pre[1] = l;
         nu_post[1] = l;
-        MultiLevelCriticalSimulation(64, nu_pre, nu_post,
-                                     erg_jump_dists, 1, InterpolationType::Checkerboard,
-                                     amount_of_steps,
-                                     step_sizes, i++);
-    }*/
+        MultiLevelCriticalSimulationXY(16, nu_pre, nu_post,
+                                       erg_jump_dists, 1, InterpolationType::Checkerboard,
+                                       amount_of_steps,
+                                       step_sizes, i++);
+    }
     //return test_hip();
 }
 

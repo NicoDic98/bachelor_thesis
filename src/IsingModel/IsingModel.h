@@ -107,6 +107,22 @@ public:
      */
     [[nodiscard]] bool check_dimensions(const VectorX &phi) const override;
 
+    /**
+     * @brief Updates the momentum \p pi in place
+     * @param phi
+     * @param pi
+     * @param step_size
+     */
+    void update_pi(VectorX &phi, VectorX &pi, double step_size) override;
+
+    /**
+     * @brief Updates the field \p phi in place
+     * @param phi
+     * @param pi
+     * @param step_size
+     */
+    void update_phi(VectorX &phi, VectorX &pi, double step_size)override;
+
     void ergodicity_jump(VectorX &phi) override;
 
     /**

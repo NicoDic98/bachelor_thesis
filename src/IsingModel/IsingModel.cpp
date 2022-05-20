@@ -322,3 +322,11 @@ HighFive::DataSet IsingModel::dump_ensemble(std::vector<VectorX> &target, HighFi
 void IsingModel::ergodicity_jump(VectorX &phi) {
     phi = -phi;
 }
+
+void IsingModel::update_pi(VectorX &phi, VectorX &pi, double step_size) {
+    pi += step_size * get_force(phi);
+}
+
+void IsingModel::update_phi(VectorX &phi, VectorX &pi, double step_size) {
+    phi += step_size * pi;
+}
