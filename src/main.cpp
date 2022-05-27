@@ -510,16 +510,11 @@ void MultiLevelCriticalSimulationXY(const int grid_size = 16,
 
 void HMCCriticalSimulationXY(int grid_size = 16, const size_t &amount_of_steps = 6,
                              const double step_sizes = 1. / 6.) {
-    double eta = -1.5;
-    size_t id = 0;
-    while (eta > -7) {
-        MultiLevelCriticalSimulationXY(grid_size, {0}, {1},
-                                       {-1}, 1, eta, InterpolationType::Checkerboard,
-                                       {amount_of_steps},
-                                       {step_sizes}, id);
-        eta -= 0.2;
-        id++;
-    }
+
+    MultiLevelCriticalSimulationXY(grid_size, {0}, {1},
+                                   {-1}, 1, -2.5565, InterpolationType::Checkerboard,
+                                   {amount_of_steps},
+                                   {step_sizes}, 0);
 
 }
 
@@ -538,7 +533,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //HMCCriticalSimulation(64, 16, 1. / 16.);
     test_leap_frog();
     test_leap_frog_XY();
-    //HMCCriticalSimulationXY(16, 12, 1. / 12.);
+    HMCCriticalSimulationXY(16, 12, 1. / 12.);
     /*size_t i{1};
     std::vector<size_t> nu_pre = {0, 1};
     std::vector<size_t> nu_post = {1, 1};

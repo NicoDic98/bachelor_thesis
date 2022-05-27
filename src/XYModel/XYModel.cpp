@@ -91,11 +91,13 @@ void XYModel::update_phi(MultiVectorX &phi, MultiVectorX &pi, double step_size) 
 double XYModel::get_action(const MultiVectorX &phi) {
     double ret{0.};
     for (int i = 0; i < phi.size(); i++) {
-        ret -= eta * phi[i].dot(phi[i]);
         ret -= 0.5 * phi[i].transpose() * k_sym * phi[i];
         ret -= h[i].dot(phi[i]);
     }
     ret *= get_beta();
+    for (int i = 0; i < phi.size(); i++) {
+        ret -= eta * phi[i].dot(phi[i]);
+    }
     return ret;
 }
 
@@ -139,8 +141,8 @@ MultiVectorX XYModel::get_force(const MultiVectorX &phi) {
     auto ret = get_empty_field();
     for (int i = 0; i < phi.size(); i++) {
         ret[i] = k_sym * phi[i] + h[i];
-        ret[i] += 2 * eta * phi[i];
         ret[i] *= get_beta();
+        ret[i] += 2 * eta * phi[i];
     }
     return ret;
 }
