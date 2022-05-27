@@ -155,7 +155,7 @@ int test_hip() {
     IsingModel test(beta, h0, eta0, C, dim, 1, grid_size);
 
     LeapFrogIntegrator leapTest(test);
-    test.print_connectivity_matrix();
+    //test.print_connectivity_matrix();
     phi0(0) = 1;
     phi0(1) = 2;
     phi0(2) = -0.1;
@@ -277,50 +277,63 @@ void DoMultiLevelMeasurements(MultiLevelHMCGenerator<configuration_type> &Gen, c
     if (remeasure) {
         HighFive::File out_file(out_filename,
                                 HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
-        Gen.dump_observable(&BaseModel<VectorX>::get_magnetization, "magnetization", out_file);
-        Gen.dump_observable(&BaseModel<VectorX>::get_field_squared, "field_squared", out_file);
-        Gen.dump_observable(&BaseModel<VectorX>::get_magnetization_squared, "magnetization_squared", out_file);
-        Gen.dump_observable(&BaseModel<VectorX>::get_energy, "energy", out_file);
-        Gen.dump_observable(&BaseModel<VectorX>::get_energy_squared, "energy_squared", out_file);
+        Gen.dump_observable(&BaseModel<configuration_type>::get_magnetization, "magnetization", out_file);
+        Gen.dump_observable(&BaseModel<configuration_type>::get_field_squared, "field_squared", out_file);
+        Gen.dump_observable(&BaseModel<configuration_type>::get_magnetization_squared, "magnetization_squared",
+                            out_file);
+        Gen.dump_observable(&BaseModel<configuration_type>::get_energy, "energy", out_file);
+        Gen.dump_observable(&BaseModel<configuration_type>::get_energy_squared, "energy_squared", out_file);
+        Gen.dump_observable(&BaseModel<configuration_type>::get_vector_length_squared, "vector_length_squared",
+                            out_file);
     }
     HighFive::File out_file(out_filename, HighFive::File::ReadWrite);
-    for (int l = 10000; l < 91000; l += 10000) {
+    /*for (int l = 10000; l < 91000; l += 10000) {
         Gen.analyze_dataset("magnetization", out_file, -1, l, -1, 400);
     }
     Gen.analyze_dataset("magnetization", out_file, -1, -1, -1, 400);
     Gen.analyze_dataset("field_squared", out_file, 100, -1, 200, 400);
     Gen.analyze_dataset("magnetization_squared", out_file, 100, -1, 200, 400);
     Gen.analyze_dataset("energy", out_file, 100, -1, 200, 400);
-    Gen.analyze_dataset("energy_squared", out_file, 100, -1, 200, 400);
+    Gen.analyze_dataset("energy_squared", out_file, 100, -1, 200, 400);*/
+    Gen.analyze_dataset("vector_length_squared", out_file, -1, -1, 200, 400);
 }
 
-void DoMultiLevelMeasurementsFromFile(std::string filename, bool remeasure) {
+void DoMultiLevelMeasurementsFromFile(std::string filename, const std::string &model, bool remeasure) {
 
     if (!filename.starts_with('/')) {
         filename = std::string(DATA_DIR).append(filename);
     }
     HighFive::File file(filename, HighFive::File::ReadOnly);
     auto helper = file.getGroup("level0");//todo see if this step can be removed to be needed
-    IsingModel test(helper);
+    if (model == "xy") {
+        XYModel test(helper);
 
-    std::default_random_engine myengine{42L};
-    MultiLevelHMCGenerator mygen(test, file, myengine);
+        std::default_random_engine myengine{42L};
+        MultiLevelHMCGenerator mygen(test, file, myengine);
 
-    filename.insert(filename.rfind('/') + 1, "out_");
-    std::string out_filename{filename};
-    DoMultiLevelMeasurements(mygen, out_filename, remeasure);
+        filename.insert(filename.rfind('/') + 1, "out_");
+        std::string out_filename{filename};
+        DoMultiLevelMeasurements(mygen, out_filename, remeasure);
+    } else if (model == "ising") {
+        IsingModel test(helper);
 
+        std::default_random_engine myengine{42L};
+        MultiLevelHMCGenerator mygen(test, file, myengine);
 
+        filename.insert(filename.rfind('/') + 1, "out_");
+        std::string out_filename{filename};
+        DoMultiLevelMeasurements(mygen, out_filename, remeasure);
+    }
 }
 
-void DoMultiLevelMeasurementsFromDir(const std::string &dirname, bool remeasure) {
+void DoMultiLevelMeasurementsFromDir(const std::string &dirname, const std::string &model, bool remeasure) {
     for (const auto &file: std::filesystem::directory_iterator(std::string(DATA_DIR).append(dirname))) {
         if (std::string(file.path().filename()).starts_with("out")) {
             continue;
         }
         if (std::string(file.path().filename()).ends_with(".h5")) {
             std::cout << file.path() << std::endl;
-            DoMultiLevelMeasurementsFromFile(file.path(), remeasure);
+            DoMultiLevelMeasurementsFromFile(file.path(), model, remeasure);
         }
     }
 }
@@ -414,23 +427,23 @@ void test_leap_frog_XY() {
 
     LeapFrogIntegrator leapTest(test);
 
-    double S_start = test.get_artificial_energy(phi0,pi0);
+    double S_start = test.get_artificial_energy(phi0, pi0);
     std::vector<double> S_error;
     std::vector<int> MD;
     for (int i = 10; i < 200; i += 20) {
         MD.push_back(i);
         MultiVectorX phiNew;
         MultiVectorX piNew;
-        for (const auto& elem:phi0) {
+        for (const auto &elem: phi0) {
             phiNew.push_back(elem);
         }
-        for (const auto& elem:pi0) {
+        for (const auto &elem: pi0) {
             piNew.push_back(elem);
         }
 
 
         leapTest.integrate(i, 1. / i, phiNew, piNew);
-        double S_end = test.get_artificial_energy(phiNew,piNew);
+        double S_end = test.get_artificial_energy(phiNew, piNew);
         S_error.push_back(abs((S_start - S_end) / S_start));
         //std::cout << S_start<<std::endl;
         //std::cout << S_end<<std::endl;
@@ -443,6 +456,7 @@ void MultiLevelCriticalSimulationXY(const int grid_size = 16,
                                     std::vector<size_t> nu_post = {1},
                                     std::vector<int> erg_jump_dists = {-1},
                                     size_t gamma = 1,
+                                    double eta = -2,
                                     InterpolationType int_type = InterpolationType::Checkerboard,
                                     const std::vector<size_t> &amount_of_steps = {6},
                                     const std::vector<double> &step_sizes = {1. / 6.},
@@ -467,7 +481,7 @@ void MultiLevelCriticalSimulationXY(const int grid_size = 16,
     h0.push_back(temp);
     std::default_random_engine myengine{42L};
 
-    XYModel test(beta, -6, h0, dim, 1, grid_size);
+    XYModel test(beta, eta, h0, dim, 1, grid_size);
 
 
     MultiLevelHMCGenerator mygen(test, nu_pre, nu_post, erg_jump_dists, gamma, int_type,
@@ -496,10 +510,17 @@ void MultiLevelCriticalSimulationXY(const int grid_size = 16,
 
 void HMCCriticalSimulationXY(int grid_size = 16, const size_t &amount_of_steps = 6,
                              const double step_sizes = 1. / 6.) {
-    MultiLevelCriticalSimulationXY(grid_size, {0}, {1},
-                                   {-1}, 1, InterpolationType::Checkerboard,
-                                   {amount_of_steps},
-                                   {step_sizes}, 0);
+    double eta = -1.5;
+    size_t id = 0;
+    while (eta > -7) {
+        MultiLevelCriticalSimulationXY(grid_size, {0}, {1},
+                                       {-1}, 1, eta, InterpolationType::Checkerboard,
+                                       {amount_of_steps},
+                                       {step_sizes}, id);
+        eta -= 0.2;
+        id++;
+    }
+
 }
 
 /**
@@ -513,12 +534,12 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     //test_multi_level_hmc();
     //test_hmc_measurements();
-    //DoMultiLevelMeasurementsFromDir(std::string("new"), false);
+    DoMultiLevelMeasurementsFromDir(std::string("xy_new"), std::string("xy"), true);
     //HMCCriticalSimulation(64, 16, 1. / 16.);
     test_leap_frog();
     test_leap_frog_XY();
-    HMCCriticalSimulationXY(16, 20, 1. / 20.);
-    size_t i{1};
+    //HMCCriticalSimulationXY(16, 12, 1. / 12.);
+    /*size_t i{1};
     std::vector<size_t> nu_pre = {0, 1};
     std::vector<size_t> nu_post = {1, 1};
     std::vector<int> erg_jump_dists = {-1, -1};
@@ -533,10 +554,10 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
         nu_pre[1] = l;
         nu_post[1] = l;
         MultiLevelCriticalSimulationXY(16, nu_pre, nu_post,
-                                       erg_jump_dists, 1, InterpolationType::Checkerboard,
+                                       erg_jump_dists, 1, -2, InterpolationType::Checkerboard,
                                        amount_of_steps,
                                        step_sizes, i++);
-    }
+    }*/
     //return test_hip();
 }
 

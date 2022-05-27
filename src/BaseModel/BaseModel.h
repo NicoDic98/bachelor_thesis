@@ -116,6 +116,9 @@ public:
     [[maybe_unused]] virtual double get_energy_squared(const configuration_type &phi) { return 0; }
 
 
+    [[maybe_unused]] virtual double get_vector_length_squared(const configuration_type &phi) { return 0; }
+
+
     /**
      * @brief Checks the dimensions of internal vectors and matrices with regard to the given field \p phi
      * @param phi Field

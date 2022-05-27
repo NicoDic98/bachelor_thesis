@@ -139,7 +139,7 @@ MultiVectorX XYModel::get_force(const MultiVectorX &phi) {
     auto ret = get_empty_field();
     for (int i = 0; i < phi.size(); i++) {
         ret[i] = k_sym * phi[i] + h[i];
-        ret[i] += 2*eta * phi[i];
+        ret[i] += 2 * eta * phi[i];
         ret[i] *= get_beta();
     }
     return ret;
@@ -259,6 +259,14 @@ void XYModel::renormalize(MultiVectorX &phi) {
             elem[l] /= norm;
         }
     }
+}
+
+double XYModel::get_vector_length_squared(const MultiVectorX &phi) {
+    double norm{0.};
+    for (const auto &elem: phi) {
+        norm += elem.dot(elem);
+    }
+    return norm / static_cast<double>(phi[0].rows());
 }
 
 

@@ -54,6 +54,8 @@ public:
 
     MultiVectorX get_pi(std::default_random_engine &generator) override;
 
+    double get_vector_length_squared(const MultiVectorX &phi)override;
+
     /**
      * @brief Checks the dimensions of internal vectors and matrices with regard to the given field phi
      * @param phi Field
