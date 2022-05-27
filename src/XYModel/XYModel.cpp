@@ -9,6 +9,8 @@
 
 #include "XYModel.h"
 
+#include <utility>
+
 const char *XYModel::dimension_name{"dimension"};
 const char *XYModel::neighbour_extent_name{"neighbour_extent"};
 const char *XYModel::h_name{"h"};
@@ -16,8 +18,8 @@ const char *XYModel::k_sym_name{"k_sym"};
 const char *XYModel::InterpolationMatrix_name{"InterpolationMatrix"};
 const char *XYModel::XYModel_name{"XYModel"};
 
-XYModel::XYModel(double beta_, const MultiVectorX &h_, int dimension_, int neighbour_extent_, int grid_size_)
-        : BaseModel<MultiVectorX>(beta_, XYModel_name), h{h_}, dimension{dimension_},
+XYModel::XYModel(double beta_, MultiVectorX h_, int dimension_, int neighbour_extent_, int grid_size_)
+        : BaseModel<MultiVectorX>(beta_, XYModel_name), h{std::move(h_)}, dimension{dimension_},
           neighbour_extent{neighbour_extent_},
           k_sym(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)),
           InterpolationMatrix{},
@@ -238,6 +240,19 @@ MultiVectorX XYModel::get_pi(std::default_random_engine &generator) {
         }
     }
     return ret;
+}
+
+void XYModel::renormalize(MultiVectorX &phi) {
+    for (int l = 0; l < phi[0].rows(); ++l) {
+        double norm{0.};
+        for (auto elem: phi) {
+            norm += elem[l] * elem[l];
+        }
+        norm = sqrt(norm);
+        for (auto &elem: phi) {
+            elem[l] /= norm;
+        }
+    }
 }
 
 

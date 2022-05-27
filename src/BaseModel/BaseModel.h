@@ -173,6 +173,10 @@ public:
      */
     virtual void update_fields(const configuration_type &phi) = 0;
 
+    virtual inline void renormalize(configuration_type &phi){
+
+    }
+
     /**
      * @brief Updates finer field \p phia using the interpolation of the coarser field \p phi2a
      * @param phi2a Coarse field

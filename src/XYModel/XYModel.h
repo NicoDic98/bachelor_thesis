@@ -17,7 +17,7 @@
 
 class XYModel : public BaseModel<MultiVectorX> {
 public:
-    XYModel(double beta_, const MultiVectorX &h_, int dimension_, int neighbour_extent_, int grid_size_);
+    XYModel(double beta_, MultiVectorX h_, int dimension_, int neighbour_extent_, int grid_size_);
 
     /**
      * @brief Coarsening constructor of XYModel
@@ -144,6 +144,8 @@ public:
      */
     HighFive::DataSet dump_ensemble(std::vector<MultiVectorX> &target,
                                     HighFive::Group &root, std::string sub_name) override;
+
+    void renormalize(MultiVectorX &phi) override;
 
 
 protected:

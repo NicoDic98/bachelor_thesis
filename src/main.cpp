@@ -394,17 +394,17 @@ void MultiLevelCriticalSimulationXY(const int grid_size = 16,
                                     size_t id = 0) {
     const int dim = 2;
     const int lambda = int_pow(grid_size, dim);
-    const double beta{0.42};
+    const double beta{1.25};
     std::string filename{std::string(DATA_DIR)};
 
     VectorX temp(lambda);
-    temp.setZero();
+    temp.setOnes();
     MultiVectorX phi0;
-    //phi0.push_back(cos(temp.array()));
-    //phi0.push_back(sin(temp.array()));
-    phi0.push_back(temp);
-    temp.setZero();
-    phi0.push_back(temp);
+    phi0.push_back(cos(temp.array()));
+    phi0.push_back(sin(temp.array()));
+    //phi0.push_back(temp);
+    //temp.setZero();
+    //phi0.push_back(temp);
     for (auto elem: phi0) {
         std::cout << elem[0] << '\n' << std::endl;
     }
@@ -462,7 +462,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_hmc_measurements();
     //DoMultiLevelMeasurementsFromDir(std::string("new"), false);
     //HMCCriticalSimulation(64, 16, 1. / 16.);
-    HMCCriticalSimulationXY(16, 16, 1. / 16.);
+    HMCCriticalSimulationXY(32, 3, 1. / 3.);
     size_t i{1};
     std::vector<size_t> nu_pre = {0, 1};
     std::vector<size_t> nu_post = {1, 1};
