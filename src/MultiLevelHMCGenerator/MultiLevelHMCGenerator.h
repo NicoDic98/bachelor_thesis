@@ -340,9 +340,6 @@ std::vector<double> MultiLevelHMCGenerator<configuration_type>::generate_ensembl
         }
         if (i % (amount_of_thermalization_steps / 100) == 0) {
             std::cout << "=";
-            for (auto elem: phi) {
-                std::cout << elem << '\n' << std::endl;
-            }
             std::cout.flush();
         }
         phi = LevelRecursion(0, phi);
@@ -351,7 +348,7 @@ std::vector<double> MultiLevelHMCGenerator<configuration_type>::generate_ensembl
     HMCStack[0].clear_ensembles();
     std::cout << "Thermalization done." << std::endl;
     for (int i = 0; i < AcceptanceRates.size(); ++i) {
-        std::cout << "Acceptance rate:" <<
+        std::cout << "Acceptance rate:" <<AcceptanceRates[i]<<"\t\t"<<
                   AcceptanceRates[i] / (amount_of_thermalization_steps * (nu_pre[i] + nu_post[i]) * int_pow(gamma, i))
                   << std::endl;
         AcceptanceRates[i] = 0.;
