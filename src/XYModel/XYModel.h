@@ -17,7 +17,7 @@
 
 class XYModel : public BaseModel<MultiVectorX> {
 public:
-    XYModel(double beta_, MultiVectorX h_, int dimension_, int neighbour_extent_, int grid_size_);
+    XYModel(double beta_,double eta_, MultiVectorX h_, int dimension_, int neighbour_extent_, int grid_size_);
 
     /**
      * @brief Coarsening constructor of XYModel
@@ -175,6 +175,10 @@ private:
      * @brief String to be used as key for \a neighbour_extent in H5 files
      */
     static const char *neighbour_extent_name;
+
+    double eta;
+
+    static const char *eta_name;
 
     /**
      * @brief External field

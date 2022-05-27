@@ -218,14 +218,12 @@ HMCGenerator<configuration_type>::generate_ensembles(const configuration_type &p
     }
 
     ensembles.resize(startindex + amount_of_samples);
-    model.renormalize(phi);
     for (int i = 0; i < amount_of_thermalization_steps; ++i) {
         phi = do_HMC_step(phi, false);
     }
     accepted_configurations = 0;
     for (int i = 0; i < amount_of_samples; ++i) {
         phi = do_HMC_step(phi, (erg_jump_distance > 0) && (i > 0) && (i % erg_jump_distance == 0));
-        model.renormalize(phi);
         ensembles[startindex + i] = phi;
     }
 

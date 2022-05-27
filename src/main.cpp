@@ -383,6 +383,61 @@ void HMCCriticalSimulation(int grid_size = 16, const size_t &amount_of_steps = 6
                                  {step_sizes}, 0);
 }
 
+void test_leap_frog_XY() {
+    const int grid_size = 5;
+
+    const int dim = 2;
+    const int lambda = int_pow(grid_size, dim);
+    const double beta{1.27};
+    std::string filename{std::string(DATA_DIR)};
+
+    VectorX temp(lambda);
+    temp.setOnes();
+    MultiVectorX phi0;
+    //phi0.push_back(cos(temp.array()));
+    //phi0.push_back(sin(temp.array()));
+    phi0.push_back(temp);
+    temp.setZero();
+    phi0.push_back(temp);
+
+    temp.setZero();
+    MultiVectorX h0;
+    h0.push_back(temp);
+    h0.push_back(temp);
+    temp.setRandom();
+    MultiVectorX pi0;
+    pi0.push_back(temp);
+    pi0.push_back(temp);
+    std::default_random_engine myengine{42L};
+
+    XYModel test(beta, -6, h0, dim, 1, grid_size);
+
+    LeapFrogIntegrator leapTest(test);
+
+    double S_start = test.get_artificial_energy(phi0,pi0);
+    std::vector<double> S_error;
+    std::vector<int> MD;
+    for (int i = 10; i < 200; i += 20) {
+        MD.push_back(i);
+        MultiVectorX phiNew;
+        MultiVectorX piNew;
+        for (const auto& elem:phi0) {
+            phiNew.push_back(elem);
+        }
+        for (const auto& elem:pi0) {
+            piNew.push_back(elem);
+        }
+
+
+        leapTest.integrate(i, 1. / i, phiNew, piNew);
+        double S_end = test.get_artificial_energy(phiNew,piNew);
+        S_error.push_back(abs((S_start - S_end) / S_start));
+        //std::cout << S_start<<std::endl;
+        //std::cout << S_end<<std::endl;
+        std::cout << i << "\t: " << abs((S_start - S_end) / S_start) << std::endl;
+    }
+}
+
 void MultiLevelCriticalSimulationXY(const int grid_size = 16,
                                     std::vector<size_t> nu_pre = {0},
                                     std::vector<size_t> nu_post = {1},
@@ -394,32 +449,30 @@ void MultiLevelCriticalSimulationXY(const int grid_size = 16,
                                     size_t id = 0) {
     const int dim = 2;
     const int lambda = int_pow(grid_size, dim);
-    const double beta{1.25};
+    const double beta{1.27};
     std::string filename{std::string(DATA_DIR)};
 
     VectorX temp(lambda);
     temp.setOnes();
     MultiVectorX phi0;
-    phi0.push_back(cos(temp.array()));
-    phi0.push_back(sin(temp.array()));
-    //phi0.push_back(temp);
-    //temp.setZero();
-    //phi0.push_back(temp);
-    for (auto elem: phi0) {
-        std::cout << elem[0] << '\n' << std::endl;
-    }
+    //phi0.push_back(cos(temp.array()));
+    //phi0.push_back(sin(temp.array()));
+    phi0.push_back(temp);
+    temp.setZero();
+    phi0.push_back(temp);
+
     temp.setZero();
     MultiVectorX h0;
     h0.push_back(temp);
     h0.push_back(temp);
     std::default_random_engine myengine{42L};
 
-    XYModel test(beta, h0, dim, 1, grid_size);
+    XYModel test(beta, -6, h0, dim, 1, grid_size);
 
 
     MultiLevelHMCGenerator mygen(test, nu_pre, nu_post, erg_jump_dists, gamma, int_type,
                                  amount_of_steps, step_sizes, myengine);
-    std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 100000, 10000);
+    std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 10000, 10000);
     for (auto acceptance_rate: acceptance_rates) {
         std::cout << "Acceptance rate:" << acceptance_rate << std::endl;
     }
@@ -442,11 +495,11 @@ void MultiLevelCriticalSimulationXY(const int grid_size = 16,
 }
 
 void HMCCriticalSimulationXY(int grid_size = 16, const size_t &amount_of_steps = 6,
-                           const double step_sizes = 1. / 6.) {
+                             const double step_sizes = 1. / 6.) {
     MultiLevelCriticalSimulationXY(grid_size, {0}, {1},
-                                 {-1}, 1, InterpolationType::Checkerboard,
-                                 {amount_of_steps},
-                                 {step_sizes}, 0);
+                                   {-1}, 1, InterpolationType::Checkerboard,
+                                   {amount_of_steps},
+                                   {step_sizes}, 0);
 }
 
 /**
@@ -462,7 +515,9 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_hmc_measurements();
     //DoMultiLevelMeasurementsFromDir(std::string("new"), false);
     //HMCCriticalSimulation(64, 16, 1. / 16.);
-    HMCCriticalSimulationXY(16, 16, 1. / 16.);
+    test_leap_frog();
+    test_leap_frog_XY();
+    HMCCriticalSimulationXY(16, 20, 1. / 20.);
     size_t i{1};
     std::vector<size_t> nu_pre = {0, 1};
     std::vector<size_t> nu_post = {1, 1};

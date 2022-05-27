@@ -13,13 +13,14 @@
 
 const char *XYModel::dimension_name{"dimension"};
 const char *XYModel::neighbour_extent_name{"neighbour_extent"};
+const char *XYModel::eta_name{"eta"};
 const char *XYModel::h_name{"h"};
 const char *XYModel::k_sym_name{"k_sym"};
 const char *XYModel::InterpolationMatrix_name{"InterpolationMatrix"};
 const char *XYModel::XYModel_name{"XYModel"};
 
-XYModel::XYModel(double beta_, MultiVectorX h_, int dimension_, int neighbour_extent_, int grid_size_)
-        : BaseModel<MultiVectorX>(beta_, XYModel_name), h{std::move(h_)}, dimension{dimension_},
+XYModel::XYModel(double beta_, double eta_, MultiVectorX h_, int dimension_, int neighbour_extent_, int grid_size_)
+        : BaseModel<MultiVectorX>(beta_, XYModel_name), eta{eta_}, h{std::move(h_)}, dimension{dimension_},
           neighbour_extent{neighbour_extent_},
           k_sym(int_pow(grid_size_, dimension_), int_pow(grid_size_, dimension_)),
           InterpolationMatrix{},
@@ -29,7 +30,7 @@ XYModel::XYModel(double beta_, MultiVectorX h_, int dimension_, int neighbour_ex
 }
 
 XYModel::XYModel(const XYModel &NewModel, InterpolationType InterpolationType_)
-        : BaseModel<MultiVectorX>(NewModel), h{NewModel.h}, dimension{NewModel.dimension},
+        : BaseModel<MultiVectorX>(NewModel), eta{NewModel.eta}, h{NewModel.h}, dimension{NewModel.dimension},
           neighbour_extent{NewModel.neighbour_extent},
           InterpolationMatrix{},
           RootModel{NewModel} {
@@ -48,7 +49,7 @@ XYModel::XYModel(const XYModel &NewModel, InterpolationType InterpolationType_)
 }
 
 XYModel::XYModel(const XYModel &NewModel)
-        : BaseModel<MultiVectorX>(NewModel), h{NewModel.h}, dimension{NewModel.dimension},
+        : BaseModel<MultiVectorX>(NewModel), eta{NewModel.eta}, h{NewModel.h}, dimension{NewModel.dimension},
           neighbour_extent{NewModel.neighbour_extent}, k_sym{NewModel.k_sym},
           InterpolationMatrix{},
           RootModel{NewModel} {
@@ -58,11 +59,12 @@ XYModel::XYModel(const XYModel &NewModel)
 
 
 [[maybe_unused]] XYModel::XYModel(HighFive::Group &root)
-        : BaseModel<MultiVectorX>(root, XYModel_name),
+        : BaseModel<MultiVectorX>(root, XYModel_name), eta{},
           dimension{}, neighbour_extent{}, RootModel{*this} {
     assert(name == XYModel_name);
     root.getAttribute(dimension_name).read(dimension);
     root.getAttribute(neighbour_extent_name).read(neighbour_extent);
+    root.getAttribute(eta_name).read(eta);
     ReadMultiVectorX(h, root, h_name);
     ReadMatrixX(k_sym, root, k_sym_name);
 
@@ -89,6 +91,7 @@ void XYModel::update_phi(MultiVectorX &phi, MultiVectorX &pi, double step_size) 
 double XYModel::get_action(const MultiVectorX &phi) {
     double ret{0.};
     for (int i = 0; i < phi.size(); i++) {
+        ret -= eta * phi[i].dot(phi[i]);
         ret -= 0.5 * phi[i].transpose() * k_sym * phi[i];
         ret -= h[i].dot(phi[i]);
     }
@@ -136,6 +139,7 @@ MultiVectorX XYModel::get_force(const MultiVectorX &phi) {
     auto ret = get_empty_field();
     for (int i = 0; i < phi.size(); i++) {
         ret[i] = k_sym * phi[i] + h[i];
+        ret[i] += 2*eta * phi[i];
         ret[i] *= get_beta();
     }
     return ret;
@@ -149,6 +153,7 @@ void XYModel::update_fields(const MultiVectorX &phi) {
     for (int i = 0; i < h.size(); i++) {
         h[i] = (RootModel.h[i].transpose() + phi[i].transpose() * RootModel.k_sym) * InterpolationMatrix;
     }
+    //TODO eta
 }
 
 void XYModel::interpolate(const MultiVectorX &phi2a, MultiVectorX &phia) {
@@ -176,6 +181,7 @@ void XYModel::dumpToH5(HighFive::Group &root) {
     BaseModel::dumpToH5(root);
     write_static_size(dimension, root, dimension_name);
     write_static_size(neighbour_extent, root, neighbour_extent_name);
+    write_static_size(eta, root, eta_name);
 
     WriteMultiVectorX(h, root, h_name);
 
