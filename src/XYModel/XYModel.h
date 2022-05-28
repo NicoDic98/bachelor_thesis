@@ -54,6 +54,8 @@ public:
 
     MultiVectorX get_pi(std::default_random_engine &generator) override;
 
+    double get_energy(const MultiVectorX &phi) override;
+
     double get_vector_length_squared(const MultiVectorX &phi)override;
 
     /**

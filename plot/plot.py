@@ -30,8 +30,16 @@ def ene_exact(J):  # exact internal energy in thermodynamic limit (for h=0)\n",
 
 def append_observable(name, measurements_group_, observable_list, observable_error_list):
     observable_group = measurements_group_.get(name)
-    observable_list.append(observable_group.attrs["bootstrap_mean"])
-    observable_error_list.append(np.sqrt(observable_group.attrs["bootstrap_variance"]))
+    temp = observable_group.attrs["bootstrap_mean"]
+    if np.isinf(temp) or temp > 1e200:
+        observable_list.append(-42)
+    else:
+        observable_list.append(temp)
+    temp = observable_group.attrs["bootstrap_variance"]
+    if np.isinf(temp) or temp > 1e200 or np.isnan(temp):
+        observable_error_list.append(42)
+    else:
+        observable_error_list.append(np.sqrt(temp))
 
 
 def make_auto_correlation_plot_to_ax(name, measurements_group_, ax_):
@@ -94,30 +102,14 @@ def base_plot(sub_folder_name="std_hmc/"):
             betas.append(level0_group.attrs["beta"])
             inverse_betas.append(1. / betas[-1])
 
-            if magnetization_name in measurements_group:
-                append_observable(magnetization_name, measurements_group, magnetizations, magnetizations_errors)
-                fig, ax = make_auto_correlation_plot(magnetization_name, measurements_group)
-                fig.savefig(sub_folder_name + magnetization_name + "_auto_correlation.png")
-
-            if magnetization_squared_name in measurements_group:
-                append_observable(magnetization_squared_name, measurements_group, magnetizations_squared,
-                                  magnetizations_squared_errors)
-                fig, ax = make_auto_correlation_plot(magnetization_squared_name, measurements_group)
-                fig.savefig(sub_folder_name + magnetization_squared_name + "_auto_correlation.png")
-
             if energy_name in measurements_group:
                 append_observable(energy_name, measurements_group, energies, energies_errors)
                 fig, ax = make_auto_correlation_plot(energy_name, measurements_group)
                 fig.savefig(sub_folder_name + energy_name + "_auto_correlation.png")
 
-            if energy_squared_name in measurements_group:
-                append_observable(energy_squared_name, measurements_group, energies_squared, energies_squared_errors)
-                fig, ax = make_auto_correlation_plot(energy_squared_name, measurements_group)
-                fig.savefig(sub_folder_name + energy_squared_name + "_auto_correlation.png")
-
     # magnetizations
+    beta_lin = np.linspace(0.25, 3, 1000)
     if len(magnetizations) > 0:
-        beta_lin = np.linspace(0.25, 3, 1000)
         m_exact = np.array([magnetization_exact(temp) for temp in beta_lin])
         fig, ax = make_observable_plot(magnetization_name, inverse_betas, magnetizations, magnetizations_errors)
         ax.plot(1. / beta_lin, m_exact)
@@ -136,8 +128,12 @@ def base_plot(sub_folder_name="std_hmc/"):
     # energies
     if len(energies) > 0:
         e_exact = np.array([ene_exact(temp) / temp for temp in beta_lin])
+        print(inverse_betas)
+        print(energies)
+        print(energies_errors)
         fig, ax = make_observable_plot(energy_name, inverse_betas, energies, energies_errors)
-        ax.plot(1. / beta_lin, e_exact)
+        ax.set_ylim(0,1.2)
+        # ax.plot(1. / beta_lin, e_exact)
         fig.savefig(sub_folder_name + energy_name + ".png")
 
     # energies_squared
@@ -235,7 +231,7 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
         ax1_.scatter(base_tick_time,
                      1 / np.sqrt(base_bootstrap_variance),
                      marker='.', c='r'))
-    ax2_.scatter(base_tick_time/base_int_auto_correlation_time,
+    ax2_.scatter(base_tick_time / base_int_auto_correlation_time,
                  1 / (np.sqrt(base_bootstrap_variance)),
                  marker='.', c='r')
     ax3_.scatter(1 / base_int_auto_correlation_time,
@@ -259,7 +255,7 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
             ls.append(ax1_.scatter(multi_tick_time,
                                    1 / np.sqrt(multi_bootstrap_variance),
                                    marker='.', c=list(mcolors.TABLEAU_COLORS.values())[j]))
-            ax2_.scatter(multi_tick_time/multi_int_auto_correlation_time,
+            ax2_.scatter(multi_tick_time / multi_int_auto_correlation_time,
                          1 / (np.sqrt(multi_bootstrap_variance)),
                          marker='.', c=list(mcolors.TABLEAU_COLORS.values())[j])
             ax3_.scatter(1 / multi_int_auto_correlation_time,
@@ -627,4 +623,4 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
 # crit_int_auto_correlation_plot_multiple_levels("gs_16CB_ga_1_levels_x/")
 # crit_int_auto_correlation_plot("gs_32_CB_ga_1_levels_2/")
 # crit_int_auto_correlation_plot("gs_64_CB_ga_1_levels_2/")
-info_plot("new/")
+base_plot("xy_new/")

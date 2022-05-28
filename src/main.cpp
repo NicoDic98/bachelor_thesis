@@ -295,6 +295,7 @@ void DoMultiLevelMeasurements(MultiLevelHMCGenerator<configuration_type> &Gen, c
     Gen.analyze_dataset("magnetization_squared", out_file, 100, -1, 200, 400);
     Gen.analyze_dataset("energy", out_file, 100, -1, 200, 400);
     Gen.analyze_dataset("energy_squared", out_file, 100, -1, 200, 400);*/
+    Gen.analyze_dataset("energy", out_file, -1, -1, 200, 400);
     Gen.analyze_dataset("vector_length_squared", out_file, -1, -1, 200, 400);
 }
 
@@ -451,19 +452,19 @@ void test_leap_frog_XY() {
     }
 }
 
-void MultiLevelCriticalSimulationXY(const int grid_size = 16,
-                                    std::vector<size_t> nu_pre = {0},
-                                    std::vector<size_t> nu_post = {1},
-                                    std::vector<int> erg_jump_dists = {-1},
-                                    size_t gamma = 1,
-                                    double eta = -2,
-                                    InterpolationType int_type = InterpolationType::Checkerboard,
-                                    const std::vector<size_t> &amount_of_steps = {6},
-                                    const std::vector<double> &step_sizes = {1. / 6.},
-                                    size_t id = 0) {
+void MultiLevelSimulationXY(const int grid_size = 16,
+                            const double beta = 2,
+                            std::vector<size_t> nu_pre = {0},
+                            std::vector<size_t> nu_post = {1},
+                            std::vector<int> erg_jump_dists = {-1},
+                            size_t gamma = 1,
+                            double eta = -2,
+                            InterpolationType int_type = InterpolationType::Checkerboard,
+                            const std::vector<size_t> &amount_of_steps = {6},
+                            const std::vector<double> &step_sizes = {1. / 6.},
+                            size_t id = 0) {
     const int dim = 2;
     const int lambda = int_pow(grid_size, dim);
-    const double beta{1.27};
     std::string filename{std::string(DATA_DIR)};
 
     VectorX temp(lambda);
@@ -511,10 +512,17 @@ void MultiLevelCriticalSimulationXY(const int grid_size = 16,
 void HMCCriticalSimulationXY(int grid_size = 16, const size_t &amount_of_steps = 6,
                              const double step_sizes = 1. / 6.) {
 
-    MultiLevelCriticalSimulationXY(grid_size, {0}, {1},
-                                   {-1}, 1, -2.5565, InterpolationType::Checkerboard,
-                                   {amount_of_steps},
-                                   {step_sizes}, 0);
+    double inverse_beta = 0.3;
+    size_t id = 0;
+    while (inverse_beta < 2) {
+        MultiLevelSimulationXY(grid_size, 1. / inverse_beta, {0}, {1},
+                               {-1}, 1, -3./(sqrt(inverse_beta)), InterpolationType::Checkerboard,
+                               {amount_of_steps},
+                               {step_sizes}, id);
+        id++;
+        inverse_beta += 0.1;
+    }
+
 
 }
 
@@ -533,7 +541,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //HMCCriticalSimulation(64, 16, 1. / 16.);
     test_leap_frog();
     test_leap_frog_XY();
-    HMCCriticalSimulationXY(16, 12, 1. / 12.);
+    //HMCCriticalSimulationXY(16, 12, 1. / 12.);
     /*size_t i{1};
     std::vector<size_t> nu_pre = {0, 1};
     std::vector<size_t> nu_post = {1, 1};
@@ -548,7 +556,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
         //step_sizes.push_back(1. / (static_cast<double>(l) * 3.));
         nu_pre[1] = l;
         nu_post[1] = l;
-        MultiLevelCriticalSimulationXY(16, nu_pre, nu_post,
+        MultiLevelSimulationXY(16, nu_pre, nu_post,
                                        erg_jump_dists, 1, -2, InterpolationType::Checkerboard,
                                        amount_of_steps,
                                        step_sizes, i++);

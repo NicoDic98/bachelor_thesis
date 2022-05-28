@@ -95,8 +95,8 @@ double XYModel::get_action(const MultiVectorX &phi) {
         ret -= h[i].dot(phi[i]);
     }
     ret *= get_beta();
-    for (int i = 0; i < phi.size(); i++) {
-        ret -= eta * phi[i].dot(phi[i]);
+    for (const auto & i : phi) {
+        ret -= eta * i.dot(i);
     }
     return ret;
 }
@@ -269,6 +269,17 @@ double XYModel::get_vector_length_squared(const MultiVectorX &phi) {
         norm += elem.dot(elem);
     }
     return norm / static_cast<double>(phi[0].rows());
+}
+
+double XYModel::get_energy(const MultiVectorX &phi) {
+    double ret{0.};
+    for (int i = 0; i < phi.size(); i++) {
+        ret -= eta * phi[i].dot(phi[i]);
+        ret -= 0.5 * phi[i].transpose() * k_sym * phi[i];
+        ret -= h[i].dot(phi[i]);
+    }
+    ret /= static_cast<double>(phi[0].rows());
+    return ret;
 }
 
 

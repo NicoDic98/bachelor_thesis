@@ -77,11 +77,12 @@ void Analyzer::set_mean() {
 }
 
 void Analyzer::block_data(int block_size, int size_to_use) {
-    if (block_size < 0) {
+    if (block_size <= 0) {
         if (int_auto_correlation_time > 0) {
-            block_size = 2 * static_cast<int>(int_auto_correlation_time);
-            if (block_size < 0) {
+            block_size = 2 * static_cast<int>(int_auto_correlation_time+1);
+            if (block_size <= 0) {
                 std::cerr << "Block size invalid: " << block_size << std::endl;
+                return;
             }
         }
     }
@@ -110,13 +111,13 @@ void Analyzer::block_data(int block_size, int size_to_use) {
 void Analyzer::bootstrap_data(int amount_of_sample_sets) {
     if (blocked_data.empty()) {
         if (int_auto_correlation_time > 0) {
-            block_data(static_cast<int>(int_auto_correlation_time) / 2, -1);
+            block_data(static_cast<int>(int_auto_correlation_time+1) / 2, -1);
         } else {
             block_data(42, -1);
         }
     }
     if (blocked_data.empty()) {
-        exit(-42);
+        return;
     }
     if (amount_of_sample_sets < 0) {
         amount_of_sample_sets = blocked_data.size();
