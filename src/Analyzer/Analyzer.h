@@ -26,7 +26,8 @@ public:
      *                 and \c HighFive::DataSet to the containing \c HighFive::Group
      * @param generator_ Random number generator to be used for the bootstrap
      */
-    explicit Analyzer(HighFive::Group &group_, const std::string &data_name, std::default_random_engine &generator_);
+    explicit Analyzer(HighFive::Group &group_, const std::string &data_name, size_t start_index,
+                      std::default_random_engine &generator_);
 
     /**
      * @brief Remove default constructor
@@ -44,7 +45,7 @@ public:
      * @brief Block the data into blocks of size \p block_size
      * @param block_size Block size
      */
-    void block_data(int block_size,int size_to_use, int start_index);
+    void block_data(int block_size, int size_to_use);
 
     /**
      * @brief Calculates the bootstrap mean and variance on the previously blocked data

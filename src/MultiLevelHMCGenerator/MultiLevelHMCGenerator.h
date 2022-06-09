@@ -78,7 +78,7 @@ public:
                          const std::string &name, HighFive::File &file);
 
     void analyze_dataset(const std::string &name, HighFive::File &file,
-                         int block_size, int size_to_use, int start_index, int amount_of_sample_sets, size_t max_t);
+                         int block_size, int size_to_use, size_t start_index, int amount_of_sample_sets, size_t max_t);
 
     /**
      * @brief Dumps the MultiLevelHMCGenerator, including all sub models and sub HMCGenerators
@@ -348,7 +348,7 @@ std::vector<double> MultiLevelHMCGenerator<configuration_type>::generate_ensembl
     HMCStack[0].clear_ensembles();
     std::cout << "Thermalization done." << std::endl;
     for (int i = 0; i < AcceptanceRates.size(); ++i) {
-        std::cout << "Acceptance rate:" <<AcceptanceRates[i]<<"\t\t"<<
+        std::cout << "Acceptance rate:" << AcceptanceRates[i] << "\t\t" <<
                   AcceptanceRates[i] / (amount_of_thermalization_steps * (nu_pre[i] + nu_post[i]) * int_pow(gamma, i))
                   << std::endl;
         AcceptanceRates[i] = 0.;
@@ -476,7 +476,7 @@ void MultiLevelHMCGenerator<configuration_type>::dump_observable(
 
 template<class configuration_type>
 void MultiLevelHMCGenerator<configuration_type>::analyze_dataset(const std::string &name, HighFive::File &file,
-                                                                 int block_size, int size_to_use, int start_index,
+                                                                 int block_size, int size_to_use, size_t start_index,
                                                                  int amount_of_sample_sets,
                                                                  size_t max_t) {
     for (int i = 0; i < HMCStack.size(); ++i) {
@@ -504,10 +504,10 @@ void MultiLevelHMCGenerator<configuration_type>::analyze_dataset(const std::stri
             std::cerr << "No dataset named " << measurements_data_name << '\n';
             return;
         }
-        Analyzer a(observable_group, measurements_data_name, generator);
         if (i == 0) {
+            Analyzer a(observable_group, measurements_data_name, start_index, generator);
             a.auto_correlation(max_t);
-            a.block_data(block_size,size_to_use, start_index);
+            a.block_data(block_size, size_to_use);
             a.bootstrap_data(amount_of_sample_sets);
         }
     }

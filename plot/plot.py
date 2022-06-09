@@ -212,10 +212,11 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
     nu_pre_level1 = np.array(nu_pre_level1)
     nu_post_level1 = np.array(nu_post_level1)
 
-    fig_, (ax1_, ax2_) = plt.subplots(2, 1, figsize=(12, 9))
+    fig_, (ax1_, ax2_, ax3_) = plt.subplots(3, 1, figsize=(12, 9))
     fig_: plt.Figure
     ax1_: plt.Axes
     ax2_: plt.Axes
+    ax3_: plt.Axes
     base_bootstrap_variance = []
     base_bootstrap_mean = []
     base_tick_time = np.zeros(1)
@@ -231,6 +232,7 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
             ax2_.errorbar(system_size[i], int_auto_correlation_time[i] - int_auto_correlation_time_bias[i],
                           np.sqrt(int_auto_correlation_time_stat_error[i]),
                           fmt='.', mfc='red', mec='red', ecolor='red')
+            ax3_.scatter(system_size[i], int_auto_correlation_time_bias[i], c='red')
         else:
             ls[1] = ax1_.errorbar(system_size[i], int_auto_correlation_time[i],
                                   np.sqrt(int_auto_correlation_time_stat_error[i]),
@@ -238,6 +240,7 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
             ax2_.errorbar(system_size[i], int_auto_correlation_time[i] - int_auto_correlation_time_bias[i],
                           np.sqrt(int_auto_correlation_time_stat_error[i]),
                           fmt='.', mfc='green', mec='green', ecolor='green')
+            ax3_.scatter(system_size[i], int_auto_correlation_time_bias[i], c='green')
 
     ax1_.set_title("Without bias correction")
     ax2_.set_title("With bias correction")
@@ -253,6 +256,11 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
     ax2_.set_ylabel(r"$\tau$")
     ax2_.set_xscale('log')
     ax2_.set_yscale('log')
+
+    ax3_.set_xlabel(r"$N$")
+    ax3_.set_ylabel("Bias")
+    ax3_.set_xscale('log')
+    # ax3_.set_yscale('log')
 
     fig_.savefig(sub_folder_name + observable_name + sub_folder_name[:-1] + ".png", dpi=1000)
     fig_.clear()

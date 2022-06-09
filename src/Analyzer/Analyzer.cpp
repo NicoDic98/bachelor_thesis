@@ -17,12 +17,13 @@ const char *Analyzer::mean_base_name{"mean"};
 const char *Analyzer::bootstrap_mean_base_name{"bootstrap_mean"};
 const char *Analyzer::bootstrap_variance_base_name{"bootstrap_variance"};
 
-Analyzer::Analyzer(HighFive::Group &group_, const std::string &data_name,
+Analyzer::Analyzer(HighFive::Group &group_, const std::string &data_name, size_t start_index,
                    std::default_random_engine &generator_)
         : dataset{group_.getDataSet(data_name)}, group{group_}, int_auto_correlation_time{-1},
           mean{0.}, generator{generator_}, bootstrap_mean{0.}, bootstrap_variance{0.} {
     dataset.read(data);
     assert(!data.empty());
+    data.erase(data.begin(), data.begin() + start_index);
 
     auto_correlation_name = auto_correlation_base_name;
     int_auto_correlation_time_name = int_auto_correlation_time_base_name;
@@ -77,10 +78,10 @@ void Analyzer::set_mean() {
     write_static_size(mean, group, mean_name);
 }
 
-void Analyzer::block_data(int block_size, int size_to_use, int start_index) {
+void Analyzer::block_data(int block_size, int size_to_use) {
     if (block_size <= 0) {
         if (int_auto_correlation_time > 0) {
-            block_size = 2 * static_cast<int>(int_auto_correlation_time+1);
+            block_size = 2 * static_cast<int>(int_auto_correlation_time + 1);
             if (block_size <= 0) {
                 std::cerr << "Block size invalid: " << block_size << std::endl;
                 return;
@@ -101,7 +102,7 @@ void Analyzer::block_data(int block_size, int size_to_use, int start_index) {
     std::fill(blocked_data.begin(), blocked_data.end(), 0.);
 
     for (int i = 0; i < blocked_data.size() * block_size; ++i) {
-        blocked_data[i / block_size] += data[i+start_index];
+        blocked_data[i / block_size] += data[i];
     }
 
     for (auto &elem: blocked_data) {
@@ -112,9 +113,9 @@ void Analyzer::block_data(int block_size, int size_to_use, int start_index) {
 void Analyzer::bootstrap_data(int amount_of_sample_sets) {
     if (blocked_data.empty()) {
         if (int_auto_correlation_time > 0) {
-            block_data(static_cast<int>(int_auto_correlation_time+1) / 2, -1,0);
+            block_data(static_cast<int>(int_auto_correlation_time + 1) / 2, -1);
         } else {
-            block_data(42, -1,0);
+            block_data(42, -1);
         }
     }
     if (blocked_data.empty()) {
