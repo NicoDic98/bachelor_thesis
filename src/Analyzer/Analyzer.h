@@ -44,7 +44,7 @@ public:
      * @brief Block the data into blocks of size \p block_size
      * @param block_size Block size
      */
-    void block_data(int block_size,int size_to_use);
+    void block_data(int block_size,int size_to_use, int start_index);
 
     /**
      * @brief Calculates the bootstrap mean and variance on the previously blocked data

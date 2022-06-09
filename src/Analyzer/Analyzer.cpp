@@ -76,7 +76,7 @@ void Analyzer::set_mean() {
     write_static_size(mean, group, mean_name);
 }
 
-void Analyzer::block_data(int block_size, int size_to_use) {
+void Analyzer::block_data(int block_size, int size_to_use, int start_index) {
     if (block_size <= 0) {
         if (int_auto_correlation_time > 0) {
             block_size = 2 * static_cast<int>(int_auto_correlation_time+1);
@@ -100,7 +100,7 @@ void Analyzer::block_data(int block_size, int size_to_use) {
     std::fill(blocked_data.begin(), blocked_data.end(), 0.);
 
     for (int i = 0; i < blocked_data.size() * block_size; ++i) {
-        blocked_data[i / block_size] += data[i];
+        blocked_data[i / block_size] += data[i+start_index];
     }
 
     for (auto &elem: blocked_data) {

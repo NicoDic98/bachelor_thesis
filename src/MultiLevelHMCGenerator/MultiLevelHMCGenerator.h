@@ -78,7 +78,7 @@ public:
                          const std::string &name, HighFive::File &file);
 
     void analyze_dataset(const std::string &name, HighFive::File &file,
-                         int block_size, int size_to_use, int amount_of_sample_sets, size_t max_t);
+                         int block_size, int size_to_use, int start_index, int amount_of_sample_sets, size_t max_t);
 
     /**
      * @brief Dumps the MultiLevelHMCGenerator, including all sub models and sub HMCGenerators
@@ -476,7 +476,7 @@ void MultiLevelHMCGenerator<configuration_type>::dump_observable(
 
 template<class configuration_type>
 void MultiLevelHMCGenerator<configuration_type>::analyze_dataset(const std::string &name, HighFive::File &file,
-                                                                 int block_size, int size_to_use,
+                                                                 int block_size, int size_to_use, int start_index,
                                                                  int amount_of_sample_sets,
                                                                  size_t max_t) {
     for (int i = 0; i < HMCStack.size(); ++i) {
@@ -507,7 +507,7 @@ void MultiLevelHMCGenerator<configuration_type>::analyze_dataset(const std::stri
         Analyzer a(observable_group, measurements_data_name, generator);
         if (i == 0) {
             a.auto_correlation(max_t);
-            a.block_data(block_size,size_to_use);
+            a.block_data(block_size,size_to_use, start_index);
             a.bootstrap_data(amount_of_sample_sets);
         }
     }

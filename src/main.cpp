@@ -295,8 +295,8 @@ void DoMultiLevelMeasurements(MultiLevelHMCGenerator<configuration_type> &Gen, c
     Gen.analyze_dataset("magnetization_squared", out_file, 100, -1, 200, 400);
     Gen.analyze_dataset("energy", out_file, 100, -1, 200, 400);
     Gen.analyze_dataset("energy_squared", out_file, 100, -1, 200, 400);*/
-    Gen.analyze_dataset("energy", out_file, -1, -1, 200, 400);
-    Gen.analyze_dataset("vector_length_squared", out_file, -1, -1, 200, 400);
+    Gen.analyze_dataset("energy", out_file, -1, -1, 3000, 200, 400);
+    Gen.analyze_dataset("vector_length_squared", out_file, -1, -1, 3000, 200, 400);
 }
 
 void DoMultiLevelMeasurementsFromFile(std::string filename, const std::string &model, bool remeasure) {
@@ -367,7 +367,7 @@ void MultiLevelCriticalSimulation(const int grid_size = 16,
 
     MultiLevelHMCGenerator mygen(test, nu_pre, nu_post, erg_jump_dists, gamma, int_type,
                                  amount_of_steps, step_sizes, myengine);
-    std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 30000, 3000);
+    std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 30000, 0);
     for (auto acceptance_rate: acceptance_rates) {
         std::cout << "Acceptance rate:" << acceptance_rate << std::endl;
     }
@@ -516,7 +516,7 @@ void HMCCriticalSimulationXY(int grid_size = 16, const size_t &amount_of_steps =
     size_t id = 0;
     while (inverse_beta < 2) {
         MultiLevelSimulationXY(grid_size, 1. / inverse_beta, {0}, {1},
-                               {-1}, 1, -3./(sqrt(inverse_beta)), InterpolationType::Checkerboard,
+                               {-1}, 1, -3. / (sqrt(inverse_beta)), InterpolationType::Checkerboard,
                                {amount_of_steps},
                                {step_sizes}, id);
         id++;
@@ -537,13 +537,11 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     //test_multi_level_hmc();
     //test_hmc_measurements();
-    DoMultiLevelMeasurementsFromDir(std::string("xy_new"), std::string("xy"), true);
-    //HMCCriticalSimulation(64, 16, 1. / 16.);
-    test_leap_frog();
-    test_leap_frog_XY();
+    //DoMultiLevelMeasurementsFromDir(std::string("xy_new"), std::string("xy"), true);
+    HMCCriticalSimulation(4, 5, 1. / 5.);
     //HMCCriticalSimulationXY(16, 12, 1. / 12.);
     /*size_t i{1};
-    std::vector<size_t> nu_pre = {0, 1};
+    std::vector<size_t> nu_pre = {0, 0};
     std::vector<size_t> nu_post = {1, 1};
     std::vector<int> erg_jump_dists = {-1, -1};
     std::vector<size_t> amount_of_steps = {16, 16};
@@ -556,8 +554,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
         //step_sizes.push_back(1. / (static_cast<double>(l) * 3.));
         nu_pre[1] = l;
         nu_post[1] = l;
-        MultiLevelSimulationXY(16, nu_pre, nu_post,
-                                       erg_jump_dists, 1, -2, InterpolationType::Checkerboard,
+        MultiLevelCriticalSimulation(16, nu_pre, nu_post,
+                                       erg_jump_dists, 1, InterpolationType::Checkerboard,
                                        amount_of_steps,
                                        step_sizes, i++);
     }*/
