@@ -60,6 +60,7 @@ std::vector<double> Analyzer::auto_correlation(size_t max_t) {
             -int_auto_correlation_time * exp(-static_cast<double>(max_t) / int_auto_correlation_time)};
     double int_auto_correlation_time_stat_error{4. * (static_cast<double>(max_t) + 0.5 - int_auto_correlation_time) *
                                                 int_auto_correlation_time / static_cast<double>(data.size())};
+    // this is really the variance!!!
     write_static_size(int_auto_correlation_time, group, int_auto_correlation_time_name);
     write_static_size(int_auto_correlation_time_bias, group, int_auto_correlation_time_bias_name);
     write_static_size(int_auto_correlation_time_stat_error, group, int_auto_correlation_time_stat_error_name);
@@ -111,9 +112,9 @@ void Analyzer::block_data(int block_size, int size_to_use, int start_index) {
 void Analyzer::bootstrap_data(int amount_of_sample_sets) {
     if (blocked_data.empty()) {
         if (int_auto_correlation_time > 0) {
-            block_data(static_cast<int>(int_auto_correlation_time+1) / 2, -1);
+            block_data(static_cast<int>(int_auto_correlation_time+1) / 2, -1,0);
         } else {
-            block_data(42, -1);
+            block_data(42, -1,0);
         }
     }
     if (blocked_data.empty()) {

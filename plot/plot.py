@@ -132,7 +132,7 @@ def base_plot(sub_folder_name="std_hmc/"):
         print(energies)
         print(energies_errors)
         fig, ax = make_observable_plot(energy_name, inverse_betas, energies, energies_errors)
-        ax.set_ylim(0,1.2)
+        ax.set_ylim(0, 1.2)
         # ax.plot(1. / beta_lin, e_exact)
         fig.savefig(sub_folder_name + energy_name + ".png")
 
@@ -148,6 +148,7 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
     int_auto_correlation_time_bias = []
     int_auto_correlation_time_stat_error = []
     gamma = []
+    system_size = []
     tick_time = []
     interpolation_type = []
     nu_pre_level0 = []
@@ -175,6 +176,8 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
             int_auto_correlation_time_stat_error.append(
                 observable_group.attrs["int_auto_correlation_time_stat_error"])
             gamma.append(level0_group.attrs["gamma"])
+            print(level0_group.get("h"), len(level0_group.get("h")))
+            system_size.append(len(level0_group.get("h")))
             tick_time.append(level0_group.attrs["tick_time"])
             interpolation_type.append(level0_group.attrs["inter_type"])
             nu_pre_level0.append(level0_group.attrs["nu_pre"])
@@ -201,6 +204,7 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
     int_auto_correlation_time_bias = np.array(int_auto_correlation_time_bias)
     int_auto_correlation_time_stat_error = np.array(int_auto_correlation_time_stat_error)
     gamma = np.array(gamma)
+    system_size = np.array(system_size)
     tick_time = np.array(tick_time)
     interpolation_type = np.array(interpolation_type)
     nu_pre_level0 = np.array(nu_pre_level0)
@@ -208,78 +212,48 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
     nu_pre_level1 = np.array(nu_pre_level1)
     nu_post_level1 = np.array(nu_post_level1)
 
-    fig_, (ax1_, ax2_, ax3_) = plt.subplots(3, 1, figsize=(12, 9))
+    fig_, (ax1_, ax2_) = plt.subplots(2, 1, figsize=(12, 9))
     fig_: plt.Figure
     ax1_: plt.Axes
     ax2_: plt.Axes
-    ax3_: plt.Axes
     base_bootstrap_variance = []
     base_bootstrap_mean = []
     base_tick_time = np.zeros(1)
     base_int_auto_correlation_time = 42
+    ls = [0, 0]
+    labels = ["HMC", "Multilevel"]
 
     for i, nu_pre in enumerate(nu_pre_level1):
         if nu_pre == -1:
-            base_bootstrap_variance = bootstrap_variance[i]
-            base_bootstrap_mean = bootstrap_mean[i]
-            base_tick_time = np.arange(1, len(base_bootstrap_variance) + 1) * tick_time[i] / 10
-            base_int_auto_correlation_time = int_auto_correlation_time[i]
-    print(len(base_bootstrap_variance))
-    ls = []
-    labels = []
-    ls.append(
-        ax1_.scatter(base_tick_time,
-                     1 / np.sqrt(base_bootstrap_variance),
-                     marker='.', c='r'))
-    ax2_.scatter(base_tick_time / base_int_auto_correlation_time,
-                 1 / (np.sqrt(base_bootstrap_variance)),
-                 marker='.', c='r')
-    ax3_.scatter(1 / base_int_auto_correlation_time,
-                 (1 / (np.sqrt(base_bootstrap_variance) * base_tick_time))[-1],
-                 marker='.', c='r')
-    labels.append("HMC")
-    j = 0
-    for i in range(513):
-        indices = np.logical_and(nu_pre_level1 == i, nu_post_level1 == i)
-        if indices.sum() == 1:
-            multi_bootstrap_variance = []
-            multi_bootstrap_mean = []
-            multi_tick_time = np.zeros(1)
-            multi_int_auto_correlation_time = 42
-            for k, truth in enumerate(indices):
-                if truth:
-                    multi_bootstrap_variance = bootstrap_variance[k]
-                    multi_bootstrap_mean = bootstrap_mean[k]
-                    multi_tick_time = np.arange(1, len(multi_bootstrap_variance) + 1) * tick_time[k] / 10
-                    multi_int_auto_correlation_time = int_auto_correlation_time[k]
-            ls.append(ax1_.scatter(multi_tick_time,
-                                   1 / np.sqrt(multi_bootstrap_variance),
-                                   marker='.', c=list(mcolors.TABLEAU_COLORS.values())[j]))
-            ax2_.scatter(multi_tick_time / multi_int_auto_correlation_time,
-                         1 / (np.sqrt(multi_bootstrap_variance)),
-                         marker='.', c=list(mcolors.TABLEAU_COLORS.values())[j])
-            ax3_.scatter(1 / multi_int_auto_correlation_time,
-                         (1 / (np.sqrt(multi_bootstrap_variance) * multi_tick_time))[-1],
-                         marker='.', c=list(mcolors.TABLEAU_COLORS.values())[j])
-            labels.append(f"nu pp={i}")
-            j += 1
+            ls[0] = ax1_.errorbar(system_size[i], int_auto_correlation_time[i],
+                                  np.sqrt(int_auto_correlation_time_stat_error[i]),
+                                  fmt='.', mfc='red', mec='red', ecolor='red')
+            ax2_.errorbar(system_size[i], int_auto_correlation_time[i] - int_auto_correlation_time_bias[i],
+                          np.sqrt(int_auto_correlation_time_stat_error[i]),
+                          fmt='.', mfc='red', mec='red', ecolor='red')
+        else:
+            ls[1] = ax1_.errorbar(system_size[i], int_auto_correlation_time[i],
+                                  np.sqrt(int_auto_correlation_time_stat_error[i]),
+                                  fmt='.', mfc='green', mec='green', ecolor='green')
+            ax2_.errorbar(system_size[i], int_auto_correlation_time[i] - int_auto_correlation_time_bias[i],
+                          np.sqrt(int_auto_correlation_time_stat_error[i]),
+                          fmt='.', mfc='green', mec='green', ecolor='green')
 
+    ax1_.set_title("Without bias correction")
+    ax2_.set_title("With bias correction")
     fig_.legend(ls, labels, loc="upper right")
     fig_.subplots_adjust(right=0.85)
-    ax1_.set_xlabel(r"$t$")
-    ax2_.set_xlabel(r"$\frac{t}{\tau}$")
-    ax3_.set_xlabel(r"$\frac{1}{\tau}$")
 
-    ax1_.set_ylabel(r"$\frac{1}{\sigma}$")
+    ax1_.set_xlabel(r"$N$")
+    ax1_.set_ylabel(r"$\tau$")
     ax1_.set_xscale('log')
     ax1_.set_yscale('log')
-    ax2_.set_ylabel(r"$\frac{1}{\sigma}$")
+
+    ax2_.set_xlabel(r"$N$")
+    ax2_.set_ylabel(r"$\tau$")
     ax2_.set_xscale('log')
     ax2_.set_yscale('log')
-    ax3_.set_ylabel(r"$\frac{1}{\sigma *t}$")
-    # ax3_.set_xscale('log')
-    # ax3_.set_yscale('log')
-    fig_.set_tight_layout(True)
+
     fig_.savefig(sub_folder_name + observable_name + sub_folder_name[:-1] + ".png", dpi=1000)
     fig_.clear()
 
@@ -623,4 +597,5 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
 # crit_int_auto_correlation_plot_multiple_levels("gs_16CB_ga_1_levels_x/")
 # crit_int_auto_correlation_plot("gs_32_CB_ga_1_levels_2/")
 # crit_int_auto_correlation_plot("gs_64_CB_ga_1_levels_2/")
-base_plot("xy_new/")
+info_plot("volume_exponent/")
+# base_plot("xy_new/")
