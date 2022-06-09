@@ -8,6 +8,7 @@ import numpy as np
 import scipy.special
 
 magnetization_name = "magnetization"
+field_squared_name = "field_squared"
 magnetization_squared_name = "magnetization_squared"
 energy_name = "energy"
 energy_squared_name = "energy_squared"
@@ -264,6 +265,45 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
 
     fig_.savefig(sub_folder_name + observable_name + sub_folder_name[:-1] + ".png", dpi=1000)
     fig_.clear()
+
+
+def check_thermalisation(sub_folder_name, observable_name=field_squared_name):
+    observable_values = []
+    file_list = []
+    for file in os.listdir(sub_folder_name):
+        if file.startswith("out_"):
+            file_list.append(sub_folder_name + file)
+
+    for file in file_list:
+        print(file)
+        f = h5py.File(file, 'r')
+
+        level0_group = f.get("level0")
+
+        measurements_group = level0_group.get("measurements")
+        if observable_name in measurements_group:
+            observable_group = measurements_group.get(observable_name)
+            observable_values.append(observable_group.get("data"))
+        else:
+            observable_values.append([])
+
+    for i, observable_value_list in enumerate(observable_values):
+        fig_, ax1_ = plt.subplots(1, 1, figsize=(12, 9))
+        fig_: plt.Figure
+        ax1_: plt.Axes
+        ax1_.scatter(np.arange(len(observable_value_list)), observable_value_list, label=file_list[i])
+
+        ax1_.set_title("Without bias correction")
+        fig_.legend(loc="upper right")
+
+        ax1_.set_xlabel(r"$N$")
+        ax1_.set_ylabel(r"$\tau$")
+        # ax1_.set_xscale('log')
+        # ax1_.set_yscale('log')
+
+        fig_.savefig(sub_folder_name + observable_name + sub_folder_name[:-1] +
+                     file_list[i].split("/")[1].split(".")[0] + ".png", dpi=1000)
+        fig_.clear()
 
 
 def crit_int_auto_correlation_plot_multiple_levels(sub_folder_name, observable_name=magnetization_name):
@@ -606,4 +646,5 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
 # crit_int_auto_correlation_plot("gs_32_CB_ga_1_levels_2/")
 # crit_int_auto_correlation_plot("gs_64_CB_ga_1_levels_2/")
 info_plot("volume_exponent/")
+# check_thermalisation("volume_exponent/")
 # base_plot("xy_new/")
