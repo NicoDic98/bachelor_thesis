@@ -295,8 +295,8 @@ void DoMultiLevelMeasurements(MultiLevelHMCGenerator<configuration_type> &Gen, c
     Gen.analyze_dataset("magnetization_squared", out_file, 100, -1, 200, 400);
     Gen.analyze_dataset("energy", out_file, 100, -1, 200, 400);
     Gen.analyze_dataset("energy_squared", out_file, 100, -1, 200, 400);*/
-    Gen.analyze_dataset("magnetization", out_file, -1, -1, 3000, 200, 400);
-    Gen.analyze_dataset("energy", out_file, -1, -1, 3000, 200, 400);
+    Gen.analyze_dataset("magnetization", out_file, -1, -1, 3000, 200, 10000);
+    //Gen.analyze_dataset("energy", out_file, -1, -1, 3000, 200, 2000);
     //Gen.analyze_dataset("vector_length_squared", out_file, -1, -1, 3000, 200, 400);
 }
 

@@ -51,8 +51,16 @@ std::vector<double> Analyzer::auto_correlation(size_t max_t) {
     int_auto_correlation_time = -0.5;//because we add gamma[0]=1
     for (double &t: ret) {
         t /= start_value;
-        int_auto_correlation_time += t;
     }
+    for (double &t: ret) {
+        if(t<0){
+            std::cout<< "t:\t"<<t<<std::endl;
+            break;
+        }else{
+            int_auto_correlation_time += t;
+        }
+    }
+
     VectorX vec_temp(ret.size());
     vec_temp = VectorX::Map(&ret[0], ret.size());
     WriteVectorX(vec_temp, group, auto_correlation_name);
