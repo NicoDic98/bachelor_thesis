@@ -538,25 +538,26 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     //test_multi_level_hmc();
     //test_hmc_measurements();
-    DoMultiLevelMeasurementsFromDir(std::string("volume_exponent"), std::string("ising"), false);
-    /*size_t i{6};
-    //HMCCriticalSimulation(32, 8, 1. / 8., i++);
+    DoMultiLevelMeasurementsFromDir(std::string("volume_exponent"), std::string("ising"), true);
+    size_t i{8};
+    //HMCCriticalSimulation(64, 16, 1. / 16., i++);
     //HMCCriticalSimulationXY(16, 12, 1. / 12.);
-    std::vector<size_t> nu_pre = {0, 0, 0, 0};
-    std::vector<size_t> nu_post = {1, 1, 1, 1};
-    std::vector<int> erg_jump_dists = {-1, -1, -1, -1};
-    std::vector<size_t> amount_of_steps = {10, 10, 10, 10};
-    std::vector<double> step_sizes = {1. / 10., 1. / 10., 1. / 10., 1. / 10.};
+    std::vector<size_t> nu_pre = {0, 0, 0, 0, 0};
+    std::vector<size_t> nu_post = {1, 1, 1, 1, 1};
+    std::vector<int> erg_jump_dists = {-1, -1, -1, -1, -1};
+    std::vector<size_t> amount_of_steps = {16, 16, 16, 16, 16};
+    std::vector<double> step_sizes = {1. / 16., 1. / 16., 1. / 16.,
+                                      1. / 16., 1. / 16.};
     //for (size_t l = 1; l < 17; l *= 4) {
     //nu_pre.push_back(1);
     //nu_post.push_back(1);
     //erg_jump_dists.push_back(-1);
     //amount_of_steps.push_back(l * 3);
     //step_sizes.push_back(1. / (static_cast<double>(l) * 3.));
-    MultiLevelCriticalSimulation(32, nu_pre, nu_post,
+    MultiLevelCriticalSimulation(64, nu_pre, nu_post,
                                  erg_jump_dists, 1, InterpolationType::Checkerboard,
                                  amount_of_steps,
-                                 step_sizes, i++);*/
+                                 step_sizes, i++);
     //}
     //return test_hip();
 }
