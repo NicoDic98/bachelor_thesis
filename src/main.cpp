@@ -296,6 +296,7 @@ void DoMultiLevelMeasurements(MultiLevelHMCGenerator<configuration_type> &Gen, c
     Gen.analyze_dataset("energy", out_file, 100, -1, 200, 400);
     Gen.analyze_dataset("energy_squared", out_file, 100, -1, 200, 400);*/
     Gen.analyze_dataset("magnetization", out_file, -1, -1, 3000, 200, 10000);
+    Gen.analyze_dataset("magnetization_squared", out_file, -1, -1, 3000, 200, 10000);
     //Gen.analyze_dataset("energy", out_file, -1, -1, 3000, 200, 2000);
     //Gen.analyze_dataset("vector_length_squared", out_file, -1, -1, 3000, 200, 400);
 }
@@ -538,16 +539,16 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     //test_multi_level_hmc();
     //test_hmc_measurements();
-    DoMultiLevelMeasurementsFromDir(std::string("volume_exponent"), std::string("ising"), true);
+    //DoMultiLevelMeasurementsFromDir(std::string("volume_exponent"), std::string("ising"), false);
     size_t i{8};
     //HMCCriticalSimulation(64, 16, 1. / 16., i++);
     //HMCCriticalSimulationXY(16, 12, 1. / 12.);
     std::vector<size_t> nu_pre = {0, 0, 0, 0, 0};
     std::vector<size_t> nu_post = {1, 1, 1, 1, 1};
     std::vector<int> erg_jump_dists = {-1, -1, -1, -1, -1};
-    std::vector<size_t> amount_of_steps = {16, 16, 16, 16, 16};
-    std::vector<double> step_sizes = {1. / 16., 1. / 16., 1. / 16.,
-                                      1. / 16., 1. / 16.};
+    std::vector<size_t> amount_of_steps = {24, 24, 24, 24, 24};
+    std::vector<double> step_sizes = {1. / 24., 1. / 24., 1. / 24.,
+                                      1. / 24., 1. / 24.};
     //for (size_t l = 1; l < 17; l *= 4) {
     //nu_pre.push_back(1);
     //nu_post.push_back(1);

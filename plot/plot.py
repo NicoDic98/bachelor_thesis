@@ -645,6 +645,7 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
 # crit_int_auto_correlation_plot_multiple_levels("gs_16CB_ga_1_levels_x/")
 # crit_int_auto_correlation_plot("gs_32_CB_ga_1_levels_2/")
 # crit_int_auto_correlation_plot("gs_64_CB_ga_1_levels_2/")
+info_plot("volume_exponent/",magnetization_squared_name)
 info_plot("volume_exponent/")
 # check_thermalisation("volume_exponent/")
 # base_plot("xy_new/")
