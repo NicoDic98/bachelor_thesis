@@ -6,12 +6,17 @@ from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.special
+import scipy.optimize as opt
 
 magnetization_name = "magnetization"
 field_squared_name = "field_squared"
 magnetization_squared_name = "magnetization_squared"
 energy_name = "energy"
 energy_squared_name = "energy_squared"
+
+
+def fit_function(x, a, b):
+    return a * x ** b
 
 
 def magnetization_exact(beta):
@@ -224,9 +229,12 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
     base_int_auto_correlation_time = 42
     ls = [0, 0]
     labels = ["HMC", "Multilevel"]
-    x = []
-    y = []
-    yerr = []
+    x_hmc = []
+    y_hmc = []
+    yerr_hmc = []
+    x_multi_hmc = []
+    y_multi_hmc = []
+    yerr_multi_hmc = []
     for i, nu_pre in enumerate(nu_pre_level1):
         if nu_pre == -1:
             ls[0] = ax1_.errorbar(system_size[i], int_auto_correlation_time[i],
@@ -235,9 +243,9 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
             ax2_.errorbar(system_size[i], int_auto_correlation_time[i] - int_auto_correlation_time_bias[i],
                           int_auto_correlation_time_stat_error[i],
                           fmt='.', mfc='red', mec='red', ecolor='red')
-            x.append(system_size[i])
-            y.append(int_auto_correlation_time[i] - int_auto_correlation_time_bias[i])
-            yerr.append(int_auto_correlation_time_stat_error[i])
+            x_hmc.append(system_size[i])
+            y_hmc.append(int_auto_correlation_time[i])
+            yerr_hmc.append(int_auto_correlation_time_stat_error[i])
             ax3_.scatter(system_size[i], int_auto_correlation_time_bias[i], c='red')
         else:
             ls[1] = ax1_.errorbar(system_size[i], int_auto_correlation_time[i],
@@ -246,11 +254,26 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
             ax2_.errorbar(system_size[i], int_auto_correlation_time[i] - int_auto_correlation_time_bias[i],
                           int_auto_correlation_time_stat_error[i],
                           fmt='.', mfc='green', mec='green', ecolor='green')
+            x_multi_hmc.append(system_size[i])
+            y_multi_hmc.append(int_auto_correlation_time[i])
+            yerr_multi_hmc.append(int_auto_correlation_time_stat_error[i])
             ax3_.scatter(system_size[i], int_auto_correlation_time_bias[i], c='green')
+
+    popt, pcov = opt.curve_fit(fit_function, x_hmc, y_hmc, sigma=yerr_hmc)
+    print(popt, pcov)
+    x_fit = np.logspace(1, 4)
+    y_fit = fit_function(x_fit, *popt)
+    ax1_.plot(x_fit, y_fit, label="HMC")
+
+    popt, pcov = opt.curve_fit(fit_function, x_multi_hmc, y_multi_hmc, sigma=yerr_multi_hmc)
+    print(popt, pcov)
+    y_fit = fit_function(x_fit, *popt)
+    ax1_.plot(x_fit, y_fit, label="Multilevel")
 
     ax1_.set_title("Without bias correction")
     ax2_.set_title("With bias correction")
     fig_.legend(ls, labels, loc="upper right")
+    ax1_.legend(loc="upper left")
     fig_.subplots_adjust(right=0.85)
 
     ax1_.set_xlabel(r"$N$")
