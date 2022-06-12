@@ -540,7 +540,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_multi_level_hmc();
     //test_hmc_measurements();
     DoMultiLevelMeasurementsFromDir(std::string("volume_exponent"), std::string("ising"), false);
-    size_t i{9};
+    /*size_t i{9};
     HMCCriticalSimulation(128, 16, 1. / 24., i++);
     //HMCCriticalSimulationXY(16, 12, 1. / 12.);
     std::vector<size_t> nu_pre = {0, 0, 0, 0, 0, 0};
@@ -559,7 +559,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
                                  erg_jump_dists, 1, InterpolationType::Checkerboard,
                                  amount_of_steps,
                                  step_sizes, i++);
-    //}
+    //}*/
     //return test_hip();
 }
 

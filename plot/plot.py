@@ -224,22 +224,27 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
     base_int_auto_correlation_time = 42
     ls = [0, 0]
     labels = ["HMC", "Multilevel"]
-
+    x = []
+    y = []
+    yerr = []
     for i, nu_pre in enumerate(nu_pre_level1):
         if nu_pre == -1:
             ls[0] = ax1_.errorbar(system_size[i], int_auto_correlation_time[i],
-                                  np.sqrt(int_auto_correlation_time_stat_error[i]),
+                                  int_auto_correlation_time_stat_error[i],
                                   fmt='.', mfc='red', mec='red', ecolor='red')
             ax2_.errorbar(system_size[i], int_auto_correlation_time[i] - int_auto_correlation_time_bias[i],
-                          np.sqrt(int_auto_correlation_time_stat_error[i]),
+                          int_auto_correlation_time_stat_error[i],
                           fmt='.', mfc='red', mec='red', ecolor='red')
+            x.append(system_size[i])
+            y.append(int_auto_correlation_time[i] - int_auto_correlation_time_bias[i])
+            yerr.append(int_auto_correlation_time_stat_error[i])
             ax3_.scatter(system_size[i], int_auto_correlation_time_bias[i], c='red')
         else:
             ls[1] = ax1_.errorbar(system_size[i], int_auto_correlation_time[i],
-                                  np.sqrt(int_auto_correlation_time_stat_error[i]),
+                                  int_auto_correlation_time_stat_error[i],
                                   fmt='.', mfc='green', mec='green', ecolor='green')
             ax2_.errorbar(system_size[i], int_auto_correlation_time[i] - int_auto_correlation_time_bias[i],
-                          np.sqrt(int_auto_correlation_time_stat_error[i]),
+                          int_auto_correlation_time_stat_error[i],
                           fmt='.', mfc='green', mec='green', ecolor='green')
             ax3_.scatter(system_size[i], int_auto_correlation_time_bias[i], c='green')
 
@@ -397,7 +402,7 @@ def crit_int_auto_correlation_plot_multiple_levels(sub_folder_name, observable_n
         if length > 1:
             x_plot.append(length)
             y1_plot.append(int_auto_correlation_time[i])
-            y1_error.append(np.sqrt(int_auto_correlation_time_stat_error[i]) + int_auto_correlation_time_bias[i])
+            y1_error.append(int_auto_correlation_time_stat_error[i] + int_auto_correlation_time_bias[i])
             y2_plot.append(tick_time[i])
 
     x_plot = np.array(x_plot)
@@ -501,7 +506,7 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
         indices = nu_pre_level1 == i
         x_plot = nu_post_level1[indices]
         y1_plot = int_auto_correlation_time[indices]
-        y1_error = np.sqrt(int_auto_correlation_time_stat_error[indices]) + int_auto_correlation_time_bias[indices]
+        y1_error = int_auto_correlation_time_stat_error[indices] + int_auto_correlation_time_bias[indices]
         y2_plot = tick_time[indices]
         if len(x_plot):
             ls.append(ax1_.errorbar(x_plot, y1_plot, y1_error, marker='.', ls='',
@@ -607,7 +612,7 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
     indices = nu_pre_level1 == 1
     x_plot = gamma[indices]
     y1_plot = int_auto_correlation_time[indices]
-    y1_error = np.sqrt(int_auto_correlation_time_stat_error[indices]) + int_auto_correlation_time_bias[indices]
+    y1_error = int_auto_correlation_time_stat_error[indices] + int_auto_correlation_time_bias[indices]
     y2_plot = tick_time[indices]
     if len(x_plot):
         ls.append(ax1_.errorbar(x_plot, y1_plot, y1_error, marker='.', ls='',
@@ -645,7 +650,7 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
 # crit_int_auto_correlation_plot_multiple_levels("gs_16CB_ga_1_levels_x/")
 # crit_int_auto_correlation_plot("gs_32_CB_ga_1_levels_2/")
 # crit_int_auto_correlation_plot("gs_64_CB_ga_1_levels_2/")
-info_plot("volume_exponent/",magnetization_squared_name)
+info_plot("volume_exponent/", magnetization_squared_name)
 info_plot("volume_exponent/")
 # check_thermalisation("volume_exponent/")
 # base_plot("xy_new/")
