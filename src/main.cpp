@@ -295,8 +295,8 @@ void DoMultiLevelMeasurements(MultiLevelHMCGenerator<configuration_type> &Gen, c
     Gen.analyze_dataset("magnetization_squared", out_file, 100, -1, 200, 400);
     Gen.analyze_dataset("energy", out_file, 100, -1, 200, 400);
     Gen.analyze_dataset("energy_squared", out_file, 100, -1, 200, 400);*/
-    Gen.analyze_dataset("magnetization", out_file, -1, -1, 3000, 200, 10000);
-    Gen.analyze_dataset("magnetization_squared", out_file, -1, -1, 3000, 200, 10000);
+    Gen.analyze_dataset("magnetization", out_file, -1, -1, 3000, 200, 20000);
+    Gen.analyze_dataset("magnetization_squared", out_file, -1, -1, 3000, 200, 20000);
     //Gen.analyze_dataset("energy", out_file, -1, -1, 3000, 200, 2000);
     //Gen.analyze_dataset("vector_length_squared", out_file, -1, -1, 3000, 200, 400);
 }
@@ -349,7 +349,7 @@ void MultiLevelCriticalSimulation(const int grid_size = 16,
                                   InterpolationType int_type = InterpolationType::Checkerboard,
                                   const std::vector<size_t> &amount_of_steps = {6},
                                   const std::vector<double> &step_sizes = {1. / 6.},
-                                  size_t id = 0) {
+                                  size_t id = 0, int config_amount = 30000) {
     const int dim = 2;
     const int lambda = int_pow(grid_size, dim);
     const double C{0.1};
@@ -369,7 +369,7 @@ void MultiLevelCriticalSimulation(const int grid_size = 16,
 
     MultiLevelHMCGenerator mygen(test, nu_pre, nu_post, erg_jump_dists, gamma, int_type,
                                  amount_of_steps, step_sizes, myengine);
-    std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 30000, 0);
+    std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, config_amount, 0);
     for (auto acceptance_rate: acceptance_rates) {
         std::cout << "Acceptance rate:" << acceptance_rate << std::endl;
     }
@@ -392,11 +392,11 @@ void MultiLevelCriticalSimulation(const int grid_size = 16,
 }
 
 void HMCCriticalSimulation(int grid_size = 16, const size_t &amount_of_steps = 6,
-                           const double step_sizes = 1. / 6., size_t id = 0) {
+                           const double step_sizes = 1. / 6., size_t id = 0, int config_amount = 30000) {
     MultiLevelCriticalSimulation(grid_size, {0}, {1},
                                  {-1}, 1, InterpolationType::Checkerboard,
                                  {amount_of_steps},
-                                 {step_sizes}, id);
+                                 {step_sizes}, id, config_amount);
 }
 
 void test_leap_frog_XY() {
@@ -539,26 +539,25 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     //test_multi_level_hmc();
     //test_hmc_measurements();
-    DoMultiLevelMeasurementsFromDir(std::string("volume_exponent"), std::string("ising"), false);
+    DoMultiLevelMeasurementsFromDir(std::string("new"), std::string("ising"), false);
     /*size_t i{9};
-    HMCCriticalSimulation(128, 16, 1. / 24., i++);
+    HMCCriticalSimulation(64, 16, 1. / 16., i++, 100000);
     //HMCCriticalSimulationXY(16, 12, 1. / 12.);
-    std::vector<size_t> nu_pre = {0, 0, 0, 0, 0, 0};
-    std::vector<size_t> nu_post = {1, 1, 1, 1, 1, 1};
-    std::vector<int> erg_jump_dists = {-1, -1, -1, -1, -1, -1};
-    std::vector<size_t> amount_of_steps = {32, 32, 32, 32, 32, 32};
-    std::vector<double> step_sizes = {1. / 32., 1. / 32., 1. / 32., 1. / 32.,
-                                      1. / 32., 1. / 32.};
+    std::vector<size_t> nu_pre = {0, 0, 0, 0, 0};
+    std::vector<size_t> nu_post = {1, 1, 1, 1, 1};
+    std::vector<int> erg_jump_dists = {-1, -1, -1, -1, -1};
+    std::vector<size_t> amount_of_steps = {24, 24, 24, 24, 24};
+    std::vector<double> step_sizes = {1. / 24., 1. / 24., 1. / 24., 1. / 24., 1. / 24.};
     //for (size_t l = 1; l < 17; l *= 4) {
     //nu_pre.push_back(1);
     //nu_post.push_back(1);
     //erg_jump_dists.push_back(-1);
     //amount_of_steps.push_back(l * 3);
     //step_sizes.push_back(1. / (static_cast<double>(l) * 3.));
-    MultiLevelCriticalSimulation(128, nu_pre, nu_post,
+    MultiLevelCriticalSimulation(64, nu_pre, nu_post,
                                  erg_jump_dists, 1, InterpolationType::Checkerboard,
                                  amount_of_steps,
-                                 step_sizes, i++);
+                                 step_sizes, i++, 100000);
     //}*/
     //return test_hip();
 }
