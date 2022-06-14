@@ -540,21 +540,21 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_multi_level_hmc();
     //test_hmc_measurements();
     DoMultiLevelMeasurementsFromDir(std::string("new"), std::string("ising"), true);
-    /*size_t i{13};
-    HMCCriticalSimulation(16, 8, 1. / 8., i++, 100000);
+    /*size_t i{17};
+    HMCCriticalSimulation(4, 5, 1. / 5., i++, 100000);
     //HMCCriticalSimulationXY(16, 12, 1. / 12.);
-    std::vector<size_t> nu_pre = {0, 0, 0};
-    std::vector<size_t> nu_post = {1, 1, 1};
-    std::vector<int> erg_jump_dists = {-1, -1, -1};
-    std::vector<size_t> amount_of_steps = {8, 8, 8};
-    std::vector<double> step_sizes = {1. / 8., 1. / 8., 1. / 8.};
+    std::vector<size_t> nu_pre = {0, 0};
+    std::vector<size_t> nu_post = {1, 1};
+    std::vector<int> erg_jump_dists = {-1, -1};
+    std::vector<size_t> amount_of_steps = {8, 8};
+    std::vector<double> step_sizes = {1. / 8., 1. / 8.};
     //for (size_t l = 1; l < 17; l *= 4) {
     //nu_pre.push_back(1);
     //nu_post.push_back(1);
     //erg_jump_dists.push_back(-1);
     //amount_of_steps.push_back(l * 3);
     //step_sizes.push_back(1. / (static_cast<double>(l) * 3.));
-    MultiLevelCriticalSimulation(16, nu_pre, nu_post,
+    MultiLevelCriticalSimulation(8, nu_pre, nu_post,
                                  erg_jump_dists, 1, InterpolationType::Checkerboard,
                                  amount_of_steps,
                                  step_sizes, i++, 100000);
