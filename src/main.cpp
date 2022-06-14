@@ -540,7 +540,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_multi_level_hmc();
     //test_hmc_measurements();
     DoMultiLevelMeasurementsFromDir(std::string("new"), std::string("ising"), true);
-    size_t i{13};
+    /*size_t i{13};
     HMCCriticalSimulation(16, 8, 1. / 8., i++, 100000);
     //HMCCriticalSimulationXY(16, 12, 1. / 12.);
     std::vector<size_t> nu_pre = {0, 0, 0};
