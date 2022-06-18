@@ -23,7 +23,7 @@ find_package(HDF5)
 FetchContent_Declare(
         HighFive
         GIT_REPOSITORY https://github.com/BlueBrain/HighFive.git
-        GIT_TAG 34bbc607182b8eab3f5dee539e428cfe403542f6
+        GIT_TAG 3c8796ff1c849a6056ebd65fe540e4299799f09e
 )
 FetchContent_MakeAvailable(HighFive)
 set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} "${highfive_SOURCE_DIR}/include")
@@ -73,4 +73,4 @@ add_executable("${PROJECT_NAME}" ${SOURCE_FILES})
 # add the binary tree to the search path for include files
 # so that we will find TutorialConfig.h
 target_include_directories("${PROJECT_NAME}" PUBLIC ${INCLUDE_DIRECTORIES})
-target_link_libraries("${PROJECT_NAME}" PUBLIC ${HDF5_LIBRARIES} Eigen3::Eigen hip::device OpenMP::OpenMP_CXX)
+target_link_libraries("${PROJECT_NAME}" PUBLIC ${HDF5_LIBRARIES} Eigen3::Eigen OpenMP::OpenMP_CXX)

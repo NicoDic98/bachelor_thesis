@@ -16,12 +16,12 @@
 #include <Analyzer.h>
 #include <fstream>
 #include <iomanip>
-#include <hip/hip_runtime.h>
+//#include <hip/hip_runtime.h>
 #include <filesystem>
 
 #include <omp.h>
 
-#define HIP_ASSERT(x) (assert((x)==hipSuccess))
+/*#define HIP_ASSERT(x) (assert((x)==hipSuccess))
 
 
 #define WIDTH     1024
@@ -131,7 +131,7 @@ int test_hip() {
     //hipResetDefaultAccelerator();
 
     return errors;
-}
+}*/
 
 /**
  * @brief Tests the Leap Frog integrator
