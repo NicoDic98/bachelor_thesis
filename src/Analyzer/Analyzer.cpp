@@ -48,27 +48,31 @@ std::vector<double> Analyzer::auto_correlation(size_t max_t) {
         ret[t] /= static_cast<double>(data.size() - t);
     }
     auto start_value = ret[0];
-    int_auto_correlation_time = -0.5;//because we add gamma[0]=1
+
     for (double &t: ret) {
         t /= start_value;
     }
-    int W = -1;
-    for (double &t: ret) {
-        if (t < 0) {
-            std::cout << "t:\t" << t << std::endl;
+    int_auto_correlation_time = 0.5;//because we add gamma[0]=1
+    int W = 0;
+    int S = 1;
+    double g_W = 1;
+    double tau_W = 0;
+    for (int i = 1; i < ret.size(); ++i) {
+        if (g_W < 0) {
+            std::cout << "i:\t" << i << "\tW:\t" << W << std::endl;
             break;
         } else {
             W++;
-            int_auto_correlation_time += t;
+            int_auto_correlation_time += ret[i];
+            tau_W = S / log((2 * int_auto_correlation_time + 1) / (2 * int_auto_correlation_time - 1));
+            g_W = exp(-W / tau_W) - tau_W / sqrt(W * static_cast<double>(data.size()));
         }
     }
-
     VectorX vec_temp(ret.size());
     vec_temp = VectorX::Map(&ret[0], ret.size());
     WriteVectorX(vec_temp, group, auto_correlation_name);
-
-    double int_auto_correlation_time_bias{
-            -int_auto_correlation_time * exp(-W / int_auto_correlation_time)};
+    double int_auto_correlation_time_bias{(2 * W + 1) * int_auto_correlation_time / static_cast<double>(data.size())};
+    int_auto_correlation_time /= (1 - (2 * W + 1) / static_cast<double>(data.size()));
     double int_auto_correlation_time_stat_error{2. * sqrt(W + 0.5 - int_auto_correlation_time) *
                                                 int_auto_correlation_time / sqrt(static_cast<double>(data.size()))};
     // this is really the variance!!!

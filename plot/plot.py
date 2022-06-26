@@ -242,32 +242,32 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
             ls[0] = ax1_.errorbar(system_size[i], int_auto_correlation_time[i],
                                   int_auto_correlation_time_stat_error[i],
                                   fmt='.', mfc='red', mec='red', ecolor='red')
-            ax2_.errorbar(system_size[i], int_auto_correlation_time[i] - int_auto_correlation_time_bias[i],
+            ax2_.errorbar(system_size[i], int_auto_correlation_time[i] + int_auto_correlation_time_bias[i],
                           int_auto_correlation_time_stat_error[i],
                           fmt='.', mfc='red', mec='red', ecolor='red')
             if system_size[i] < 33 * 33:
                 x_wo_bias_correction_hmc.append(system_size[i])
                 y_wo_bias_correction_hmc.append(int_auto_correlation_time[i])
-                y_w_bias_correction_hmc.append(int_auto_correlation_time[i] - int_auto_correlation_time_bias[i])
+                y_w_bias_correction_hmc.append(int_auto_correlation_time[i] + int_auto_correlation_time_bias[i])
                 yerr_wo_bias_correction_hmc.append(int_auto_correlation_time_stat_error[i])
                 if system_size[i] < 5 * 5:
                     x_wo_bias_correction_multi_hmc.append(system_size[i])
                     y_wo_bias_correction_multi_hmc.append(int_auto_correlation_time[i])
                     y_w_bias_correction_multi_hmc.append(
-                        int_auto_correlation_time[i] - int_auto_correlation_time_bias[i])
+                        int_auto_correlation_time[i] + int_auto_correlation_time_bias[i])
                     yerr_wo_bias_correction_multi_hmc.append(int_auto_correlation_time_stat_error[i])
             ax3_.scatter(system_size[i], int_auto_correlation_time_bias[i], c='red')
         else:
             ls[1] = ax1_.errorbar(system_size[i], int_auto_correlation_time[i],
                                   int_auto_correlation_time_stat_error[i],
                                   fmt='.', mfc='green', mec='green', ecolor='green')
-            ax2_.errorbar(system_size[i], int_auto_correlation_time[i] - int_auto_correlation_time_bias[i],
+            ax2_.errorbar(system_size[i], int_auto_correlation_time[i] + int_auto_correlation_time_bias[i],
                           int_auto_correlation_time_stat_error[i],
                           fmt='.', mfc='green', mec='green', ecolor='green')
             if system_size[i] < 33 * 33:
                 x_wo_bias_correction_multi_hmc.append(system_size[i])
                 y_wo_bias_correction_multi_hmc.append(int_auto_correlation_time[i])
-                y_w_bias_correction_multi_hmc.append(int_auto_correlation_time[i] - int_auto_correlation_time_bias[i])
+                y_w_bias_correction_multi_hmc.append(int_auto_correlation_time[i] + int_auto_correlation_time_bias[i])
                 yerr_wo_bias_correction_multi_hmc.append(int_auto_correlation_time_stat_error[i])
             ax3_.scatter(system_size[i], int_auto_correlation_time_bias[i], c='green')
 

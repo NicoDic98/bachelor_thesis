@@ -253,11 +253,11 @@ void test_multi_level_hmc() {
 
     for (double inverse_beta = 0.3; inverse_beta < 4.05; inverse_beta += 0.1) {
         test.set_beta(1. / inverse_beta);
-        MultiLevelHMCGenerator mygen(test, {1, 2, 3}, {1, 2, 3}, {-1, -1, -1}, 2, InterpolationType::Checkerboard,
-                                     {8, 12, 16},
-                                     {1. / 8, 1. / 12, 1. / 16},
+        MultiLevelHMCGenerator mygen(test, {0, 1}, {1, 1}, {-1, -1}, 1, InterpolationType::Checkerboard,
+                                     {8, 8},
+                                     {1. / 8, 1. / 8},
                                      myengine);
-        std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 10000, 1000);
+        std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 100000, 10000);
         for (auto acceptance_rate: acceptance_rates) {
             std::cout << "Acceptance rate:" << acceptance_rate << std::endl;
         }
@@ -295,8 +295,10 @@ void DoMultiLevelMeasurements(MultiLevelHMCGenerator<configuration_type> &Gen, c
     Gen.analyze_dataset("magnetization_squared", out_file, 100, -1, 200, 400);
     Gen.analyze_dataset("energy", out_file, 100, -1, 200, 400);
     Gen.analyze_dataset("energy_squared", out_file, 100, -1, 200, 400);*/
-    Gen.analyze_dataset("magnetization", out_file, -1, -1, 3000, 200, 20000);
-    Gen.analyze_dataset("magnetization_squared", out_file, -1, -1, 3000, 200, 20000);
+    Gen.analyze_dataset("magnetization", out_file, -1, -1, -1, 200, 20000);
+    Gen.analyze_dataset("magnetization_squared", out_file, -1, -1, -1, 200, 20000);
+    //Gen.analyze_dataset("energy", out_file, -1, -1, 0, 200, 20000);
+    //Gen.analyze_dataset("energy_squared", out_file, -1, -1, 0, 200, 20000);
     //Gen.analyze_dataset("energy", out_file, -1, -1, 3000, 200, 2000);
     //Gen.analyze_dataset("vector_length_squared", out_file, -1, -1, 3000, 200, 400);
 }
@@ -539,7 +541,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     //test_multi_level_hmc();
     //test_hmc_measurements();
-    DoMultiLevelMeasurementsFromDir(std::string("new"), std::string("ising"), true);
+    DoMultiLevelMeasurementsFromDir(std::string("volume_exponent"), std::string("ising"), false);
     /*size_t i{17};
     HMCCriticalSimulation(4, 5, 1. / 5., i++, 100000);
     //HMCCriticalSimulationXY(16, 12, 1. / 12.);
