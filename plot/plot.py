@@ -219,6 +219,7 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
     nu_post_level1 = np.array(nu_post_level1)
 
     fig_, (ax1_, ax2_, ax3_) = plt.subplots(3, 1, figsize=(12, 9))
+    fig_, ax1_ = plt.subplots(1, 1)
     fig_: plt.Figure
     ax1_: plt.Axes
     ax2_: plt.Axes
