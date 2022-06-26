@@ -297,8 +297,8 @@ void DoMultiLevelMeasurements(MultiLevelHMCGenerator<configuration_type> &Gen, c
     Gen.analyze_dataset("energy_squared", out_file, 100, -1, 200, 400);*/
     Gen.analyze_dataset("magnetization", out_file, -1, -1, -1, 200, 20000);
     Gen.analyze_dataset("magnetization_squared", out_file, -1, -1, -1, 200, 20000);
-    //Gen.analyze_dataset("energy", out_file, -1, -1, 0, 200, 20000);
-    //Gen.analyze_dataset("energy_squared", out_file, -1, -1, 0, 200, 20000);
+    Gen.analyze_dataset("energy", out_file, -1, -1, 0, 200, 20000);
+    Gen.analyze_dataset("energy_squared", out_file, -1, -1, 0, 200, 20000);
     //Gen.analyze_dataset("energy", out_file, -1, -1, 3000, 200, 2000);
     //Gen.analyze_dataset("vector_length_squared", out_file, -1, -1, 3000, 200, 400);
 }
@@ -541,7 +541,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     //test_multi_level_hmc();
     //test_hmc_measurements();
-    DoMultiLevelMeasurementsFromDir(std::string("volume_exponent"), std::string("ising"), false);
+    DoMultiLevelMeasurementsFromDir(std::string("MLHMC_physical_check"), std::string("ising"), true);
     /*size_t i{17};
     HMCCriticalSimulation(4, 5, 1. / 5., i++, 100000);
     //HMCCriticalSimulationXY(16, 12, 1. / 12.);

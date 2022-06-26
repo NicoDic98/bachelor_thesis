@@ -113,6 +113,11 @@ def base_plot(sub_folder_name="std_hmc/"):
                 fig, ax = make_auto_correlation_plot(energy_name, measurements_group)
                 fig.savefig(sub_folder_name + energy_name + "_auto_correlation.png")
 
+            if magnetization_name in measurements_group:
+                append_observable(magnetization_name, measurements_group, magnetizations, magnetizations_errors)
+                fig, ax = make_auto_correlation_plot(magnetization_name, measurements_group)
+                fig.savefig(sub_folder_name + magnetization_name + "_auto_correlation.png")
+
     # magnetizations
     beta_lin = np.linspace(0.25, 3, 1000)
     if len(magnetizations) > 0:
@@ -134,12 +139,9 @@ def base_plot(sub_folder_name="std_hmc/"):
     # energies
     if len(energies) > 0:
         e_exact = np.array([ene_exact(temp) / temp for temp in beta_lin])
-        print(inverse_betas)
-        print(energies)
-        print(energies_errors)
         fig, ax = make_observable_plot(energy_name, inverse_betas, energies, energies_errors)
-        ax.set_ylim(0, 1.2)
-        # ax.plot(1. / beta_lin, e_exact)
+        # ax.set_ylim(0, 1.2)
+        ax.plot(1. / beta_lin, e_exact)
         fig.savefig(sub_folder_name + energy_name + ".png")
 
     # energies_squared
@@ -704,7 +706,7 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
 # crit_int_auto_correlation_plot_multiple_levels("gs_16CB_ga_1_levels_x/")
 # crit_int_auto_correlation_plot("gs_32_CB_ga_1_levels_2/")
 # crit_int_auto_correlation_plot("gs_64_CB_ga_1_levels_2/")
-info_plot("volume_exponent/", magnetization_squared_name)
-info_plot("volume_exponent/")
+# info_plot("volume_exponent/", magnetization_squared_name)
+# info_plot("volume_exponent/")
 # check_thermalisation("volume_exponent/")
-# base_plot("xy_new/")
+base_plot("HMC_physical_check/")
