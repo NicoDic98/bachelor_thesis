@@ -26,7 +26,7 @@ public:
      *                 and \c HighFive::DataSet to the containing \c HighFive::Group
      * @param generator_ Random number generator to be used for the bootstrap
      */
-    explicit Analyzer(HighFive::Group &group_, const std::string &data_name, size_t start_index,
+    explicit Analyzer(HighFive::Group &group_, const std::string &data_name, int start_index,int end_index,
                       std::default_random_engine &generator_);
 
     /**

@@ -17,21 +17,37 @@ const char *Analyzer::mean_base_name{"mean"};
 const char *Analyzer::bootstrap_mean_base_name{"bootstrap_mean"};
 const char *Analyzer::bootstrap_variance_base_name{"bootstrap_variance"};
 
-Analyzer::Analyzer(HighFive::Group &group_, const std::string &data_name, size_t start_index,
+Analyzer::Analyzer(HighFive::Group &group_, const std::string &data_name, int start_index, int end_index,
                    std::default_random_engine &generator_)
         : dataset{group_.getDataSet(data_name)}, group{group_}, int_auto_correlation_time{-1},
           mean{0.}, generator{generator_}, bootstrap_mean{0.}, bootstrap_variance{0.} {
     dataset.read(data);
     assert(!data.empty());
-    data.erase(data.begin(), data.begin() + start_index);
+    if (end_index > 0) {
+        data.erase(data.begin() + end_index, data.end());
+    } else {
+        end_index = static_cast<int>(data.size());
+    }
+    if (start_index > 0) {
+        data.erase(data.begin(), data.begin() + start_index);
+    } else {
+        start_index = 0;
+    }
 
-    auto_correlation_name = auto_correlation_base_name;
-    int_auto_correlation_time_name = int_auto_correlation_time_base_name;
-    int_auto_correlation_time_bias_name = int_auto_correlation_time_bias_base_name;
-    int_auto_correlation_time_stat_error_name = int_auto_correlation_time_stat_error_base_name;
-    mean_name = mean_base_name;
-    bootstrap_mean_name = bootstrap_mean_base_name;
-    bootstrap_variance_name = bootstrap_variance_base_name;
+    auto_correlation_name = std::string(auto_correlation_base_name).append("_").append(
+            std::to_string(start_index)).append("_").append(std::to_string(end_index));
+    int_auto_correlation_time_name = std::string(int_auto_correlation_time_base_name).append("_").append(
+            std::to_string(start_index)).append("_").append(std::to_string(end_index));
+    int_auto_correlation_time_bias_name = std::string(int_auto_correlation_time_bias_base_name).append("_").append(
+            std::to_string(start_index)).append("_").append(std::to_string(end_index));
+    int_auto_correlation_time_stat_error_name = std::string(int_auto_correlation_time_stat_error_base_name).append(
+            "_").append(std::to_string(start_index)).append("_").append(std::to_string(end_index));
+    mean_name = std::string(mean_base_name).append("_").append(
+            std::to_string(start_index)).append("_").append(std::to_string(end_index));
+    bootstrap_mean_name = std::string(bootstrap_mean_base_name).append("_").append(
+            std::to_string(start_index)).append("_").append(std::to_string(end_index));
+    bootstrap_variance_name = std::string(bootstrap_variance_base_name).append("_").append(
+            std::to_string(start_index)).append("_").append(std::to_string(end_index));
 
     set_mean();
 }
@@ -105,12 +121,10 @@ void Analyzer::block_data(int block_size, int size_to_use) {
     blocked_data.clear();
     if (size_to_use > 0) {
         blocked_data.resize(size_to_use / block_size);
-        bootstrap_mean_name = std::string(bootstrap_mean_base_name).append(std::to_string(size_to_use));
-        bootstrap_variance_name = std::string(bootstrap_variance_base_name).append(std::to_string(size_to_use));
+        bootstrap_mean_name = std::string(bootstrap_mean_name).append("_").append(std::to_string(size_to_use));
+        bootstrap_variance_name = std::string(bootstrap_variance_name).append("_").append(std::to_string(size_to_use));
     } else {
         blocked_data.resize(data.size() / block_size);
-        bootstrap_mean_name = bootstrap_mean_base_name;
-        bootstrap_variance_name = bootstrap_variance_base_name;
     }
 
     std::fill(blocked_data.begin(), blocked_data.end(), 0.);
@@ -136,7 +150,7 @@ void Analyzer::bootstrap_data(int amount_of_sample_sets) {
         return;
     }
     if (amount_of_sample_sets < 0) {
-        amount_of_sample_sets = blocked_data.size();
+        amount_of_sample_sets = static_cast<int>(blocked_data.size());
 
     }
     bootstrapped_data.clear();

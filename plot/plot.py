@@ -15,8 +15,8 @@ energy_name = "energy"
 energy_squared_name = "energy_squared"
 
 
-def fit_function(x, a, b):
-    return a * x ** b
+def fit_function(x, a, z):
+    return a * x ** z
 
 
 def magnetization_exact(beta):
@@ -112,11 +112,13 @@ def base_plot(sub_folder_name="std_hmc/"):
                 append_observable(energy_name, measurements_group, energies, energies_errors)
                 fig, ax = make_auto_correlation_plot(energy_name, measurements_group)
                 fig.savefig(sub_folder_name + energy_name + "_auto_correlation.png")
+                plt.close(fig)
 
             if magnetization_name in measurements_group:
                 append_observable(magnetization_name, measurements_group, magnetizations, magnetizations_errors)
                 fig, ax = make_auto_correlation_plot(magnetization_name, measurements_group)
                 fig.savefig(sub_folder_name + magnetization_name + "_auto_correlation.png")
+                plt.close(fig)
 
     # magnetizations
     beta_lin = np.linspace(0.25, 3, 1000)
@@ -126,6 +128,7 @@ def base_plot(sub_folder_name="std_hmc/"):
         ax.plot(1. / beta_lin, m_exact)
         ax.plot(1. / beta_lin, -m_exact)
         fig.savefig(sub_folder_name + magnetization_name + ".png")
+        plt.close(fig)
 
     # magnetizations_squared
     if len(magnetizations_squared) > 0:
@@ -135,6 +138,7 @@ def base_plot(sub_folder_name="std_hmc/"):
 
         ax.plot(1. / beta_lin, m_squared_exact)
         fig.savefig(sub_folder_name + magnetization_squared_name + ".png")
+        plt.close(fig)
 
     # energies
     if len(energies) > 0:
@@ -143,12 +147,14 @@ def base_plot(sub_folder_name="std_hmc/"):
         # ax.set_ylim(0, 1.2)
         ax.plot(1. / beta_lin, e_exact)
         fig.savefig(sub_folder_name + energy_name + ".png")
+        plt.close(fig)
 
     # energies_squared
     if len(energies_squared) > 0:
         fig, ax = make_observable_plot(energy_squared_name, inverse_betas, energies_squared, energies_squared_errors)
         # todo exact solution
         fig.savefig(sub_folder_name + energy_squared_name + ".png")
+        plt.close(fig)
 
 
 def info_plot(sub_folder_name, observable_name=magnetization_name):
@@ -167,7 +173,7 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
     bootstrap_mean = []
     file_list = []
     for file in os.listdir(sub_folder_name):
-        if file.startswith("out_"):
+        if file.startswith("out_") and file.endswith(".h5"):
             file_list.append(sub_folder_name + file)
 
     for file in file_list:
@@ -179,34 +185,50 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
         measurements_group = level0_group.get("measurements")
         if observable_name in measurements_group:
             observable_group = measurements_group.get(observable_name)
-            int_auto_correlation_time.append(observable_group.attrs["int_auto_correlation_time"])
-            int_auto_correlation_time_bias.append(observable_group.attrs["int_auto_correlation_time_bias"])
+            last_sufix = ""
+            temp_int_auto_correlation_time = []
+            temp_int_auto_correlation_time_stat_error = []
+            temp_x = []
+            for i in range(1000, 100001, 1000):
+                sufix = f"_{0}_{i}"
+                if "int_auto_correlation_time" + sufix in observable_group.attrs:
+                    temp_int_auto_correlation_time.append(observable_group.attrs["int_auto_correlation_time" + sufix])
+                    temp_int_auto_correlation_time_stat_error.append(
+                        observable_group.attrs["int_auto_correlation_time_stat_error" + sufix])
+                    temp_x.append(i)
+                    last_sufix = sufix
+            fig_, ax_ = plt.subplots()
+            fig_: plt.Figure
+            ax_: plt.Axes
+            ax_.errorbar(temp_x, temp_int_auto_correlation_time, temp_int_auto_correlation_time_stat_error, fmt='o')
+            title = f"Grid side length =" + file.split('/')[1].split('_')[1][2:]
+
+            int_auto_correlation_time.append(observable_group.attrs["int_auto_correlation_time" + last_sufix])
+            int_auto_correlation_time_bias.append(observable_group.attrs["int_auto_correlation_time_bias" + last_sufix])
             int_auto_correlation_time_stat_error.append(
-                observable_group.attrs["int_auto_correlation_time_stat_error"])
+                observable_group.attrs["int_auto_correlation_time_stat_error" + last_sufix])
             gamma.append(level0_group.attrs["gamma"])
-            print(level0_group.get("h"), len(level0_group.get("h")))
             system_size.append(len(level0_group.get("h")))
             tick_time.append(level0_group.attrs["tick_time"])
             interpolation_type.append(level0_group.attrs["inter_type"])
             nu_pre_level0.append(level0_group.attrs["nu_pre"])
             nu_post_level0.append(level0_group.attrs["nu_post"])
-            temp_bootstrap_variance = []
-            temp_bootstrap_mean = []
             if "level1" in f:
+                title = "MLHMC " + title
                 level1_group = f.get("level1")
                 nu_pre_level1.append(level1_group.attrs["nu_pre"])
                 nu_post_level1.append(level1_group.attrs["nu_post"])
             else:
+                title = "HMC " + title
                 nu_pre_level1.append(-1)
                 nu_post_level1.append(-1)
-            for i in range(1, 10):
-                if f"bootstrap_variance{i * 10000}" in observable_group.attrs:
-                    temp_bootstrap_variance.append(observable_group.attrs[f"bootstrap_variance{i * 10000}"])
-                    temp_bootstrap_mean.append(observable_group.attrs[f"bootstrap_mean{i * 10000}"])
-            temp_bootstrap_variance.append(observable_group.attrs["bootstrap_variance"])
-            temp_bootstrap_mean.append(observable_group.attrs["bootstrap_mean"])
-            bootstrap_variance.append(temp_bootstrap_variance)
-            bootstrap_mean.append(temp_bootstrap_mean)
+
+            ax_.set_title(title)
+            ax_.set_xlabel("$N_{ensemble}$")
+            ax_.set_ylabel(r"$\tau$")
+            fig_.set_tight_layout(True)
+            fig_.savefig(file.split('.')[0] + observable_name + "test")
+            plt.close(fig_)
 
     int_auto_correlation_time = np.array(int_auto_correlation_time)
     int_auto_correlation_time_bias = np.array(int_auto_correlation_time_bias)
@@ -242,48 +264,52 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
     y_w_bias_correction_multi_hmc = []
     for i, nu_pre in enumerate(nu_pre_level1):
         if nu_pre == -1:
-            ls[0] = ax1_.errorbar(system_size[i], int_auto_correlation_time[i],
+            ls[0] = ax1_.errorbar(np.sqrt(system_size[i]), int_auto_correlation_time[i],
                                   int_auto_correlation_time_stat_error[i],
                                   fmt='.', mfc='red', mec='red', ecolor='red')
-            ax2_.errorbar(system_size[i], int_auto_correlation_time[i] + int_auto_correlation_time_bias[i],
+            ax2_.errorbar(np.sqrt(system_size[i]), int_auto_correlation_time[i] + int_auto_correlation_time_bias[i],
                           int_auto_correlation_time_stat_error[i],
                           fmt='.', mfc='red', mec='red', ecolor='red')
             if system_size[i] < 33 * 33:
-                x_wo_bias_correction_hmc.append(system_size[i])
+                x_wo_bias_correction_hmc.append(np.sqrt(system_size[i]))
                 y_wo_bias_correction_hmc.append(int_auto_correlation_time[i])
                 y_w_bias_correction_hmc.append(int_auto_correlation_time[i] + int_auto_correlation_time_bias[i])
                 yerr_wo_bias_correction_hmc.append(int_auto_correlation_time_stat_error[i])
                 if system_size[i] < 5 * 5:
-                    x_wo_bias_correction_multi_hmc.append(system_size[i])
+                    x_wo_bias_correction_multi_hmc.append(np.sqrt(system_size[i]))
                     y_wo_bias_correction_multi_hmc.append(int_auto_correlation_time[i])
                     y_w_bias_correction_multi_hmc.append(
                         int_auto_correlation_time[i] + int_auto_correlation_time_bias[i])
                     yerr_wo_bias_correction_multi_hmc.append(int_auto_correlation_time_stat_error[i])
-            ax3_.scatter(system_size[i], int_auto_correlation_time_bias[i], c='red')
+            ax3_.scatter(np.sqrt(system_size[i]), int_auto_correlation_time_bias[i], c='red')
         else:
-            ls[1] = ax1_.errorbar(system_size[i], int_auto_correlation_time[i],
+            ls[1] = ax1_.errorbar(np.sqrt(system_size[i]), int_auto_correlation_time[i],
                                   int_auto_correlation_time_stat_error[i],
                                   fmt='.', mfc='green', mec='green', ecolor='green')
-            ax2_.errorbar(system_size[i], int_auto_correlation_time[i] + int_auto_correlation_time_bias[i],
+            ax2_.errorbar(np.sqrt(system_size[i]), int_auto_correlation_time[i] + int_auto_correlation_time_bias[i],
                           int_auto_correlation_time_stat_error[i],
                           fmt='.', mfc='green', mec='green', ecolor='green')
             if system_size[i] < 33 * 33:
-                x_wo_bias_correction_multi_hmc.append(system_size[i])
+                x_wo_bias_correction_multi_hmc.append(np.sqrt(system_size[i]))
                 y_wo_bias_correction_multi_hmc.append(int_auto_correlation_time[i])
                 y_w_bias_correction_multi_hmc.append(int_auto_correlation_time[i] + int_auto_correlation_time_bias[i])
                 yerr_wo_bias_correction_multi_hmc.append(int_auto_correlation_time_stat_error[i])
-            ax3_.scatter(system_size[i], int_auto_correlation_time_bias[i], c='green')
+            ax3_.scatter(np.sqrt(system_size[i]), int_auto_correlation_time_bias[i], c='green')
 
     popt, pcov = opt.curve_fit(fit_function, x_wo_bias_correction_hmc, y_wo_bias_correction_hmc,
                                sigma=yerr_wo_bias_correction_hmc)
-    print("hmc wo_bias_correction", observable_name, popt, np.sqrt(pcov[0, 0]), np.sqrt(pcov[1, 1]))
-    x_fit = np.logspace(1, 4)
+    f = open(sub_folder_name + "output.txt", "w")
+    print("HMC", observable_name, "a =", popt[0], "+-", np.sqrt(pcov[0, 0]), "z =", popt[1], "+-", np.sqrt(pcov[1, 1]),
+          file=f)
+    x_fit = np.logspace(0, 2)
     y_fit = fit_function(x_fit, *popt)
     ax1_.plot(x_fit, y_fit, label="HMC")
 
     popt, pcov = opt.curve_fit(fit_function, x_wo_bias_correction_multi_hmc, y_wo_bias_correction_multi_hmc,
                                sigma=yerr_wo_bias_correction_multi_hmc)
-    print("Multilevel wo_bias_correction", observable_name, popt, np.sqrt(pcov[0, 0]), np.sqrt(pcov[1, 1]))
+    print("MLHMC", observable_name, "a =", popt[0], "+-", np.sqrt(pcov[0, 0]), "z =", popt[1], "+-",
+          np.sqrt(pcov[1, 1]), file=f)
+    f.close()
     y_fit = fit_function(x_fit, *popt)
     ax1_.plot(x_fit, y_fit, label="Multilevel")
 
@@ -291,13 +317,13 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
 
     popt, pcov = opt.curve_fit(fit_function, x_wo_bias_correction_hmc, y_w_bias_correction_hmc,
                                sigma=yerr_wo_bias_correction_hmc)
-    print("hmc w_bias_correction", observable_name, popt, np.sqrt(pcov[0, 0]), np.sqrt(pcov[1, 1]))
+    # print("hmc w_bias_correction", observable_name, popt, np.sqrt(pcov[0, 0]), np.sqrt(pcov[1, 1]))
     y_fit = fit_function(x_fit, *popt)
     ax2_.plot(x_fit, y_fit, label="HMC")
 
     popt, pcov = opt.curve_fit(fit_function, x_wo_bias_correction_multi_hmc, y_w_bias_correction_multi_hmc,
                                sigma=yerr_wo_bias_correction_multi_hmc)
-    print("Multilevel w_bias_correction", observable_name, popt, np.sqrt(pcov[0, 0]), np.sqrt(pcov[1, 1]))
+    # print("Multilevel w_bias_correction", observable_name, popt, np.sqrt(pcov[0, 0]), np.sqrt(pcov[1, 1]))
     y_fit = fit_function(x_fit, *popt)
     ax2_.plot(x_fit, y_fit, label="Multilevel")
 
@@ -707,6 +733,7 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
 # crit_int_auto_correlation_plot("gs_32_CB_ga_1_levels_2/")
 # crit_int_auto_correlation_plot("gs_64_CB_ga_1_levels_2/")
 # info_plot("volume_exponent/", magnetization_squared_name)
-# info_plot("volume_exponent/")
+info_plot("volume_exponent_test/")
 # check_thermalisation("volume_exponent/")
-base_plot("HMC_physical_check/")
+# base_plot("HMC_physical_check/")
+# base_plot("MLHMC_physical_check/")
