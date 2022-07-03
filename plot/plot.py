@@ -226,6 +226,7 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
             ax_.set_title(title)
             ax_.set_xlabel("$N_{ensemble}$")
             ax_.set_ylabel(r"$\tau$")
+            ax_.set_yscale("log")
             fig_.set_tight_layout(True)
             fig_.savefig(file.split('.')[0] + observable_name + "test")
             plt.close(fig_)
