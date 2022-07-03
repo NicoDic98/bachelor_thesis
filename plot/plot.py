@@ -76,7 +76,8 @@ def make_auto_correlation_plot(name, measurements_group_):
     make_auto_correlation_plot_to_ax(name, measurements_group_, ax_)
     ax_.set_xlabel(r"t")
     ax_.set_ylabel(r"$\Gamma$(" + name + ")")
-    ax_.set_yscale("log")
+    # ax_.set_yscale("log")
+    ax_.set_xlim(-1, 100)
     fig_.set_tight_layout(True)
     return fig_, ax_
 
@@ -121,9 +122,9 @@ def base_plot(sub_folder_name="std_hmc/"):
 
             if energy_name in measurements_group:
                 append_observable(energy_name, measurements_group, energies, energies_errors)
-                # fig, ax = make_auto_correlation_plot(energy_name, measurements_group)
-                # fig.savefig(sub_folder_name + energy_name + "_auto_correlation.png")
-                # plt.close(fig)
+                fig, ax = make_auto_correlation_plot(energy_name, measurements_group)
+                fig.savefig(sub_folder_name + energy_name + f"_auto_correlation_{inverse_betas[-1]}.png")
+                plt.close(fig)
 
             if magnetization_name in measurements_group:
                 append_observable(magnetization_name, measurements_group, magnetizations, magnetizations_errors)
@@ -226,8 +227,8 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
                     temp_int_auto_correlation_time.append(observable_group.attrs["int_auto_correlation_time" + sufix])
                     temp_int_auto_correlation_time_stat_error.append(
                         observable_group.attrs["int_auto_correlation_time_stat_error" + sufix])
-                    temp_x.append(100000-i)
-                    if len(last_sufix)==0:
+                    temp_x.append(100000 - i)
+                    if len(last_sufix) == 0:
                         last_sufix = sufix
             fig_, ax_ = plt.subplots()
             fig_: plt.Figure
@@ -766,7 +767,7 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
 # crit_int_auto_correlation_plot("gs_32_CB_ga_1_levels_2/")
 # crit_int_auto_correlation_plot("gs_64_CB_ga_1_levels_2/")
 # info_plot("volume_exponent/", magnetization_squared_name)
-info_plot("volume_exponent_test/")
+# info_plot("volume_exponent_test/")
 # check_thermalisation("volume_exponent/")
-# base_plot("HMC_physical_check/")
+base_plot("HMC_physical_check/")
 # base_plot("MLHMC_physical_check/")
