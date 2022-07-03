@@ -77,7 +77,7 @@ def make_auto_correlation_plot(name, measurements_group_):
     ax_.set_xlabel(r"t")
     ax_.set_ylabel(r"$\Gamma$(" + name + ")")
     # ax_.set_yscale("log")
-    ax_.set_xlim(-1, 100)
+    # ax_.set_xlim(-1, 100)
     fig_.set_tight_layout(True)
     return fig_, ax_
 
