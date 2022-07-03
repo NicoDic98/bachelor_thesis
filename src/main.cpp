@@ -288,12 +288,12 @@ void DoMultiLevelMeasurements(MultiLevelHMCGenerator<configuration_type> &Gen, c
     }
     HighFive::File out_file(out_filename, HighFive::File::ReadWrite);
     int my_size = 1e5;
-    int amount_of_sub_samples = 10;
+    int amount_of_sub_samples = 20;
     for (int k = my_size / amount_of_sub_samples; k < my_size; k += my_size / amount_of_sub_samples) {
-        Gen.analyze_dataset("magnetization", out_file, -1, -1, -1, k, 200, 20000);
-        Gen.analyze_dataset("magnetization_squared", out_file, -1, -1, -1, k, 200, 20000);
-        Gen.analyze_dataset("energy", out_file, -1, -1, -1, k, 200, 20000);
-        Gen.analyze_dataset("energy_squared", out_file, -1, -1, -1, k, 200, 20000);
+        Gen.analyze_dataset("magnetization", out_file, -1, -1, k, -1, 200, 20000);
+        Gen.analyze_dataset("magnetization_squared", out_file, -1, -1, k, -1, 200, 20000);
+        Gen.analyze_dataset("energy", out_file, -1, -1, k, -1, 200, 20000);
+        Gen.analyze_dataset("energy_squared", out_file, -1, -1, k, -1, 200, 20000);
     }
     Gen.analyze_dataset("magnetization", out_file, -1, -1, -1, -1, 200, 20000);
     Gen.analyze_dataset("magnetization_squared", out_file, -1, -1, -1, -1, 200, 20000);

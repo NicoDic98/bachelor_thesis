@@ -36,12 +36,22 @@ def ene_exact(J):  # exact internal energy in thermodynamic limit (for h=0)\n",
 
 def append_observable(name, measurements_group_, observable_list, observable_error_list):
     observable_group = measurements_group_.get(name)
-    temp = observable_group.attrs["bootstrap_mean"]
+    temp = -42
+    if "bootstrap_mean_10000_100000" in observable_group.attrs:
+        temp = observable_group.attrs["bootstrap_mean_10000_100000"]
+        print("hi")
+    else:
+        temp = observable_group.attrs["bootstrap_mean"]
     if np.isinf(temp) or temp > 1e200:
         observable_list.append(-42)
     else:
         observable_list.append(temp)
-    temp = observable_group.attrs["bootstrap_variance"]
+
+    if "bootstrap_variance_10000_100000" in observable_group.attrs:
+        temp = observable_group.attrs["bootstrap_variance_10000_100000"]
+        print("hey")
+    else:
+        temp = observable_group.attrs["bootstrap_variance"]
     if np.isinf(temp) or temp > 1e200 or np.isnan(temp):
         observable_error_list.append(42)
     else:
@@ -75,7 +85,8 @@ def make_observable_plot(name, inverse_betas, observable_list, observable_error_
     fig_, ax_ = plt.subplots()
     fig_: plt.Figure
     ax_: plt.Axes
-    ax_.errorbar(inverse_betas, observable_list, observable_error_list, fmt='o')
+    ax_.errorbar(inverse_betas, observable_list, observable_error_list,
+                 color='green', fmt='.', markersize='10', ecolor='red', capsize=4, label="Measurements")
 
     ax_.set_xlabel(r"1/$\beta$")
     ax_.set_ylabel(name)
@@ -110,23 +121,38 @@ def base_plot(sub_folder_name="std_hmc/"):
 
             if energy_name in measurements_group:
                 append_observable(energy_name, measurements_group, energies, energies_errors)
-                fig, ax = make_auto_correlation_plot(energy_name, measurements_group)
-                fig.savefig(sub_folder_name + energy_name + "_auto_correlation.png")
-                plt.close(fig)
+                # fig, ax = make_auto_correlation_plot(energy_name, measurements_group)
+                # fig.savefig(sub_folder_name + energy_name + "_auto_correlation.png")
+                # plt.close(fig)
 
             if magnetization_name in measurements_group:
                 append_observable(magnetization_name, measurements_group, magnetizations, magnetizations_errors)
-                fig, ax = make_auto_correlation_plot(magnetization_name, measurements_group)
-                fig.savefig(sub_folder_name + magnetization_name + "_auto_correlation.png")
-                plt.close(fig)
+                # fig, ax = make_auto_correlation_plot(magnetization_name, measurements_group)
+                # fig.savefig(sub_folder_name + magnetization_name + "_auto_correlation.png")
+                # plt.close(fig)
+
+            if energy_squared_name in measurements_group:
+                append_observable(energy_squared_name, measurements_group, energies_squared, energies_squared_errors)
+                # fig, ax = make_auto_correlation_plot(energy_squared_name, measurements_group)
+                # fig.savefig(sub_folder_name + energy_squared_name + "_auto_correlation.png")
+                # plt.close(fig)
+
+            if magnetization_squared_name in measurements_group:
+                append_observable(magnetization_squared_name, measurements_group, magnetizations_squared,
+                                  magnetizations_squared_errors)
+                # fig, ax = make_auto_correlation_plot(magnetization_squared_name, measurements_group)
+                # fig.savefig(sub_folder_name + magnetization_squared_name + "_auto_correlation.png")
+                # plt.close(fig)
 
     # magnetizations
     beta_lin = np.linspace(0.25, 3, 1000)
     if len(magnetizations) > 0:
         m_exact = np.array([magnetization_exact(temp) for temp in beta_lin])
         fig, ax = make_observable_plot(magnetization_name, inverse_betas, magnetizations, magnetizations_errors)
-        ax.plot(1. / beta_lin, m_exact)
-        ax.plot(1. / beta_lin, -m_exact)
+        ax.set_ylabel("$<m>$")
+        ax.plot(1. / beta_lin, m_exact, label="Thermodynamic limit")
+        ax.plot(1. / beta_lin, -m_exact, label="-Thermodynamic limit")
+        ax.legend()
         fig.savefig(sub_folder_name + magnetization_name + ".png")
         plt.close(fig)
 
@@ -135,8 +161,9 @@ def base_plot(sub_folder_name="std_hmc/"):
         m_squared_exact = m_exact ** 2  # todo
         fig, ax = make_observable_plot(magnetization_squared_name, inverse_betas, magnetizations_squared,
                                        magnetizations_squared_errors)
-
-        ax.plot(1. / beta_lin, m_squared_exact)
+        ax.set_ylabel("$<m^2>$")
+        ax.plot(1. / beta_lin, m_squared_exact, label="Thermodynamic limit")
+        ax.legend()
         fig.savefig(sub_folder_name + magnetization_squared_name + ".png")
         plt.close(fig)
 
@@ -145,14 +172,18 @@ def base_plot(sub_folder_name="std_hmc/"):
         e_exact = np.array([ene_exact(temp) / temp for temp in beta_lin])
         fig, ax = make_observable_plot(energy_name, inverse_betas, energies, energies_errors)
         # ax.set_ylim(0, 1.2)
-        ax.plot(1. / beta_lin, e_exact)
+        ax.set_ylabel("$<e>$")
+        ax.plot(1. / beta_lin, e_exact, label="Thermodynamic limit")
+        ax.legend()
         fig.savefig(sub_folder_name + energy_name + ".png")
         plt.close(fig)
 
     # energies_squared
     if len(energies_squared) > 0:
         fig, ax = make_observable_plot(energy_squared_name, inverse_betas, energies_squared, energies_squared_errors)
+        ax.set_ylabel("$<e^2>$")
         # todo exact solution
+        ax.legend()
         fig.savefig(sub_folder_name + energy_squared_name + ".png")
         plt.close(fig)
 
@@ -190,7 +221,7 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
             temp_int_auto_correlation_time_stat_error = []
             temp_x = []
             for i in range(1000, 100001, 1000):
-                sufix = f"_{0}_{i}"
+                sufix = f"_{i}_{100000}"
                 if "int_auto_correlation_time" + sufix in observable_group.attrs:
                     temp_int_auto_correlation_time.append(observable_group.attrs["int_auto_correlation_time" + sufix])
                     temp_int_auto_correlation_time_stat_error.append(
@@ -734,7 +765,7 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
 # crit_int_auto_correlation_plot("gs_32_CB_ga_1_levels_2/")
 # crit_int_auto_correlation_plot("gs_64_CB_ga_1_levels_2/")
 # info_plot("volume_exponent/", magnetization_squared_name)
-info_plot("volume_exponent_test/")
+# info_plot("volume_exponent_test/")
 # check_thermalisation("volume_exponent/")
-# base_plot("HMC_physical_check/")
+base_plot("HMC_physical_check/")
 # base_plot("MLHMC_physical_check/")

@@ -91,6 +91,9 @@ std::vector<double> Analyzer::auto_correlation(size_t max_t) {
                                                 int_auto_correlation_time / sqrt(static_cast<double>(data.size()))};
 
     int_auto_correlation_time /= (1 - (2 * W + 1) / static_cast<double>(data.size()));
+    if (int_auto_correlation_time < 0.5) {
+        int_auto_correlation_time = 0.5;
+    }
     std::cout << "i:\t" << int_auto_correlation_time << "\tW:\t" << W << std::endl;
     // this is really the variance!!!
     write_static_size(int_auto_correlation_time, group, int_auto_correlation_time_name);
