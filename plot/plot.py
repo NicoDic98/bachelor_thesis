@@ -226,8 +226,9 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
                     temp_int_auto_correlation_time.append(observable_group.attrs["int_auto_correlation_time" + sufix])
                     temp_int_auto_correlation_time_stat_error.append(
                         observable_group.attrs["int_auto_correlation_time_stat_error" + sufix])
-                    temp_x.append(i)
-                    last_sufix = sufix
+                    temp_x.append(100000-i)
+                    if len(last_sufix)==0:
+                        last_sufix = sufix
             fig_, ax_ = plt.subplots()
             fig_: plt.Figure
             ax_: plt.Axes
@@ -765,7 +766,7 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
 # crit_int_auto_correlation_plot("gs_32_CB_ga_1_levels_2/")
 # crit_int_auto_correlation_plot("gs_64_CB_ga_1_levels_2/")
 # info_plot("volume_exponent/", magnetization_squared_name)
-# info_plot("volume_exponent_test/")
+info_plot("volume_exponent_test/")
 # check_thermalisation("volume_exponent/")
-base_plot("HMC_physical_check/")
+# base_plot("HMC_physical_check/")
 # base_plot("MLHMC_physical_check/")
