@@ -16,122 +16,9 @@
 #include <Analyzer.h>
 #include <fstream>
 #include <iomanip>
-//#include <hip/hip_runtime.h>
 #include <filesystem>
 
 #include <omp.h>
-
-/*#define HIP_ASSERT(x) (assert((x)==hipSuccess))
-
-
-#define WIDTH     1024
-#define HEIGHT    1024
-
-#define NUM       (WIDTH*HEIGHT)
-
-#define THREADS_PER_BLOCK_X  16
-#define THREADS_PER_BLOCK_Y  16
-#define THREADS_PER_BLOCK_Z  1
-
-__global__ void
-vectoradd_float(float *__restrict__ a, const float *__restrict__ b, const float *__restrict__ c, int width,
-                int height) {
-
-    int x = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
-    int y = hipBlockDim_y * hipBlockIdx_y + hipThreadIdx_y;
-
-    int i = y * width + x;
-    if (i < (width * height)) {
-        a[i] = b[i] + c[i];
-    }
-
-
-}
-
-int test_hip() {
-    float *hostA;
-    float *hostB;
-    float *hostC;
-
-    float *deviceA;
-    float *deviceB;
-    float *deviceC;
-
-    hipDeviceProp_t devProp;
-    auto ret = (hipGetDeviceProperties(&devProp, 0));
-    HIP_ASSERT(ret);
-    std::cout << " System minor " << devProp.minor << std::endl;
-    std::cout << " System major " << devProp.major << std::endl;
-    std::cout << " agent prop name " << devProp.name << std::endl;
-
-
-    std::cout << "hip Device prop succeeded " << std::endl;
-
-
-    int i;
-    int errors;
-
-    hostA = (float *) malloc(NUM * sizeof(float));
-    hostB = (float *) malloc(NUM * sizeof(float));
-    hostC = (float *) malloc(NUM * sizeof(float));
-
-    // initialize the input data
-    for (i = 0; i < NUM; i++) {
-        hostB[i] = (float) i;
-        hostC[i] = (float) i * 100.0f;
-    }
-
-    ret = (hipMalloc((void **) &deviceA, NUM * sizeof(float)));
-    HIP_ASSERT(ret);
-    ret = (hipMalloc((void **) &deviceB, NUM * sizeof(float)));
-    HIP_ASSERT(ret);
-    ret = (hipMalloc((void **) &deviceC, NUM * sizeof(float)));
-    HIP_ASSERT(ret);
-
-    ret = (hipMemcpy(deviceB, hostB, NUM * sizeof(float), hipMemcpyHostToDevice));
-    HIP_ASSERT(ret);
-    ret = (hipMemcpy(deviceC, hostC, NUM * sizeof(float), hipMemcpyHostToDevice));
-    HIP_ASSERT(ret);
-
-
-    hipLaunchKernelGGL(vectoradd_float,
-                       dim3(WIDTH / THREADS_PER_BLOCK_X, HEIGHT / THREADS_PER_BLOCK_Y),
-                       dim3(THREADS_PER_BLOCK_X, THREADS_PER_BLOCK_Y),
-                       0, 0,
-                       deviceA, deviceB, deviceC, WIDTH, HEIGHT);
-
-
-    ret = (hipMemcpy(hostA, deviceA, NUM * sizeof(float), hipMemcpyDeviceToHost));
-    HIP_ASSERT(ret);
-
-    // verify the results
-    errors = 0;
-    for (i = 0; i < NUM; i++) {
-        if (hostA[i] != (hostB[i] + hostC[i])) {
-            errors++;
-        }
-    }
-    if (errors != 0) {
-        std::cerr << "FAILED: " << errors << " errors";
-    } else {
-        std::cout << "PASSED!" << std::endl;
-    }
-
-    ret = (hipFree(deviceA));
-    HIP_ASSERT(ret);
-    ret = (hipFree(deviceB));
-    HIP_ASSERT(ret);
-    ret = (hipFree(deviceC));
-    HIP_ASSERT(ret);
-
-    free(hostA);
-    free(hostB);
-    free(hostC);
-
-    //hipResetDefaultAccelerator();
-
-    return errors;
-}*/
 
 /**
  * @brief Tests the Leap Frog integrator
@@ -531,16 +418,30 @@ void HMCCriticalSimulationXY(int grid_size = 16, const size_t &amount_of_steps =
 
 /**
  * @brief Main function
- * @param argc
- * @param argv
+ * @param argc Argument count
+ * @param argv Arguments
  * @return Exit status
  */
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
+    if (argc >= 2) {
+        for (int l = 1; l < argc; ++l) {
+            if (std::string(argv[l]) == "license") {
+                std::string line;
+                std::ifstream license_file(std::string(PROJ_DIR).append("LICENSE"));
+                if (license_file.is_open()) {
+                    while (license_file) {
+                        std::getline(license_file, line);
+                        std::cout << line << '\n';
+                    }
+                }
+            }
+        }
+    }
     //test_leap_frog();
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     //test_multi_level_hmc();
     //test_hmc_measurements();
-    DoMultiLevelMeasurementsFromDir(std::string("volume_exponent_test"), std::string("ising"), false);
+    //DoMultiLevelMeasurementsFromDir(std::string("volume_exponent_test"), std::string("ising"), false);
     /*size_t i{17};
     HMCCriticalSimulation(4, 5, 1. / 5., i++, 100000);
     //HMCCriticalSimulationXY(16, 12, 1. / 12.);
@@ -560,7 +461,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
                                  amount_of_steps,
                                  step_sizes, i++, 100000);
     //}*/
-    //return test_hip();
 }
 
 
