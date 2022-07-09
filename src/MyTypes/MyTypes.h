@@ -23,6 +23,9 @@ typedef Eigen::VectorXd VectorX;
  */
 typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> MatrixX;
 
+/**
+ * @brief Vector definition for multidimensional parameters
+ */
 typedef std::vector<VectorX> MultiVectorX;
 
 /**
@@ -51,6 +54,9 @@ inline int int_pow(int x, int y) {
 /**
  * @brief Fills the connectivity matrix \a k_sym for the given hyper cube of dimension \a dimension and side length \p grid_size
  * @param grid_size Side length
+ * @param dimension Dimension of the lattice
+ * @param neighbour_extent Extent of coupling
+ * @param k_sym Matrix into which to write the connectivity matrix
  */
 void fill_connectivity_matrix(int grid_size, int dimension, int neighbour_extent, MatrixX &k_sym);
 
@@ -58,6 +64,8 @@ void fill_connectivity_matrix(int grid_size, int dimension, int neighbour_extent
  * @brief Fills the \a InterpolationMatrix
  * @param InterpolationType_ Type of interpolation to be used
  * @param fine_size Finer grid total size
+ * @param dimension Dimension of the lattice
+ * @param InterpolationMatrix Matrix into which to write the interpolation matrix
  */
 void fill_interpolation_matrix(InterpolationType InterpolationType_, long fine_size, int dimension,
                                MatrixX &InterpolationMatrix);
