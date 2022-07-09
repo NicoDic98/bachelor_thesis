@@ -22,8 +22,10 @@ class Analyzer {
 public:
     /**
      * @brief Standard constructor for Analyzer
-     * @param dataset_ Dataset to be analyzed, parameters will be written as \c HighFive::Attribute
-     *                 and \c HighFive::DataSet to the containing \c HighFive::Group
+     * @param group_ Group under which the dataset with name \p data_name lies
+     * @param data_name Name of dataset
+     * @param start_index Index to be used as starting point for the analysis
+     * @param end_index Index to be used as ending point for the analysis
      * @param generator_ Random number generator to be used for the bootstrap
      */
     explicit Analyzer(HighFive::Group &group_, const std::string &data_name, int start_index,int end_index,
@@ -44,6 +46,7 @@ public:
     /**
      * @brief Block the data into blocks of size \p block_size
      * @param block_size Block size
+     * @param size_to_use Part of internal array to be used for the blocking
      */
     void block_data(int block_size, int size_to_use);
 
@@ -83,20 +86,45 @@ private:
      * @brief String to be used as key for the auto_correlation in H5 files
      */
     static const char *auto_correlation_base_name;
+
+    /**
+     * @brief String to be used as key for the auto_correlation in H5 files
+     */
     std::string auto_correlation_name;
 
     /**
      * @brief Mean of the dataset
      */
     double int_auto_correlation_time;
+
     /**
      * @brief String to be used as key for the int_auto_correlation_time in H5 files
      */
     static const char *int_auto_correlation_time_base_name;
+
+    /**
+     * @brief String to be used as key for the auto_correlation in H5 files
+     */
     std::string int_auto_correlation_time_name;
+
+    /**
+     * @brief String to be used as key for the int_auto_correlation_time_bias in H5 files
+     */
     static const char *int_auto_correlation_time_bias_base_name;
+
+    /**
+     * @brief String to be used as key for the int_auto_correlation_time_bias in H5 files
+     */
     std::string int_auto_correlation_time_bias_name;
+
+    /**
+     * @brief String to be used as key for the int_auto_correlation_time_stat_error in H5 files
+     */
     static const char *int_auto_correlation_time_stat_error_base_name;
+
+    /**
+     * @brief String to be used as key for the int_auto_correlation_time_stat_error in H5 files
+     */
     std::string int_auto_correlation_time_stat_error_name;
 
     /**
@@ -112,6 +140,9 @@ private:
      * @brief String to be used as key for \a mean in H5 files
      */
     static const char *mean_base_name;
+    /**
+     * @brief String to be used as key for \a mean in H5 files
+     */
     std::string mean_name;
 
     /**
@@ -122,6 +153,9 @@ private:
      * @brief String to be used as key for \a bootstrap_mean in H5 files
      */
     static const char *bootstrap_mean_base_name;
+    /**
+     * @brief String to be used as key for \a bootstrap_mean in H5 files
+     */
     std::string bootstrap_mean_name;
 
     /**
@@ -132,6 +166,9 @@ private:
      * @brief String to be used as key for \a bootstrap_variance in H5 files
      */
     static const char *bootstrap_variance_base_name;
+    /**
+     * @brief String to be used as key for \a bootstrap_variance in H5 files
+     */
     std::string bootstrap_variance_name;
 
     /**
