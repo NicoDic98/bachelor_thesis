@@ -14,7 +14,9 @@
 #include <vector>
 #include <MyTypes.h>
 
-
+/**
+ * @brief Definition of the XY model
+ */
 class XYModel : public BaseModel<MultiVectorX> {
 public:
     XYModel(double beta_,double eta_, MultiVectorX h_, int dimension_, int neighbour_extent_, int grid_size_);

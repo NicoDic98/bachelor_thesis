@@ -21,7 +21,7 @@
 #include <omp.h>
 
 /**
- * @brief Tests the Leap Frog integrator
+ * @brief Tests the Leap Frog integrator for the Ising model
  */
 [[maybe_unused]] void test_leap_frog() {
     const int grid_size = 5;
@@ -67,7 +67,7 @@
 
 /**
  * @brief Tests the HMC, and prints some results to filename
- * @param filename
+ * @param filename File to print to
  */
 void test_HMC(const std::string &filename) {
     const int grid_size = 5;
@@ -109,7 +109,9 @@ void test_HMC(const std::string &filename) {
 
 }
 
-
+/**
+ * @brief Tests the basic functionality of MLHMC
+ */
 void test_multi_level_hmc() {
     const int grid_size = 16;
     const int dim = 2;
@@ -158,6 +160,13 @@ void test_multi_level_hmc() {
 
 }
 
+/**
+ * @brief Performs measurements and analysis on the given MLHMC generator
+ * @tparam configuration_type Gets inferred from \p Gen
+ * @param Gen MLHMC generator, which has the ensembles stored
+ * @param out_filename Output filename
+ * @param remeasure Rather to perform measurements or not
+ */
 template<class configuration_type>
 void DoMultiLevelMeasurements(MultiLevelHMCGenerator<configuration_type> &Gen, const std::string &out_filename,
                               bool remeasure) {
@@ -189,6 +198,12 @@ void DoMultiLevelMeasurements(MultiLevelHMCGenerator<configuration_type> &Gen, c
     //Gen.analyze_dataset("vector_length_squared", out_file, -1, -1, 3000, 200, 400);
 }
 
+/**
+ * @brief Performs measurements by reading in a given file with name \p filename
+ * @param filename Name of file to read in
+ * @param model Name of model under which the file was generated
+ * @param remeasure Rather to perform measurements or not
+ */
 void DoMultiLevelMeasurementsFromFile(std::string filename, const std::string &model, bool remeasure) {
 
     if (!filename.starts_with('/')) {
@@ -217,6 +232,12 @@ void DoMultiLevelMeasurementsFromFile(std::string filename, const std::string &m
     }
 }
 
+/**
+ * @brief Performs measurements by reading in all h5 files within the directory \p dirname
+ * @param dirname Name of the directory to read in
+ * @param model Name of model under which the files were generated
+ * @param remeasure Rather to perform measurements or not
+ */
 void DoMultiLevelMeasurementsFromDir(const std::string &dirname, const std::string &model, bool remeasure) {
     for (const auto &file: std::filesystem::directory_iterator(std::string(DATA_DIR).append(dirname))) {
         if (std::string(file.path().filename()).starts_with("out")) {
@@ -229,6 +250,19 @@ void DoMultiLevelMeasurementsFromDir(const std::string &dirname, const std::stri
     }
 }
 
+/**
+ * @brief Perform simulation of the Isingmodel at the critical point
+ * @param grid_size Grid size on which to simulate (always 2 dimensional)
+ * @param nu_pre Amount of pre steps to be performed on the different levels of MLHMC
+ * @param nu_post Amount of post steps to be performed on the different levels of MLHMC
+ * @param erg_jump_dists Interval of ergodicity jumps on each level of MLHMC, -1 means no jumps
+ * @param gamma Amount of gamma repetitions
+ * @param int_type Interpolation type
+ * @param amount_of_steps Amount of molecular dynamics steps at each level of MLHMC
+ * @param step_sizes Step size used in the LeapFrogIntegrator at each level of MLHMC
+ * @param id Id to be used for the saved file
+ * @param config_amount Amount of configurations to be produced
+ */
 void MultiLevelCriticalSimulation(const int grid_size = 16,
                                   std::vector<size_t> nu_pre = {0},
                                   std::vector<size_t> nu_post = {1},
@@ -279,6 +313,14 @@ void MultiLevelCriticalSimulation(const int grid_size = 16,
     mygen.dumpToH5(file);
 }
 
+/**
+ * @brief Simulation of the Ising model at the critical point using HMC as a special case of MLHMC
+ * @param grid_size Grid size on which to simulate (always 2 dimensional)
+ * @param amount_of_steps Amount of molecular dynamics steps at each level of MLHMC
+ * @param step_sizes Step size used in the LeapFrogIntegrator at each level of MLHMC
+ * @param id Id to be used for the saved file
+ * @param config_amount Amount of configurations to be produced
+ */
 void HMCCriticalSimulation(int grid_size = 16, const size_t &amount_of_steps = 6,
                            const double step_sizes = 1. / 6., size_t id = 0, int config_amount = 30000) {
     MultiLevelCriticalSimulation(grid_size, {0}, {1},
@@ -287,6 +329,9 @@ void HMCCriticalSimulation(int grid_size = 16, const size_t &amount_of_steps = 6
                                  {step_sizes}, id, config_amount);
 }
 
+/**
+ * @brief Tests the Leap Frog integrator for the XY model
+ */
 void test_leap_frog_XY() {
     const int grid_size = 5;
 
@@ -342,6 +387,20 @@ void test_leap_frog_XY() {
     }
 }
 
+/**
+ * @brief Perform simulation of the XY model at inverse temperature \p beta
+ * @param grid_size Grid size on which to simulate (always 2 dimensional)
+ * @param beta Inverse temperature at which to simulate
+ * @param nu_pre Amount of pre steps to be performed on the different levels of MLHMC
+ * @param nu_post Amount of post steps to be performed on the different levels of MLHMC
+ * @param erg_jump_dists Interval of ergodicity jumps on each level of MLHMC, -1 means no jumps
+ * @param gamma Amount of gamma repetitions
+ * @param eta Self introduced lagrange multiplier, which didn't yield promising results
+ * @param int_type Interpolation type
+ * @param amount_of_steps Amount of molecular dynamics steps at each level of MLHMC
+ * @param step_sizes Step size used in the LeapFrogIntegrator at each level of MLHMC
+ * @param id Id to be used for the saved file
+ */
 void MultiLevelSimulationXY(const int grid_size = 16,
                             const double beta = 2,
                             std::vector<size_t> nu_pre = {0},
@@ -399,6 +458,12 @@ void MultiLevelSimulationXY(const int grid_size = 16,
     mygen.dumpToH5(file);
 }
 
+/**
+ * @brief Performs simulation of the XY model over a range of temperatures
+ * @param grid_size Grid size on which to simulate (always 2 dimensional)
+ * @param amount_of_steps Amount of molecular dynamics steps at each level of MLHMC
+ * @param step_sizes Step size used in the LeapFrogIntegrator at each level of MLHMC
+ */
 void HMCCriticalSimulationXY(int grid_size = 16, const size_t &amount_of_steps = 6,
                              const double step_sizes = 1. / 6.) {
 
