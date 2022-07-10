@@ -19,6 +19,15 @@
  */
 class XYModel : public BaseModel<MultiVectorX> {
 public:
+    /**
+     * @brief Constructor of XYModel, with generation of connectivity matrix
+     * @param beta_ Inverse temperature
+     * @param eta_ Lagrange multiplier
+     * @param h_ External field
+     * @param dimension_ Dimension of the XY model
+     * @param neighbour_extent_ Range of coupling spins
+     * @param grid_size_ Spatial extend of the square/cubic/... grid
+     */
     XYModel(double beta_,double eta_, MultiVectorX h_, int dimension_, int neighbour_extent_, int grid_size_);
 
     /**
@@ -50,6 +59,7 @@ public:
     /**
      * @brief Calculates the artificial energy for the given field phi
      * @param phi Field
+     * @param pi Conjugate momentum
      * @return H(phi) (artificial energy)
      */
     double get_artificial_energy(const MultiVectorX &phi, const MultiVectorX &pi) override;
@@ -182,8 +192,14 @@ private:
      */
     static const char *neighbour_extent_name;
 
+    /**
+     * @brief Lagrange multiplier
+     */
     double eta;
 
+    /**
+     * @brief String to be used as key for \a eta in H5 files
+     */
     static const char *eta_name;
 
     /**

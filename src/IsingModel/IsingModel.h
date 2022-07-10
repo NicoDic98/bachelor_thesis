@@ -64,6 +64,7 @@ public:
     /**
      * @brief Calculates the artificial energy for the given field phi
      * @param phi Field
+     * @param pi Conjugate momentum
      * @return H(phi) (artificial energy)
      */
     double get_artificial_energy(const VectorX &phi, const VectorX &pi) override;
@@ -134,6 +135,10 @@ public:
      */
     void update_phi(VectorX &phi, VectorX &pi, double step_size) override;
 
+    /**
+     * @brief Perform known ergodicity jump on \p phi
+     * @param phi Field on which the ergodicity jump should be performed
+     */
     void ergodicity_jump(VectorX &phi) override;
 
     /**

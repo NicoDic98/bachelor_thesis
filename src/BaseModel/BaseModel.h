@@ -67,10 +67,16 @@ public:
     /**
      * @brief Calculates the artificial energy for the given field phi
      * @param phi Field
+     * @param pi Conjugate momentum
      * @return H(phi) (artificial energy)
      */
     virtual double get_artificial_energy(const configuration_type &phi, const configuration_type &pi) = 0;
 
+    /**
+     * @brief Generates a conjugate momentum
+     * @param generator Random number generator to be used for the generation process
+     * @return Conjugate momentum
+     */
     virtual configuration_type get_pi(std::default_random_engine &generator)=0;
 
     /**
@@ -92,6 +98,11 @@ public:
      */
     [[maybe_unused]] virtual double get_magnetization(const configuration_type &phi) { return 0; }
 
+    /**
+     * @brief Calculates the field squared for the given field \p phi
+     * @param phi Field
+     * @return phi^2
+     */
     [[maybe_unused]] virtual double get_field_squared(const configuration_type &phi) { return 0; }
 
     /**
@@ -116,6 +127,11 @@ public:
     [[maybe_unused]] virtual double get_energy_squared(const configuration_type &phi) { return 0; }
 
 
+    /**
+     * @brief Calculates the general vector length squared for the given field \p phi
+     * @param phi Field
+     * @return |phi|^2
+     */
     [[maybe_unused]] virtual double get_vector_length_squared(const configuration_type &phi) { return 0; }
 
 
@@ -142,6 +158,10 @@ public:
      */
     virtual void update_phi(configuration_type &phi, configuration_type &pi, double step_size)=0;
 
+    /**
+     * @brief Perform ergodicity jump on \p phi
+     * @param phi Field on which the ergodicity jump should be performed
+     */
     virtual void ergodicity_jump(configuration_type &phi);
 
     /**
@@ -176,6 +196,10 @@ public:
      */
     virtual void update_fields(const configuration_type &phi) = 0;
 
+    /**
+     * @brief Renormalize the field \p phi
+     * @param phi Field which needs to be renormalized
+     */
     virtual inline void renormalize(configuration_type &phi){
 
     }

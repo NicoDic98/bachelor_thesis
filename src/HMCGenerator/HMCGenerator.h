@@ -120,6 +120,7 @@ private:
     /**
      * @brief Do one HMC step
      * @param phi0 Starting field
+     * @param do_ergo_jump Rather to perform known ergodicity jumps
      * @return New field (after accept/reject)
      */
     configuration_type do_HMC_step([[maybe_unused]] [[maybe_unused]] const configuration_type &phi0, bool do_ergo_jump);

@@ -32,6 +32,7 @@ public:
      * @param model_ Model for which to generate ensembles
      * @param nu_pre_ Amount of pre coarsening steps to take at each level
      * @param nu_post_ Amount of post coarsening steps to take at each level
+     * @param erg_jump_dists_ Distance of ergodicity jumps (negative for no ergodicity jumps)
      * @param gamma_ Amount of repetitions at each level (determines if a 'V' or 'W' or ... cycle is performed)
      * @param InterpolationType_ Interpolation type used to generate the coarser levels
      * @param amount_of_steps_ Amount of steps to be used in the integration process for each level
@@ -77,6 +78,17 @@ public:
     BaseModel<configuration_type>::*observable_function_pointer)(const configuration_type &),
                          const std::string &name, HighFive::File &file);
 
+    /**
+     * @brief Analyzes the dataset \p name in file \p file
+     * @param name Name of observable dataset to be analyzed
+     * @param file File in which the dataset lies
+     * @param block_size Size used for the blocking
+     * @param size_to_use Size of dataset used for the blocking
+     * @param start_index Index to be used as starting point for the analysis
+     * @param end_index Index to be used as ending point for the analysis
+     * @param amount_of_sample_sets Amount of Bootstrap samples
+     * @param max_t Maximum Marcov time up to which the autocorrelation gets calculated
+     */
     void analyze_dataset(const std::string &name, HighFive::File &file,
                          int block_size, int size_to_use, int start_index,
                          int end_index, int amount_of_sample_sets, size_t max_t);
