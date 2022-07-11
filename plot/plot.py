@@ -80,9 +80,9 @@ def make_auto_correlation_plot(name, measurements_group_):
     ax_: plt.Axes
     make_auto_correlation_plot_to_ax(name, measurements_group_, ax_)
     ax_.set_xlabel(r"t")
-    ax_.set_ylabel(r"$\Gamma$(" + name + ")")
+    ax_.set_ylabel(r"$\bar{\Gamma}_{e}$")
     # ax_.set_yscale("log")
-    # ax_.set_xlim(-1, 100)
+    ax_.set_xlim(-1, 100)
     fig_.set_tight_layout(True)
     return fig_, ax_
 
@@ -801,7 +801,7 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
 # crit_int_auto_correlation_plot("gs_32_CB_ga_1_levels_2/")
 # crit_int_auto_correlation_plot("gs_64_CB_ga_1_levels_2/")
 # info_plot("volume_exponent/", magnetization_squared_name)
-info_plot("volume_exponent_test/")
+# info_plot("volume_exponent_test/")
 # check_thermalisation("volume_exponent/")
-# base_plot("HMC_physical_check/")
+base_plot("HMC_physical_check/")
 # base_plot("MLHMC_physical_check/")
