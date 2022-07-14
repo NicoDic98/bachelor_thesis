@@ -506,9 +506,9 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     //test_multi_level_hmc();
     //test_hmc_measurements();
-    //DoMultiLevelMeasurementsFromDir(std::string("volume_exponent_test"), std::string("ising"), false);
-    /*size_t i{17};
-    HMCCriticalSimulation(4, 5, 1. / 5., i++, 100000);
+    DoMultiLevelMeasurementsFromDir(std::string("newnew"), std::string("ising"), false);
+    /*size_t i{18};
+    HMCCriticalSimulation(32, 10, 1. / 10., i++, 100000);
     //HMCCriticalSimulationXY(16, 12, 1. / 12.);
     std::vector<size_t> nu_pre = {0, 0};
     std::vector<size_t> nu_post = {1, 1};

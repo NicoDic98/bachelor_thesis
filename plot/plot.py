@@ -63,24 +63,24 @@ def append_observable(name, measurements_group_, observable_list, observable_err
         observable_error_list.append(np.sqrt(temp))
 
 
-def make_auto_correlation_plot_to_ax(name, measurements_group_, ax_):
+def make_auto_correlation_plot_to_ax(name, measurements_group_, ax_, suffix="", label=""):
     observable_group = measurements_group_.get(name)
-    observable_auto_correlation_dataset = observable_group.get("auto_correlation")
+    observable_auto_correlation_dataset = observable_group.get("auto_correlation" + suffix)
     observable_auto_correlation = np.zeros(observable_auto_correlation_dataset.size)
     observable_auto_correlation_dataset.read_direct(observable_auto_correlation,
                                                     np.s_[0:observable_auto_correlation_dataset.size],
                                                     np.s_[0:observable_auto_correlation_dataset.size])
 
-    ax_.scatter(np.arange(observable_auto_correlation.size), observable_auto_correlation)
+    ax_.plot(np.arange(observable_auto_correlation.size), observable_auto_correlation, label=label)
 
 
-def make_auto_correlation_plot(name, measurements_group_):
+def make_auto_correlation_plot(name, measurements_group_, suffix=""):
     fig_, ax_ = plt.subplots()
     fig_: plt.Figure
     ax_: plt.Axes
-    make_auto_correlation_plot_to_ax(name, measurements_group_, ax_)
+    make_auto_correlation_plot_to_ax(name, measurements_group_, ax_, suffix)
     ax_.set_xlabel(r"t")
-    ax_.set_ylabel(r"$\bar{\Gamma}_{e}$")
+    ax_.set_ylabel(r"$\bar{\Gamma}_{m}$")
     # ax_.set_yscale("log")
     ax_.set_xlim(-1, 100)
     fig_.set_tight_layout(True)
@@ -209,6 +209,9 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
     bootstrap_variance = []
     bootstrap_mean = []
     file_list = []
+    fig_correl, ax_correl = plt.subplots()
+    fig_correl: plt.Figure
+    ax_correl: plt.Axes
     for file in os.listdir(sub_folder_name):
         if file.startswith("out_") and file.endswith(".h5"):
             file_list.append(sub_folder_name + file)
@@ -247,19 +250,32 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
                 observable_group.attrs["int_auto_correlation_time_stat_error" + last_sufix])
             gamma.append(level0_group.attrs["gamma"])
             system_size.append(len(level0_group.get("h")))
+
             tick_time.append(level0_group.attrs["tick_time"])
             interpolation_type.append(level0_group.attrs["inter_type"])
             nu_pre_level0.append(level0_group.attrs["nu_pre"])
             nu_post_level0.append(level0_group.attrs["nu_post"])
+            label = "abc"
             if "level1" in f:
+                label = "MLHMC"
                 title = "MLHMC " + title
                 level1_group = f.get("level1")
                 nu_pre_level1.append(level1_group.attrs["nu_pre"])
                 nu_post_level1.append(level1_group.attrs["nu_post"])
             else:
+                label = "HMC"
                 title = "HMC " + title
                 nu_pre_level1.append(-1)
                 nu_post_level1.append(-1)
+
+            if system_size[-1] == 32 * 32:
+                make_auto_correlation_plot_to_ax(observable_name, measurements_group, ax_correl, last_sufix, label)
+                ax_correl.set_xlabel(r"t")
+                ax_correl.set_ylabel(r"$\bar{\Gamma}_{m}$")
+                # ax_.set_yscale("log")
+                ax_correl.set_xlim(-1, 3000)
+                ax_correl.set_ylim(0, 1.05)
+                fig_correl.set_tight_layout(True)
 
             ax_.set_title(title)
             ax_.set_xlabel("$N_{ensemble}$")
@@ -269,6 +285,9 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
             fig_.savefig(file.split('.')[0] + observable_name + "test")
             plt.close(fig_)
 
+    ax_correl.legend()
+    fig_correl.savefig(sub_folder_name + observable_name + f"_auto_correlation_{42}.png")
+    plt.close(fig_correl)
     int_auto_correlation_time = np.array(int_auto_correlation_time)
     int_auto_correlation_time_bias = np.array(int_auto_correlation_time_bias)
     int_auto_correlation_time_stat_error = np.array(int_auto_correlation_time_stat_error)
@@ -361,7 +380,7 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
     print("HMC", observable_name, "a =", popt[0], "+-", np.sqrt(pcov[0, 0]), "z =", popt[1], "+-", np.sqrt(pcov[1, 1]),
           "chi2 =", chi2,
           file=f)
-    x_fit = np.linspace(3.8, 70)
+    x_fit = np.linspace(3.8, 40)
     y_fit = fit_function(x_fit, *popt)
     ax1_.plot(x_fit, y_fit, label="HMC fit")
 
@@ -801,7 +820,7 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
 # crit_int_auto_correlation_plot("gs_32_CB_ga_1_levels_2/")
 # crit_int_auto_correlation_plot("gs_64_CB_ga_1_levels_2/")
 # info_plot("volume_exponent/", magnetization_squared_name)
-# info_plot("volume_exponent_test/")
+info_plot("volume_exponent_test/")
 # check_thermalisation("volume_exponent/")
-base_plot("HMC_physical_check/")
+# base_plot("HMC_physical_check/")
 # base_plot("MLHMC_physical_check/")

@@ -87,13 +87,13 @@ std::vector<double> Analyzer::auto_correlation(size_t max_t) {
     vec_temp = VectorX::Map(&ret[0], ret.size());
     WriteVectorX(vec_temp, group, auto_correlation_name);
     double int_auto_correlation_time_bias{(2 * W + 1) * int_auto_correlation_time / static_cast<double>(data.size())};
-    double int_auto_correlation_time_stat_error{2. * sqrt(W + 0.5 - int_auto_correlation_time) *
-                                                int_auto_correlation_time / sqrt(static_cast<double>(data.size()))};
-
     int_auto_correlation_time /= (1 - (2 * W + 1) / static_cast<double>(data.size()));
     if (int_auto_correlation_time < 0.5) {
         int_auto_correlation_time = 0.5;
     }
+    double int_auto_correlation_time_stat_error{2. * sqrt(W + 0.5 - int_auto_correlation_time) *
+                                                int_auto_correlation_time / sqrt(static_cast<double>(data.size()))};
+
     std::cout << "i:\t" << int_auto_correlation_time << "\tW:\t" << W << std::endl;
     // this is really the variance!!!
     write_static_size(int_auto_correlation_time, group, int_auto_correlation_time_name);
