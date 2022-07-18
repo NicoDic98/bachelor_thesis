@@ -34,7 +34,7 @@ set(GPU_TARGETS "gfx1012" CACHE STRING "GPU targets to compile for")
 # Search for rocm in common locations
 list(APPEND CMAKE_PREFIX_PATH /opt/rocm/hip /opt/rocm)
 # Find hip
-find_package(hip)
+# find_package(hip)
 if(hip_FOUND)
     message(STATUS "Found my hip ${hip_VERSION}: ${hip_INCLUDE_DIRS}")
     set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} "${hip_INCLUDE_DIRS}")

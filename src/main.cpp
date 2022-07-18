@@ -146,7 +146,7 @@ void test_multi_level_hmc() {
                                      {8, 8},
                                      {1. / 8, 1. / 8},
                                      myengine);
-        std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 100000, 10000);
+        std::vector<double> acceptance_rates = mygen.generate_ensembles(phi0, 100000, 0);
         for (auto acceptance_rate: acceptance_rates) {
             std::cout << "Acceptance rate:" << acceptance_rate << std::endl;
         }
@@ -262,6 +262,7 @@ void DoMultiLevelMeasurementsFromDir(const std::string &dirname, const std::stri
  * @param step_sizes Step size used in the LeapFrogIntegrator at each level of MLHMC
  * @param id Id to be used for the saved file
  * @param config_amount Amount of configurations to be produced
+ * @param dim Dimension of the lattice
  */
 void MultiLevelCriticalSimulation(const int grid_size = 16,
                                   std::vector<size_t> nu_pre = {0},
@@ -271,11 +272,18 @@ void MultiLevelCriticalSimulation(const int grid_size = 16,
                                   InterpolationType int_type = InterpolationType::Checkerboard,
                                   const std::vector<size_t> &amount_of_steps = {6},
                                   const std::vector<double> &step_sizes = {1. / 6.},
-                                  size_t id = 0, int config_amount = 30000) {
-    const int dim = 2;
+                                  size_t id = 0, int config_amount = 30000, int dim = 2) {
     const int lambda = int_pow(grid_size, dim);
     const double C{0.1};
-    const double beta{0.440686793509772};
+    double beta{4.2};
+    if (dim == 2) {
+        beta = 0.440686793509772;
+    } else if (dim == 3) {
+        beta = 0.22165468;
+    } else {
+        std::cerr << "I do not know the critical point in " << dim << " dimensions.\n";
+        exit(dim);
+    }
     std::string filename{std::string(DATA_DIR)};
 
     VectorX phi0(lambda);
@@ -320,13 +328,14 @@ void MultiLevelCriticalSimulation(const int grid_size = 16,
  * @param step_sizes Step size used in the LeapFrogIntegrator at each level of MLHMC
  * @param id Id to be used for the saved file
  * @param config_amount Amount of configurations to be produced
+ * @param dim Dimension of the lattice
  */
 void HMCCriticalSimulation(int grid_size = 16, const size_t &amount_of_steps = 6,
-                           const double step_sizes = 1. / 6., size_t id = 0, int config_amount = 30000) {
+                           const double step_sizes = 1. / 6., size_t id = 0, int config_amount = 30000, int dim = 2) {
     MultiLevelCriticalSimulation(grid_size, {0}, {1},
                                  {-1}, 1, InterpolationType::Checkerboard,
                                  {amount_of_steps},
-                                 {step_sizes}, id, config_amount);
+                                 {step_sizes}, id, config_amount, dim);
 }
 
 /**
@@ -506,25 +515,36 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
     //test_HMC(std::string(DATA_DIR).append("HMCTest1.dat"));
     //test_multi_level_hmc();
     //test_hmc_measurements();
-    DoMultiLevelMeasurementsFromDir(std::string("newnew"), std::string("ising"), false);
-    /*size_t i{18};
-    HMCCriticalSimulation(32, 10, 1. / 10., i++, 100000);
+    DoMultiLevelMeasurementsFromDir(std::string("3d_new_c_0_3"), std::string("ising"), true);
+    /*size_t i{6};
+    HMCCriticalSimulation(2, 3, 1. / 3., i++, 100000, 3);
+    HMCCriticalSimulation(4, 4, 1. / 4., i++, 100000, 3);
+    HMCCriticalSimulation(8, 8, 1. / 8., i++, 100000, 3);
     //HMCCriticalSimulationXY(16, 12, 1. / 12.);
     std::vector<size_t> nu_pre = {0, 0};
     std::vector<size_t> nu_post = {1, 1};
     std::vector<int> erg_jump_dists = {-1, -1};
-    std::vector<size_t> amount_of_steps = {8, 8};
-    std::vector<double> step_sizes = {1. / 8., 1. / 8.};
+    std::vector<size_t> amount_of_steps = {4, 6};
+    std::vector<double> step_sizes = {1. / 4., 1. / 6.};
     //for (size_t l = 1; l < 17; l *= 4) {
     //nu_pre.push_back(1);
     //nu_post.push_back(1);
     //erg_jump_dists.push_back(-1);
     //amount_of_steps.push_back(l * 3);
     //step_sizes.push_back(1. / (static_cast<double>(l) * 3.));
+    MultiLevelCriticalSimulation(4, nu_pre, nu_post,
+                                 erg_jump_dists, 1, InterpolationType::Checkerboard,
+                                 amount_of_steps,
+                                 step_sizes, i++, 100000, 3);
+    nu_pre = {0, 0, 0};
+    nu_post = {1, 1, 1};
+    erg_jump_dists = {-1, -1, -1};
+    amount_of_steps = {8, 12, 18};
+    step_sizes = {1. / 8., 1. / 12., 1. / 18.};
     MultiLevelCriticalSimulation(8, nu_pre, nu_post,
                                  erg_jump_dists, 1, InterpolationType::Checkerboard,
                                  amount_of_steps,
-                                 step_sizes, i++, 100000);
+                                 step_sizes, i++, 100000, 3);
     //}*/
 }
 

@@ -159,7 +159,7 @@ def base_plot(sub_folder_name="std_hmc/"):
         ax.plot(1. / beta_lin, m_exact, label="Thermodynamic limit")
         ax.plot(1. / beta_lin, -m_exact, label="-Thermodynamic limit")
         ax.legend()
-        fig.savefig(sub_folder_name + magnetization_name + ".png")
+        fig.savefig(sub_folder_name + magnetization_name + ".png", dpi=1000)
         plt.close(fig)
 
     # magnetizations_squared
@@ -170,7 +170,7 @@ def base_plot(sub_folder_name="std_hmc/"):
         ax.set_ylabel("$<m^2>$")
         ax.plot(1. / beta_lin, m_squared_exact, label="Thermodynamic limit")
         ax.legend()
-        fig.savefig(sub_folder_name + magnetization_squared_name + ".png")
+        fig.savefig(sub_folder_name + magnetization_squared_name + ".png", dpi=1000)
         plt.close(fig)
 
     # energies
@@ -181,7 +181,7 @@ def base_plot(sub_folder_name="std_hmc/"):
         ax.set_ylabel("$<e>$")
         ax.plot(1. / beta_lin, e_exact, label="Thermodynamic limit")
         ax.legend()
-        fig.savefig(sub_folder_name + energy_name + ".png")
+        fig.savefig(sub_folder_name + energy_name + ".png", dpi=1000)
         plt.close(fig)
 
     # energies_squared
@@ -190,7 +190,7 @@ def base_plot(sub_folder_name="std_hmc/"):
         ax.set_ylabel("$<e^2>$")
         # todo exact solution
         ax.legend()
-        fig.savefig(sub_folder_name + energy_squared_name + ".png")
+        fig.savefig(sub_folder_name + energy_squared_name + ".png", dpi=1000)
         plt.close(fig)
 
 
@@ -268,7 +268,7 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
                 nu_pre_level1.append(-1)
                 nu_post_level1.append(-1)
 
-            if system_size[-1] == 32 * 32:
+            if system_size[-1] == 8 * 8:
                 make_auto_correlation_plot_to_ax(observable_name, measurements_group, ax_correl, last_sufix, label)
                 ax_correl.set_xlabel(r"t")
                 ax_correl.set_ylabel(r"$\bar{\Gamma}_{m}$")
@@ -282,11 +282,11 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
             ax_.set_ylabel(r"$\tau$")
             ax_.set_yscale("log")
             fig_.set_tight_layout(True)
-            fig_.savefig(file.split('.')[0] + observable_name + "test")
+            # fig_.savefig(file.split('.')[0] + observable_name + "test")
             plt.close(fig_)
 
     ax_correl.legend()
-    fig_correl.savefig(sub_folder_name + observable_name + f"_auto_correlation_{42}.png")
+    fig_correl.savefig(sub_folder_name + observable_name + f"_auto_correlation_{42}.png", dpi=1000)
     plt.close(fig_correl)
     int_auto_correlation_time = np.array(int_auto_correlation_time)
     int_auto_correlation_time_bias = np.array(int_auto_correlation_time_bias)
@@ -327,12 +327,12 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
             if hmc_first:
                 ls[0] = ax1_.errorbar(np.sqrt(system_size[i]), int_auto_correlation_time[i],
                                       int_auto_correlation_time_stat_error[i],
-                                      fmt='.', mfc='red', mec='red', ecolor='red', label="HMC")
+                                      fmt='.', mfc='red', mec='red', ecolor='red', label="HMC", zorder=2)
                 hmc_first = False
             else:
                 ls[0] = ax1_.errorbar(np.sqrt(system_size[i]), int_auto_correlation_time[i],
                                       int_auto_correlation_time_stat_error[i],
-                                      fmt='.', mfc='red', mec='red', ecolor='red')
+                                      fmt='.', mfc='red', mec='red', ecolor='red', zorder=2)
             ax2_.errorbar(np.sqrt(system_size[i]), int_auto_correlation_time[i] + int_auto_correlation_time_bias[i],
                           int_auto_correlation_time_stat_error[i],
                           fmt='.', mfc='red', mec='red', ecolor='red')
@@ -352,12 +352,12 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
             if mlhmc_first:
                 ls[1] = ax1_.errorbar(np.sqrt(system_size[i]), int_auto_correlation_time[i],
                                       int_auto_correlation_time_stat_error[i],
-                                      fmt='.', mfc='green', mec='green', ecolor='green', label="MLHMC")
+                                      fmt='.', mfc='green', mec='green', ecolor='green', label="MLHMC", zorder=2)
                 mlhmc_first = False
             else:
                 ls[1] = ax1_.errorbar(np.sqrt(system_size[i]), int_auto_correlation_time[i],
                                       int_auto_correlation_time_stat_error[i],
-                                      fmt='.', mfc='green', mec='green', ecolor='green')
+                                      fmt='.', mfc='green', mec='green', ecolor='green', zorder=2)
             ax2_.errorbar(np.sqrt(system_size[i]), int_auto_correlation_time[i] + int_auto_correlation_time_bias[i],
                           int_auto_correlation_time_stat_error[i],
                           fmt='.', mfc='green', mec='green', ecolor='green')
@@ -370,7 +370,7 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
 
     popt, pcov = opt.curve_fit(fit_function, x_wo_bias_correction_hmc, y_wo_bias_correction_hmc,
                                sigma=yerr_wo_bias_correction_hmc)
-    f = open(sub_folder_name + "output.txt", "w")
+    f = open(sub_folder_name + observable_name+"_output.txt", "w")
     x_wo_bias_correction_hmc = np.array(x_wo_bias_correction_hmc)
     y_wo_bias_correction_hmc = np.array(y_wo_bias_correction_hmc)
     yerr_wo_bias_correction_hmc = np.array(yerr_wo_bias_correction_hmc)
@@ -380,9 +380,10 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
     print("HMC", observable_name, "a =", popt[0], "+-", np.sqrt(pcov[0, 0]), "z =", popt[1], "+-", np.sqrt(pcov[1, 1]),
           "chi2 =", chi2,
           file=f)
+    print("HMC", pcov)
     x_fit = np.linspace(3.8, 40)
     y_fit = fit_function(x_fit, *popt)
-    ax1_.plot(x_fit, y_fit, label="HMC fit")
+    ax1_.plot(x_fit, y_fit, label="HMC fit", zorder=1)
 
     popt, pcov = opt.curve_fit(fit_function, x_wo_bias_correction_multi_hmc, y_wo_bias_correction_multi_hmc,
                                sigma=yerr_wo_bias_correction_multi_hmc)
@@ -394,9 +395,10 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
                    len(x_wo_bias_correction_multi_hmc) - len(popt))
     print("MLHMC", observable_name, "a =", popt[0], "+-", np.sqrt(pcov[0, 0]), "z =", popt[1], "+-",
           np.sqrt(pcov[1, 1]), "chi2 =", chi2, file=f)
+    print("MLHMC", pcov)
     f.close()
     y_fit = fit_function(x_fit, *popt)
-    ax1_.plot(x_fit, y_fit, label="MLHMC fit")
+    ax1_.plot(x_fit, y_fit, label="MLHMC fit", zorder=1)
 
     ax1_.legend(loc="upper left")
 
@@ -820,7 +822,11 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
 # crit_int_auto_correlation_plot("gs_32_CB_ga_1_levels_2/")
 # crit_int_auto_correlation_plot("gs_64_CB_ga_1_levels_2/")
 # info_plot("volume_exponent/", magnetization_squared_name)
-info_plot("volume_exponent_test/")
+# info_plot("volume_exponent_test/",magnetization_name)
+info_plot("3d_new_c_0_3/",magnetization_name)
+info_plot("3d_new_c_0_3/",energy_name)
+info_plot("3d_new_c_0_3/",magnetization_squared_name)
+info_plot("3d_new_c_0_3/",energy_squared_name)
 # check_thermalisation("volume_exponent/")
 # base_plot("HMC_physical_check/")
 # base_plot("MLHMC_physical_check/")
