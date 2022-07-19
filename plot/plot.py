@@ -290,7 +290,7 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
                 ax_correl.set_xlabel(r"t")
                 ax_correl.set_ylabel(r"$\bar{\Gamma}_{m}$")
                 # ax_.set_yscale("log")
-                ax_correl.set_xlim(-1, 2000)
+                ax_correl.set_xlim(-1, 6000)
                 ax_correl.set_ylim(0, 1.05)
                 fig_correl.set_tight_layout(True)
 
