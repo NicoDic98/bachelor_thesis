@@ -39,6 +39,16 @@ def ene_exact(J):  # exact internal energy in thermodynamic limit (for h=0)\n",
     return -J * np.cosh(J2) * answer / np.sinh(J2)
 
 
+def specific_heat_exact(beta):  # exact cpecific_heat in thermodynamic limit (for h=0)\n",
+    B2 = 2 * beta
+    k = 4 * np.sinh(B2) ** 2 / np.cosh(B2) ** 4
+    Kk = scipy.special.ellipk(k)
+    Ek = scipy.special.ellipe(k)
+    kp = 2 * (np.tanh(B2) ** 2) - 1
+    answer = 2 * Kk - 2 * Ek - (1 - kp) * ((np.pi / 2) + kp * Kk)
+    return ((2 * beta ** 2 / np.pi) / (np.tanh(B2) ** 2)) * answer
+
+
 def append_observable(name, measurements_group_, observable_list, observable_error_list):
     observable_group = measurements_group_.get(name)
     temp = -42
@@ -186,9 +196,13 @@ def base_plot(sub_folder_name="std_hmc/"):
 
     # energies_squared
     if len(energies_squared) > 0:
-        fig, ax = make_observable_plot(energy_squared_name, inverse_betas, energies_squared, energies_squared_errors)
-        ax.set_ylabel("$<e^2>$")
-        # todo exact solution
+        energies_squared = np.array(energies_squared)
+        energies = np.array(energies)
+        c_exact = np.array([specific_heat_exact(temp) / temp for temp in beta_lin])
+        fig, ax = make_observable_plot(energy_squared_name, inverse_betas, energies_squared - energies ** 2,
+                                       energies_squared_errors)
+        ax.set_ylabel("$<C>$")
+        ax.plot(1. / beta_lin, c_exact, label="Thermodynamic limit")
         ax.legend()
         fig.savefig(sub_folder_name + energy_squared_name + ".png", dpi=1000)
         plt.close(fig)
@@ -257,7 +271,10 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
             nu_post_level0.append(level0_group.attrs["nu_post"])
             label = "abc"
             if "level1" in f:
-                label = "MLHMC"
+                if gamma[-1]>1:
+                    label = "MLHMC  W-cycle"
+                else:
+                    label = "MLHMC V-cycle"
                 title = "MLHMC " + title
                 level1_group = f.get("level1")
                 nu_pre_level1.append(level1_group.attrs["nu_pre"])
@@ -268,12 +285,12 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
                 nu_pre_level1.append(-1)
                 nu_post_level1.append(-1)
 
-            if system_size[-1] == 8 * 8:
+            if system_size[-1] == 32 * 32:
                 make_auto_correlation_plot_to_ax(observable_name, measurements_group, ax_correl, last_sufix, label)
                 ax_correl.set_xlabel(r"t")
                 ax_correl.set_ylabel(r"$\bar{\Gamma}_{m}$")
                 # ax_.set_yscale("log")
-                ax_correl.set_xlim(-1, 3000)
+                ax_correl.set_xlim(-1, 2000)
                 ax_correl.set_ylim(0, 1.05)
                 fig_correl.set_tight_layout(True)
 
@@ -370,7 +387,7 @@ def info_plot(sub_folder_name, observable_name=magnetization_name):
 
     popt, pcov = opt.curve_fit(fit_function, x_wo_bias_correction_hmc, y_wo_bias_correction_hmc,
                                sigma=yerr_wo_bias_correction_hmc)
-    f = open(sub_folder_name + observable_name+"_output.txt", "w")
+    f = open(sub_folder_name + observable_name + "_output.txt", "w")
     x_wo_bias_correction_hmc = np.array(x_wo_bias_correction_hmc)
     y_wo_bias_correction_hmc = np.array(y_wo_bias_correction_hmc)
     yerr_wo_bias_correction_hmc = np.array(yerr_wo_bias_correction_hmc)
@@ -823,10 +840,10 @@ def crit_int_auto_correlation_plot(sub_folder_name, observable_name=magnetizatio
 # crit_int_auto_correlation_plot("gs_64_CB_ga_1_levels_2/")
 # info_plot("volume_exponent/", magnetization_squared_name)
 # info_plot("volume_exponent_test/",magnetization_name)
-info_plot("3d_new_c_0_3/",magnetization_name)
-info_plot("3d_new_c_0_3/",energy_name)
-info_plot("3d_new_c_0_3/",magnetization_squared_name)
-info_plot("3d_new_c_0_3/",energy_squared_name)
+# info_plot("3d_new_c_0_3/",magnetization_name)
+info_plot("volume_exponent_test/",magnetization_name)
+# info_plot("3d_new_c_0_3/",magnetization_squared_name)
+# info_plot("3d_new_c_0_3/",energy_squared_name)
 # check_thermalisation("volume_exponent/")
 # base_plot("HMC_physical_check/")
 # base_plot("MLHMC_physical_check/")
