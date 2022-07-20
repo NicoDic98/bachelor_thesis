@@ -56,8 +56,6 @@ public:
      */
     void bootstrap_data(int amount_of_sample_sets);
 
-    void susceptibility(Analyzer &analyzer, int amount_of_sample_sets, const std::string &observable_name);
-
 private:
     /**
      * @brief Dataset
