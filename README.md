@@ -1,2 +1,2 @@
 # Documentation
-www.bachelorthesis.nocoffeetech.de
+bachelorthesis.nocoffeetech.de
